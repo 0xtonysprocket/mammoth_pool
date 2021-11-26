@@ -18,6 +18,10 @@ end
 func token_address() -> (contract_address: felt):
 end
 
+@storage_var
+func market_maker_address() -> (market_maker_address: felt);
+end
+
 func call_mint{syscall_ptr: felt*, range_check_ptr}(
     contract_address:felt, recipient:felt, amount: Uint256):
     let (c) = token_address.read()

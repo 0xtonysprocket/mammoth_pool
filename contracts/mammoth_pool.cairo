@@ -45,6 +45,11 @@ end
 func accrued_rewards_at_time_of_stake(user: felt) -> (rewards_at_time_of_stake: felt)
 end
 
+#total value accrued at time of last distribute
+@storage_var
+func total_value_accrued_at_time_of_last_distribute() -> (ammount: felt)
+end
+
 @constructor
 func constructor{
         syscall_ptr : felt*, 
@@ -63,8 +68,10 @@ func _deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount_of_eth: felt) -> ( 
+    }(amount_of_eth: felt, address: felt) -> (
+    alloc_locals
 
+    let (local new_total) = total_staked.read() + ammount_of_eth
 #TODO: handle case where they are already staked
 #Increase total_staked by amount
 #set accrued_rewards_at_time_of_stake[user] = total_porportional_accrued_rewards
