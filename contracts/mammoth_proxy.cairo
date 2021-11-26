@@ -1,4 +1,8 @@
 # proxy contract for depositing to Mammoth pool and receiving LP tokens
+#also proxy for whitelised MM
+
+#whitelist MM in storage var
+#allow MM to call fill_order from zigzag contract with liquidity from mammoth_pool
 
 @contract_interface
 namespace ITokenContract:
