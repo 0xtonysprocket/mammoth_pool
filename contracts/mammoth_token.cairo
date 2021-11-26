@@ -328,7 +328,8 @@ func _require_call_from_proxy{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }():
-    assert get_caller_address() = _proxy.read()
+    let (caller) = call get_caller_address
+    assert caller = _proxy.read()
 end
 
 @external
