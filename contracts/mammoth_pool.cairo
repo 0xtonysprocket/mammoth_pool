@@ -56,8 +56,6 @@ func constructor{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }():
-    # get_caller_address() returns '0' in the constructor;
-    # therefore, recipient parameter is included
     total_staked.write(0)
     total_porportional_accrued_rewards.write(0)
 end
@@ -68,14 +66,22 @@ func _deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount_of_eth: felt, address: felt) -> (
+    }(amount_of_eth: felt, address: felt) -> ():
     alloc_locals
 
+    #TODO: handle case where they are already staked
+
     let (local new_total) = total_staked.read() + ammount_of_eth
-#TODO: handle case where they are already staked
-#Increase total_staked by amount
-#set accrued_rewards_at_time_of_stake[user] = total_porportional_accrued_rewards
-#set user_amount_staked[user] = amount
+    let (local current_accrued_rewards) = total_porportional_accrued_rewards.read()
+
+    total_staked.write(new_total)
+    # address -> current_accrued_rewards
+    # address -> amount of eth
+    accrued_rewards_at_time_of_stake.write(address, current_accrued_rewards)
+    user_amount_staked.write(address, amount_of_eth)
+
+    return ()
+    end
 
 
 #internal distribute FUNC
