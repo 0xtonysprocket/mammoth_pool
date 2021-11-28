@@ -18,6 +18,11 @@ end
 func token_address() -> (contract_address: felt):
 end
 
+#store the address of the pool contract
+@storage_var
+func pool_address() -> (contract_address: felt):
+end
+
 @storage_var
 func market_maker_address() -> (market_maker_address: felt);
 end
@@ -33,3 +38,37 @@ func call_burn{syscall_ptr: felt*, range_check_ptr}(
     let (c) = token_address.read()
     ITokenContract.proxy_burn(contract_address=c, recipient=recipient, amount=amount)
 end
+
+##########
+#FUNCTIONALITY TO BE IMPLEMENTED FOR DEPOSIT AND WITHDRAWAL
+##########
+
+#func call_deposit
+#input (amount, address)
+
+#IPoolContract.proxy_deposit(amount, address)
+#END
+
+#func call_withdraw
+#input (amount, address)
+
+#IPoolContract.proxy_withdraw(amount, address)
+#END
+
+#func mammoth_deposit
+#input (amount, address)
+
+#call_deposit(amount, address)
+#call_mint(amount, address)
+#END
+
+#func mammoth_withdraw
+#input (amount, address)
+
+#get caller address
+#call_withdraw(amount, address)
+#call_burn(amount, address)
+#END
+
+##########
+##########
