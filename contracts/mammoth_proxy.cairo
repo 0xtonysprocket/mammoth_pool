@@ -61,6 +61,7 @@ end
 ##########
 
 #store owner address
+#eventually inherit onlyOwner
 @storage_var
 func owner() -> (address: felt):
 end
