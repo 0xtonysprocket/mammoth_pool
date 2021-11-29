@@ -27,6 +27,10 @@ struct Address:
     member address: felt
 end
 
+##########
+#STORAGE VAR AND CONSTRUCTOR
+##########
+
 #proxy contract address
 @storage_var
 func _proxy() -> (res: felt):
@@ -63,6 +67,9 @@ func constructor{
     ret
 end
 
+##########
+#DEPOSIT, DISTRIBUTE, WITHDRAW
+##########
 
 #internal deposit FUNC
 func _deposit{
@@ -102,7 +109,8 @@ func _distribute{
     let (local t: felt) = total_staked.read()
 
     #check that there is a nonzero quotient before 1e9 wei
-    let (local digit_of_non_zero_quotient: felt) = _find_first_non_zero_quotient(new_reward, t)
+    #one is the starting digit for recursion
+    let (local digit_of_non_zero_quotient: felt) = _find_first_non_zero_quotient(new_reward, t, 1)
     assert_le(digit_of_non_zero_quotient, eth_rounded_digit)
     
     let (local quotient: felt, local remainder: felt) = unsigned_div_rem(new_reward * eth_rounded_digit, t)
@@ -132,29 +140,23 @@ func _withdraw{
     return ()
 end
 
+##########
+#HELPERS
+##########
+
 #helper function to protect against unexpected behavior with division
 func _find_first_non_zero_quotient{
-        syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(numerator: felt, denominator: felt) -> (digit_of_non_zero_quotient: felt):
+    }(numerator: felt, denominator: felt, next_digit: felt) -> (digit_of_non_zero_quotient: felt):
     alloc_locals
-
     let (local quotient: felt, local remainder: felt) = unsigned_div_rem(numerator, denominator)
 
-    let x = 1
-    [ap] = x; ap++
-    jmp done if quotient != 0
-
-    quotient_is_0:
-    let x = x * 10
-    let (local quotient: felt, local remainder: felt) = unsigned_div_rem(x * numerator, denominator)
-    [ap] = x; ap++
-    jmp done if quotient != 0
-    jmp quotient_is_0
-
-    done:
-    ret
+    if quotient != 0:
+        return (next_digit)
+    else:
+        return _find_first_non_zero_quotient(numerator * 10, denominator, next_digit * 10)
+    end
 end
 
 #helper function to require call from proxy
@@ -170,7 +172,9 @@ func _require_call_from_proxy{
     ret
 end
 
+##########
 #EXTERNALS
+##########
 
 @external
 func proxy_deposit{

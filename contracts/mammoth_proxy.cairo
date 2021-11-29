@@ -7,8 +7,8 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt
 )
 
-# proxy contract for depositing to Mammoth pool and receiving LP tokens
-#also proxy for whitelised MM
+# proxy contract for depositing to Mammoth pool, receiving LP tokens, 
+# and for MM to interact with mammoth pool liquidity 
 
 ##########
 #STRUCTS
@@ -193,6 +193,8 @@ func set_market_maker_contract_address{
     market_maker_address.write(address)
     ret
 end
+
+#TODO: add approve_mm function called by owner only and approves MM to spend token from pool contract
 
 ##########
 #Market Maker Functions
