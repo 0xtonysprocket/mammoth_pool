@@ -1,0 +1,110 @@
+[
+    {
+        "members": [
+            {
+                "name": "low",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "high",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Uint256",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "inputs": [],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "felt"
+            },
+            {
+                "name": "address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "proxy_deposit",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "felt"
+            },
+            {
+                "name": "address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "proxy_withdraw",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "proxy_distribute",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "felt"
+            },
+            {
+                "name": "token_contract_address",
+                "type": "felt"
+            },
+            {
+                "name": "spender_address",
+                "type": "felt"
+            }
+        ],
+        "name": "proxy_approve",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "contract_address",
+                "type": "felt"
+            }
+        ],
+        "name": "ERC20_balance",
+        "outputs": [
+            {
+                "name": "res",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

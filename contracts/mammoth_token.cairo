@@ -10,7 +10,6 @@ from starkware.cairo.common.math import (
     assert_not_zero, assert_not_equal)
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
-from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt
 )
@@ -27,7 +26,7 @@ end
 
 #not in ERC20
 @storage_var
-func _proxy() -> (res: ProxyAddress):
+func _proxy() -> (res: felt):
 end
 
 @storage_var
@@ -328,8 +327,11 @@ func _require_call_from_proxy{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }():
-    let (caller) = call get_caller_address
-    assert caller = _proxy.read()
+    alloc_locals
+    let (local caller_address: felt) = get_caller_address()
+    let (local approved_caller: felt) = _proxy.read()
+    assert caller_address = approved_caller
+    ret
 end
 
 @external
