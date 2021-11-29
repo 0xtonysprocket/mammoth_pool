@@ -145,6 +145,9 @@ end
 ##########
 
 #helper function to protect against unexpected behavior with division
+#this function takes in a numerator and a denominator and outputs 10 ^ x where
+#x is the digit of the first nonzero number in division
+#for example, if num is 1000 and denom is 100000 then this function returns 100 or 10^2
 func _find_first_non_zero_quotient{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
