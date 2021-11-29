@@ -45,9 +45,24 @@ namespace ITokenContract:
     end
 end
 
+@contract_interface
+namespace IPoolContract:
+    func proxy_approve(amount: felt, token_contract_address: felt, spender_address: felt):
+    end
+
+    func proxy_deposit(amount: felt, address: felt, erc20_address: felt):
+    end
+
+    func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
+    end
+
+    func proxy_distribute(erc20_address: felt):
+    end
+end
+
 #ZigZagExchange
 @contract_interface
-namespace ExchangeContract:
+namespace IExchangeContract:
     func fill_order(
         buy_order: Order, 
         sell_order: Order,  
@@ -108,35 +123,77 @@ func call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 end
 
 ##########
-#FUNCTIONALITY TO BE IMPLEMENTED FOR DEPOSIT AND WITHDRAWAL
+#POOL CONTRACT
 ##########
 
-#func call_deposit
-#input (amount, address)
+#TODO: make these calls safer by storing a list of valid erc20 addresses for the pool
+#do this either here or in pool contract
 
-#IPoolContract.proxy_deposit(amount, address)
-#END
+func call_deposit{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount: felt, address: felt, erc20_address: felt):
+    alloc_locals
 
-#func call_withdraw
-#input (amount, address)
+    let (local pool) = pool_address.read()
+    IPoolContract.proxy_deposit(contract_address=pool, amount=amount, address=address, erc20_address=erc20_address)
+    ret
+end
 
-#IPoolContract.proxy_withdraw(amount, address)
-#END
+func call_withdraw{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount: felt, address: felt, erc20_address: felt):
+    alloc_locals
 
-#func mammoth_deposit
-#input (amount, address)
+    let (local pool) = pool_address.read()
+    IPoolContract.proxy_withdraw(contract_address=pool, amount=amount, address=address, erc20_address=erc20_address)
+    ret
+end
 
-#call_deposit(amount, address)
-#call_mint(amount, address)
-#END
+@external
+func call_distribute{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt):
+    alloc_locals
 
-#func mammoth_withdraw
-#input (amount, address)
+    let (local pool) = pool_address.read()
+    IPoolContract.proxy_distribute(contract_address=pool, erc20_address=erc20_address)
+    ret
+end
 
-#get caller address
-#call_withdraw(amount, address)
-#call_burn(amount, address)
-#END
+##########
+#MAMMOTH EXTERNALS
+##########
+
+#deposits eth into pool and mints mammoth LP tokens
+@external
+func mammoth_deposit{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount: felt, address: felt, erc20_address: felt):
+
+    call_deposit(amount, address, erc20_address)
+    call_mint(recipient=address, amount=Uint256(amount, 0))
+    ret
+end
+
+@external
+func mammoth_withdraw{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount: felt, address: felt, erc20_address: felt):
+
+    call_withdraw(amount, address, erc20_address)
+    call_burn(recipient=address, amount=Uint256(amount, 0))
+    ret
+end
 
 ##########
 #Require Owner
@@ -212,6 +269,26 @@ func _require_call_from_mm{
     ret
 end
 
+#token_contract_address should be address of ETH ERC20
+#exchange address should be zigzag exchange address for now
+@external
+func call_approve_mammoth_pool_liquidity{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount: Uint256, token_contract_address: felt, exchange_address: felt):
+    alloc_locals
+    call _require_call_from_owner
+
+    let (local pool) = pool_address.read()
+    #TODO: fix the .low in amount in next line
+    IPoolContract.proxy_approve(contract_address=pool, amount=amount.low, token_contract_address=token_contract_address, spender_address=exchange_address)
+    ret
+end
+
+#func APPROVE liquidity from pool contract for swap on exchange contract
+#require call from MM
+
 #TODO: add in approval for MM to transfer tokens from the pool
 @external
 func call_fill_order{
@@ -226,7 +303,7 @@ func call_fill_order{
     base_fill_quantity: felt):
     
     call _require_call_from_mm
-    ExchangeContract.fill_order(contract_address, buy_order, sell_order, fill_price, base_fill_quantity)
+    IExchangeContract.fill_order(contract_address, buy_order, sell_order, fill_price, base_fill_quantity)
     ret
 end
 
