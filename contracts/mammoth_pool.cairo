@@ -33,25 +33,25 @@ end
 
 @contract_interface
 namespace IERC20:
-    func get_total_supply() -> (res: Uint256):
+    func get_total_supply() -> (res: felt):
     end
 
     func get_decimals() -> (res: felt):
     end
 
-    func balance_of(account: felt) -> (res: Uint256):
+    func balance_of(account: felt) -> (res: felt):
     end
 
-    func allowance(owner: felt, spender: felt) -> (res: Uint256):
+    func allowance(owner: felt, spender: felt) -> (res: felt):
     end
 
-    func transfer(recipient: felt, amount: Uint256):
+    func transfer(recipient: felt, amount: felt):
     end
 
-    func transfer_from(sender: felt, recipient: felt, amount: Uint256):
+    func transfer_from(sender: felt, recipient: felt, amount: felt):
     end
 
-    func approve(spender: felt, amount: Uint256):
+    func approve(spender: felt, amount: felt):
     end
 end
 
@@ -86,7 +86,7 @@ end
 
 #eth balance at time of last snapshot
 @storage_var
-func eth_balance_at_time_of_last_snapshot() -> (balance: felt):
+func erc20_balance_at_time_of_last_snapshot(erc20: felt) -> (balance: felt):
 end
 
 @constructor
@@ -97,7 +97,6 @@ func constructor{
     }():
     total_staked.write(0)
     total_porportional_accrued_rewards.write(0)
-    eth_balance_at_time_of_last_snapshot.write(0)
     ret
 end
 
@@ -125,7 +124,7 @@ func _deposit{
 
     let (local this_contract) = get_contract_address()
 
-    IERC20.transfer_from(contract_address=erc20_address, sender=address, recipient=this_contract, amount=Uint256(amount,0))
+    IERC20.transfer_from(contract_address=erc20_address, sender=address, recipient=this_contract, amount=amount)
 
     return ()
     end
@@ -141,7 +140,7 @@ func _distribute{
     }(new_reward: felt) -> ():
     alloc_locals
     #rewards per 1e9 wei
-    let eth_rounded_digit = 1000000000
+    let erc20_rounded_digit = 1000000000
 
     let (local s: felt) = total_porportional_accrued_rewards.read()
     let (local t: felt) = total_staked.read()
@@ -149,9 +148,9 @@ func _distribute{
     #check that there is a nonzero quotient before 1e9 wei
     #one is the starting digit for recursion
     let (local digit_of_non_zero_quotient: felt) = _find_first_non_zero_quotient(new_reward, t, 1)
-    assert_le(digit_of_non_zero_quotient, eth_rounded_digit)
+    assert_le(digit_of_non_zero_quotient, erc20_rounded_digit)
     
-    let (local quotient: felt, local remainder: felt) = unsigned_div_rem(new_reward * eth_rounded_digit, t)
+    let (local quotient: felt, local remainder: felt) = unsigned_div_rem(new_reward * erc20_rounded_digit, t)
 
     total_porportional_accrued_rewards.write(s + quotient)
     return ()
@@ -167,14 +166,17 @@ func _withdraw{
 
     #TODO: handle case where they withdraw less than full amount
 
-    let (local deposited: felt) = user_amount_staked.read(address)
+    let erc20_rounded_digit = 1000000000
+
+    let (local raw_deposited: felt) = user_amount_staked.read(address)
+    let (local deposited: felt, remainder: felt) = unsigned_div_rem(raw_deposited, erc20_rounded_digit)
     let (local s_0: felt) = accrued_rewards_at_time_of_stake.read(address)
     let (local s: felt) = total_porportional_accrued_rewards.read()
     
     tempvar reward = deposited * (s - s_0)
     let amount = amount + reward
 
-    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=Uint256(amount,0))
+    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=amount)
 
     user_amount_staked.write(address, 0)
     return ()
@@ -229,7 +231,7 @@ func proxy_deposit{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    call _require_call_from_proxy
+    #call _require_call_from_proxy
 
     _deposit(amount, address, erc20_address)
     return ()
@@ -258,13 +260,13 @@ func proxy_distribute{
 
     let (local this_contract) = get_contract_address()
     let (local current_balance) = IERC20.balance_of(contract_address=erc20_address, account=this_contract)
-    let (local previous_balance) = eth_balance_at_time_of_last_snapshot.read()
+    let (local previous_balance) = erc20_balance_at_time_of_last_snapshot.read(erc20_address)
 
-    #TODO: test this .low, for safety need to convert distribute to use Uint256
-    tempvar new_reward = current_balance.low - previous_balance
+    #TODO: test this , for safety need to convert distribute to use Uint256
+    tempvar new_reward = current_balance - previous_balance
     _distribute(new_reward)
 
-    eth_balance_at_time_of_last_snapshot.write(current_balance.low)
+    erc20_balance_at_time_of_last_snapshot.write(erc20_address, current_balance)
     return ()
 end
 
@@ -276,7 +278,7 @@ func proxy_approve{
     }(amount: felt, token_contract_address: felt, spender_address: felt):
     call _require_call_from_proxy
 
-    IERC20.approve(contract_address=token_contract_address, spender=spender_address, amount=Uint256(amount, 0))
+    IERC20.approve(contract_address=token_contract_address, spender=spender_address, amount=amount)
     ret
 end
 
@@ -286,18 +288,49 @@ end
 
 #For ETH just put ETH ERC20 address
 @view
-func ERC20_balance{
+func get_ERC20_balance{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(contract_address: felt) -> (res: Uint256):
+    }(contract_address: felt) -> (res: felt):
     alloc_locals
     let (local this_contract) = get_contract_address()
     let (res) = IERC20.balance_of(contract_address=contract_address, account=this_contract)
     return (res)
 end
 
+@view
+func get_user_balance{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(user: felt, erc20_address: felt) -> (amount: felt):
+    alloc_locals
+    let (local amount) = user_amount_staked.read(user)
+    return (amount)
+end
 
+@view
+func get_total_staked{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (total: felt):
+    alloc_locals
+    let (local total) = total_staked.read()
+    return (total)
+end
+
+@view
+func get_S{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (S: felt):
+    alloc_locals
+    let (local S) = total_porportional_accrued_rewards.read()
+    return (S)
+end
 
 
 

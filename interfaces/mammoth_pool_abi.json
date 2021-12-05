@@ -17,7 +17,16 @@
         "type": "struct"
     },
     {
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "initial_stake",
+                "type": "felt"
+            },
+            {
+                "name": "initial_accrued",
+                "type": "felt"
+            }
+        ],
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
@@ -97,11 +106,35 @@
                 "type": "felt"
             }
         ],
-        "name": "ERC20_balance",
+        "name": "get_ERC20_balance",
         "outputs": [
             {
                 "name": "res",
                 "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_total_staked",
+        "outputs": [
+            {
+                "name": "total",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_S",
+        "outputs": [
+            {
+                "name": "S",
+                "type": "felt"
             }
         ],
         "stateMutability": "view",
