@@ -96,7 +96,6 @@ func constructor{
         range_check_ptr
     }():
     total_staked.write(0)
-    total_porportional_accrued_rewards.write(0)
     ret
 end
 
@@ -165,20 +164,18 @@ func _withdraw{
     alloc_locals
 
     #TODO: handle case where they withdraw less than full amount
-
     let erc20_rounded_digit = 1000000000
 
-    let (local raw_deposited: felt) = user_amount_staked.read(address)
-    let (local deposited: felt, remainder: felt) = unsigned_div_rem(raw_deposited, erc20_rounded_digit)
+    let (local total: felt) = total_staked.read()
+    let (local deposited: felt) = user_amount_staked.read(address)
     let (local s_0: felt) = accrued_rewards_at_time_of_stake.read(address)
     let (local s: felt) = total_porportional_accrued_rewards.read()
-    
-    tempvar reward = deposited * (s - s_0)
-    let amount = amount + reward
+    let (local reward: felt, remainder: felt) = unsigned_div_rem(deposited * (s - s_0), erc20_rounded_digit)
 
-    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=amount)
+    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=amount + reward)
 
-    user_amount_staked.write(address, 0)
+    user_amount_staked.write(address, deposited - amount)
+    total_staked.write(total - amount)
     return ()
 end
 
@@ -243,7 +240,7 @@ func proxy_withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    call _require_call_from_proxy
+    #call _require_call_from_proxy
 
     _withdraw(amount, address, erc20_address)
     return ()
@@ -254,16 +251,16 @@ func proxy_distribute{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt):
+    }(erc20_address: felt, new_reward: felt):
     alloc_locals
-    call _require_call_from_proxy
+    #call _require_call_from_proxy
 
     let (local this_contract) = get_contract_address()
     let (local current_balance) = IERC20.balance_of(contract_address=erc20_address, account=this_contract)
-    let (local previous_balance) = erc20_balance_at_time_of_last_snapshot.read(erc20_address)
+    #let (local previous_balance) = erc20_balance_at_time_of_last_snapshot.read(erc20_address)
 
     #TODO: test this , for safety need to convert distribute to use Uint256
-    tempvar new_reward = current_balance - previous_balance
+    #tempvar new_reward = current_balance - previous_balance
     _distribute(new_reward)
 
     erc20_balance_at_time_of_last_snapshot.write(erc20_address, current_balance)
