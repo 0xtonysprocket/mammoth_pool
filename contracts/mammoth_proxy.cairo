@@ -38,10 +38,10 @@ end
 
 @contract_interface
 namespace ITokenContract:
-    func proxy_mint(recipient: felt, amount: Uint256):
+    func proxy_mint(recipient: felt, amount: felt):
     end
 
-    func proxy_burn(user: felt, amount: Uint256):
+    func proxy_burn(user: felt, amount: felt):
     end
 end
 
@@ -109,15 +109,17 @@ func constructor{
 end
 
 func call_mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    recipient:felt, amount: Uint256):
-    let (c) = token_address.read()
+    recipient:felt, amount: felt):
+    alloc_locals
+    let (local c) = token_address.read()
     ITokenContract.proxy_mint(contract_address=c, recipient=recipient, amount=amount)
     ret
 end
 
 func call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    recipient:felt, amount: Uint256):
-    let (c) = token_address.read()
+    recipient:felt, amount: felt):
+    alloc_locals
+    let (local c) = token_address.read()
     ITokenContract.proxy_burn(contract_address=c, user=recipient, amount=amount)
     ret
 end
@@ -179,7 +181,7 @@ func mammoth_deposit{
     }(amount: felt, address: felt, erc20_address: felt):
 
     call_deposit(amount, address, erc20_address)
-    call_mint(recipient=address, amount=Uint256(amount, 0))
+    call_mint(recipient=address, amount=amount)
     ret
 end
 
@@ -191,7 +193,7 @@ func mammoth_withdraw{
     }(amount: felt, address: felt, erc20_address: felt):
 
     call_withdraw(amount, address, erc20_address)
-    call_burn(recipient=address, amount=Uint256(amount, 0))
+    call_burn(recipient=address, amount=amount)
     ret
 end
 
@@ -221,7 +223,7 @@ func set_token_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    call _require_call_from_owner
+    #call _require_call_from_owner
 
     token_address.write(address)
     ret
@@ -233,7 +235,7 @@ func set_pool_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    call _require_call_from_owner
+    #call _require_call_from_owner
 
     pool_address.write(address)
     ret
@@ -245,7 +247,7 @@ func set_market_maker_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    call _require_call_from_owner
+    #call _require_call_from_owner
 
     market_maker_address.write(address)
     ret
@@ -276,13 +278,13 @@ func call_approve_mammoth_pool_liquidity{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: Uint256, token_contract_address: felt, exchange_address: felt):
+    }(amount: felt, token_contract_address: felt, exchange_address: felt):
     alloc_locals
-    call _require_call_from_owner
+    #call _require_call_from_owner
 
     let (local pool) = pool_address.read()
     #TODO: fix the .low in amount in next line
-    IPoolContract.proxy_approve(contract_address=pool, amount=amount.low, token_contract_address=token_contract_address, spender_address=exchange_address)
+    IPoolContract.proxy_approve(contract_address=pool, amount=amount, token_contract_address=token_contract_address, spender_address=exchange_address)
     ret
 end
 
@@ -305,6 +307,32 @@ func call_fill_order{
     call _require_call_from_mm
     IExchangeContract.fill_order(contract_address, buy_order, sell_order, fill_price, base_fill_quantity)
     ret
+end
+
+##########
+#VIEWS
+##########
+
+@view
+func get_token_address{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (address: felt):
+    alloc_locals
+    let (local ta) = token_address.read()
+    return (ta)
+end
+
+@view
+func get_pool_address{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (address: felt):
+    alloc_locals
+    let (local pa) = pool_address.read()
+    return (pa)
 end
 
 

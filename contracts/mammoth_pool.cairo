@@ -94,8 +94,8 @@ func constructor{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }():
-    total_staked.write(0)
+    }(proxy: felt):
+    _proxy.write(proxy)
     ret
 end
 
@@ -228,7 +228,7 @@ func proxy_deposit{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    #call _require_call_from_proxy
+    _require_call_from_proxy()
 
     _deposit(amount, address, erc20_address)
     return ()
@@ -240,7 +240,7 @@ func proxy_withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    #call _require_call_from_proxy
+    _require_call_from_proxy()
 
     _withdraw(amount, address, erc20_address)
     return ()
@@ -253,7 +253,7 @@ func proxy_distribute{
         range_check_ptr
     }(erc20_address: felt, new_reward: felt):
     alloc_locals
-    #call _require_call_from_proxy
+    _require_call_from_proxy()
 
     let (local this_contract) = get_contract_address()
     let (local current_balance) = IERC20.balance_of(contract_address=erc20_address, account=this_contract)
@@ -273,7 +273,7 @@ func proxy_approve{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, token_contract_address: felt, spender_address: felt):
-    call _require_call_from_proxy
+    _require_call_from_proxy()
 
     IERC20.approve(contract_address=token_contract_address, spender=spender_address, amount=amount)
     ret
