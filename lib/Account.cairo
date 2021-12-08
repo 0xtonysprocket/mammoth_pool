@@ -1,3 +1,4 @@
+
 %lang starknet
 %builtins pedersen range_check ecdsa
 
@@ -148,7 +149,7 @@ func execute{
         calldata_len: felt,
         calldata: felt*,
         nonce: felt
-    ) -> (response : felt):
+    ) -> (response_len: felt, response: felt*):
     alloc_locals
 
     let (__fp__, _) = get_fp_and_pc()
@@ -180,7 +181,7 @@ func execute{
         calldata=message.calldata
     )
 
-    return (response=response.retdata_size)
+    return (response_len=response.retdata_size, response=response.retdata)
 end
 
 func hash_message{pedersen_ptr : HashBuiltin*}(message: Message*) -> (res: felt):
@@ -203,7 +204,7 @@ func hash_message{pedersen_ptr : HashBuiltin*}(message: Message*) -> (res: felt)
             hash_state_ptr, message.nonce)
         let (res) = hash_finalize(hash_state_ptr)
         let pedersen_ptr = hash_ptr
-    return (res=res)
+        return (res=res)
     end
 end
 
