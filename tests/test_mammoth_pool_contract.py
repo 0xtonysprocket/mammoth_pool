@@ -19,11 +19,12 @@ ERC20_CONTRACT = os.path.join(
 )
 
 ACCOUNT_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../lib/openzeppelin/contacts/Account.cairo"
+    os.path.dirname(__file__), "../lib/openzeppelin/contracts/Account.cairo"
 )
 
 
-# TODO figure out what my address is when sending the transactions in this environment
+def uint(a):
+    return (int(a), 0)
 
 
 @pytest.mark.asyncio
@@ -40,16 +41,22 @@ async def test_deposit():
 
     # create starknet signer
     signer = Signer(12345)
-    user = signer.public_key
 
     number_of_deposits = 0
     erc20_rounded_decimal = 1000000000
     initial_deposit = 100 * erc20_rounded_decimal
     initial_withdrawal = initial_deposit
     simulated_profit = 10 * erc20_rounded_decimal
-    mint_amount = 1000 * erc20_rounded_decimal
+    mint_amount = uint(1000 * erc20_rounded_decimal)
 
     # Deploy the contract.
+    user_account = await starknet.deploy(
+        source=ACCOUNT_CONTRACT, constructor_calldata=[signer.public_key]
+    )
+
+    # set user address to the user_account address
+    user = user_account.contract_address
+
     proxy_contract = await starknet.deploy(
         source=PROXY_CONTRACT,
         constructor_calldata=[user],
@@ -67,7 +74,7 @@ async def test_deposit():
 
     lp_token_contract = await starknet.deploy(
         source=ERC20_CONTRACT,
-        constructor_calldata=[LP_NAME, LP_SYMBOL, user, 0],
+        constructor_calldata=[LP_NAME, LP_SYMBOL, user, uint(0)],
     )
 
     # define contract variables

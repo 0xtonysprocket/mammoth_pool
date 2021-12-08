@@ -223,7 +223,7 @@ func set_token_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    #call _require_call_from_owner
+    call _require_call_from_owner
 
     token_address.write(address)
     ret
@@ -235,7 +235,7 @@ func set_pool_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    #call _require_call_from_owner
+    call _require_call_from_owner
 
     pool_address.write(address)
     ret
@@ -247,7 +247,7 @@ func set_market_maker_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    #call _require_call_from_owner
+    call _require_call_from_owner
 
     market_maker_address.write(address)
     ret
@@ -280,7 +280,7 @@ func call_approve_mammoth_pool_liquidity{
         range_check_ptr
     }(amount: felt, token_contract_address: felt, exchange_address: felt):
     alloc_locals
-    #call _require_call_from_owner
+    call _require_call_from_owner
 
     let (local pool) = pool_address.read()
     #TODO: fix the .low in amount in next line
