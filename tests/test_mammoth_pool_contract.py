@@ -14,9 +14,13 @@ PROXY_CONTRACT = os.path.join(
     os.path.dirname(__file__), "../contracts/mammoth_proxy.cairo"
 )
 
-ERC20_CONTRACT = os.path.join(os.path.dirname(__file__), "../lib/ERC20.cairo")
+ERC20_CONTRACT = os.path.join(
+    os.path.dirname(__file__), "../lib/openzeppelin/contracts/token/ERC20.cairo"
+)
 
-ACCOUNT_CONTRACT = os.path.join(os.path.dirname(__file__), "../lib/Account.cairo")
+ACCOUNT_CONTRACT = os.path.join(
+    os.path.dirname(__file__), "../lib/openzeppelin/contacts/Account.cairo"
+)
 
 
 # TODO figure out what my address is when sending the transactions in this environment
