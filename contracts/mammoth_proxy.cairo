@@ -56,7 +56,7 @@ namespace IPoolContract:
     func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
     end
 
-    func proxy_distribute(erc20_address: felt):
+    func proxy_distribute(erc20_address: felt, new_reward: felt):
     end
 end
 
@@ -159,16 +159,15 @@ func call_withdraw{
     return ()
 end
 
-@external
 func call_distribute{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt):
+    }(erc20_address: felt, new_reward: felt):
     alloc_locals
 
     let (local pool) = pool_address.read()
-    IPoolContract.proxy_distribute(contract_address=pool, erc20_address=erc20_address)
+    IPoolContract.proxy_distribute(contract_address=pool, erc20_address=erc20_address, new_reward=new_reward)
     return ()
 end
 
@@ -198,6 +197,17 @@ func mammoth_withdraw{
 
     call_withdraw(amount, address, erc20_address)
     call_burn(recipient=address, amount=amount)
+    return ()
+end
+
+@external
+func mammoth_distribute{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt, new_reward: felt):
+    require_call_from_owner()
+    call_distribute(erc20_address, new_reward)
     return ()
 end
 

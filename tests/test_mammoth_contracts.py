@@ -1,8 +1,12 @@
 import pytest
 import math
 
+from .conftest import MINT_AMOUNT
+
 ERC20_DIGIT = 1000000000
 INITIAL_DEPOSIT = 100 * ERC20_DIGIT
+WITHDRAW_AMOUNT = INITIAL_DEPOSIT
+SIMULATED_PROFIT = 10 * ERC20_DIGIT
 
 
 @pytest.mark.asyncio
@@ -78,8 +82,6 @@ async def test_mammoth_deposit(
     erc20_factory,
     lp_token_factory,
 ):
-    simulated_profit = 10 * ERC20_DIGIT
-
     signer = signer_factory
     user_account, user = account_factory
     pool_contract, _ = pool_factory
@@ -111,37 +113,78 @@ async def test_mammoth_deposit(
     user_lp_balance = await lp_token_contract.balance_of(user).call()
     assert user_lp_balance.result[0] == (INITIAL_DEPOSIT, 0)
 
-    '''
+
+@pytest.mark.asyncio
+async def test_manual_increase_to_simulate_profit(erc20_factory, pool_factory):
+    erc20_contract, _ = erc20_factory
+    _, pool_address = pool_factory
+
     # increase pool contract erc20 balance (simulates profit from trading)
-    await erc20_contract.mint(pool_contract.contract_address, simulated_profit).invoke()
-    contract_erc20_balance = await erc20_contract.balance_of(
-        pool_contract.contract_address
-    ).call()
+    await erc20_contract._mint(pool_address, (SIMULATED_PROFIT, 0)).invoke()
+    contract_erc20_balance = await erc20_contract.balanceOf(pool_address).call()
 
-    assert contract_erc20_balance.result == (INITIAL_DEPOSIT + simulated_profit,)
+    assert contract_erc20_balance.result[0] == (INITIAL_DEPOSIT + SIMULATED_PROFIT, 0)
 
-    # distribute profits
-    await proxy_contract.call_distribute(erc20_address, simulated_profit).invoke()
+
+@pytest.mark.asyncio
+async def test_mammoth_distribute(
+    signer_factory, account_factory, proxy_factory, erc20_factory, pool_factory
+):
+
+    signer = signer_factory
+    user_account, _ = account_factory
+    pool_contract, _ = pool_factory
+    _, proxy_address = proxy_factory
+    _, erc20_address = erc20_factory
+
+    # distribute rewards
+    await signer.send_transaction(
+        account=user_account,
+        to=proxy_address,
+        selector_name="mammoth_distribute",
+        # erc20_address says which rewards to distribute
+        calldata=[erc20_address, SIMULATED_PROFIT],
+    )
 
     # check the reward sum function is correct
     S = await pool_contract.get_S().call()
     assert S.result == (
-        math.floor(((simulated_profit * erc20_rounded_decimal) / INITIAL_DEPOSIT)),
+        math.floor(((SIMULATED_PROFIT * ERC20_DIGIT) / INITIAL_DEPOSIT)),
     )  # round down because of felt division in cairo
 
-    # withdraw full amount
-    await proxy_contract.mammoth_withdraw(
-        initial_withdrawal, user, erc20_address
-    ).invoke()
+
+@pytest.mark.asyncio
+async def test_mammoth_withdraw(
+    signer_factory,
+    account_factory,
+    proxy_factory,
+    pool_factory,
+    erc20_factory,
+    lp_token_factory,
+):
+    signer = signer_factory
+    user_account, user = account_factory
+    pool_contract, _ = pool_factory
+    lp_token_contract, _ = lp_token_factory
+    _, proxy_address = proxy_factory
+    erc20_contract, erc20_address = erc20_factory
+
+    # deposit initial amount
+    await signer.send_transaction(
+        account=user_account,
+        to=proxy_address,
+        selector_name="mammoth_withdraw",
+        calldata=[WITHDRAW_AMOUNT, user, erc20_address],
+    )
 
     # new total stake
     total_staked = await pool_contract.get_total_staked().call()
-    assert total_staked.result == (0,)
+    assert total_staked.result == (INITIAL_DEPOSIT - WITHDRAW_AMOUNT,)
 
-    contract_erc20_balance = await erc20_contract.balance_of(user).call()
-    assert contract_erc20_balance.result == (
-        (mint_amount - INITIAL_DEPOSIT) + initial_withdrawal + simulated_profit,
-    )
+    # check that the user withdrew initial stake plus their allocated profits
+    contract_erc20_balance = await erc20_contract.balanceOf(user).call()
+    assert contract_erc20_balance.result[0] == (MINT_AMOUNT + SIMULATED_PROFIT, 0)
 
-    """
-    '''
+    # check that the LP contract burned the corresponding LP tokens
+    user_lp_balance = await lp_token_contract.balance_of(user).call()
+    assert user_lp_balance.result[0] == (0, 0)

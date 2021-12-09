@@ -28,6 +28,7 @@ ACCOUNT_CONTRACT = os.path.join(
 )
 
 ERC20_DIGIT = 1000000000
+MINT_AMOUNT = 1000 * ERC20_DIGIT
 
 
 @pytest.fixture(scope="module")
@@ -111,12 +112,11 @@ async def erc20_factory(starknet_factory, account_factory):
 
     erc_name = int("TEST".encode().hex(), 16)
     erc_symbol = int("T".encode().hex(), 16)
-    mint_amount = 1000 * ERC20_DIGIT
 
     erc20_contract = await starknet.deploy(
         source=ERC20_CONTRACT,
         # extra 0 to handle the fact that ERC needs Uint256 as input
-        constructor_calldata=[erc_name, erc_symbol, mint_amount, 0, user],
+        constructor_calldata=[erc_name, erc_symbol, MINT_AMOUNT, 0, user],
     )
 
     return erc20_contract, erc20_contract.contract_address
