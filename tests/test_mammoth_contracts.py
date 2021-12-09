@@ -98,11 +98,11 @@ async def test_mammoth_deposit(
     )
 
     # new total stake
-    total_staked = await pool_contract.get_total_staked().call()
+    total_staked = await pool_contract.get_total_staked(erc20_address).call()
     assert total_staked.result == (INITIAL_DEPOSIT,)
 
     # total accrued rewards check
-    S = await pool_contract.get_S().call()
+    S = await pool_contract.get_S(erc20_address).call()
     assert S.result == (0,)
 
     # check user balance
@@ -147,7 +147,7 @@ async def test_mammoth_distribute(
     )
 
     # check the reward sum function is correct
-    S = await pool_contract.get_S().call()
+    S = await pool_contract.get_S(erc20_address).call()
     assert S.result == (
         math.floor(((SIMULATED_PROFIT * ERC20_DIGIT) / INITIAL_DEPOSIT)),
     )  # round down because of felt division in cairo
@@ -178,7 +178,7 @@ async def test_mammoth_withdraw(
     )
 
     # new total stake
-    total_staked = await pool_contract.get_total_staked().call()
+    total_staked = await pool_contract.get_total_staked(erc20_address).call()
     assert total_staked.result == (INITIAL_DEPOSIT - WITHDRAW_AMOUNT,)
 
     # check that the user withdrew initial stake plus their allocated profits

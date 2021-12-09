@@ -66,22 +66,22 @@ end
 
 #total amount deposited
 @storage_var
-func total_staked() -> (value: felt):
+func total_staked(erc20_address: felt) -> (value: felt):
 end
 
 #amount of accrued rewards
 @storage_var
-func total_porportional_accrued_rewards() -> (quotient: felt):
+func total_porportional_accrued_rewards(erc20_address: felt) -> (quotient: felt):
 end
 
 #(total_value locked at time t -> total_staked + total_accrued_value)
 @storage_var
-func user_amount_staked(user: felt) -> (amount_staked: felt):
+func user_amount_staked(user: felt, erc20_address: felt) -> (amount_staked: felt):
 end
 
 #amount of undistributed accrued rewards at time of deposit
 @storage_var
-func accrued_rewards_at_time_of_stake(user: felt) -> (accrued_rewards_at_time_of_stake: felt):
+func accrued_rewards_at_time_of_stake(user: felt, erc20_address: felt) -> (accrued_rewards_at_time_of_stake: felt):
 end
 
 #eth balance at time of last snapshot
@@ -112,14 +112,14 @@ func _deposit{
     alloc_locals
 
     #TODO: handle case where they are already staked
-    let (local staked: felt) = total_staked.read()
-    let (local current_accrued_rewards: felt) = total_porportional_accrued_rewards.read()
+    let (local staked: felt) = total_staked.read(erc20_address)
+    let (local current_accrued_rewards: felt) = total_porportional_accrued_rewards.read(erc20_address)
 
-    total_staked.write(staked + amount)
+    total_staked.write(erc20_address, staked + amount)
     # address -> current_accrued_rewards
     # address -> amount of eth
-    accrued_rewards_at_time_of_stake.write(address, current_accrued_rewards)
-    user_amount_staked.write(address, amount)
+    accrued_rewards_at_time_of_stake.write(address, erc20_address, current_accrued_rewards)
+    user_amount_staked.write(address, erc20_address, amount)
 
     let (local this_contract) = get_contract_address()
 
@@ -136,13 +136,13 @@ func _distribute{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(new_reward: felt) -> ():
+    }(new_reward: felt, erc20_address: felt) -> ():
     alloc_locals
     #rewards per 1e9 wei
     let erc20_rounded_digit = 1000000000
 
-    let (local s: felt) = total_porportional_accrued_rewards.read()
-    let (local t: felt) = total_staked.read()
+    let (local s: felt) = total_porportional_accrued_rewards.read(erc20_address)
+    let (local t: felt) = total_staked.read(erc20_address)
 
     #check that there is a nonzero quotient before 1e9 wei
     #one is the starting digit for recursion
@@ -151,7 +151,7 @@ func _distribute{
     
     let (local quotient: felt, local remainder: felt) = unsigned_div_rem(new_reward * erc20_rounded_digit, t)
 
-    total_porportional_accrued_rewards.write(s + quotient)
+    total_porportional_accrued_rewards.write(erc20_address, s + quotient)
     return ()
 end
 
@@ -166,16 +166,16 @@ func _withdraw{
     #TODO: handle case where they withdraw less than full amount
     let erc20_rounded_digit = 1000000000
 
-    let (local total: felt) = total_staked.read()
-    let (local deposited: felt) = user_amount_staked.read(address)
-    let (local s_0: felt) = accrued_rewards_at_time_of_stake.read(address)
-    let (local s: felt) = total_porportional_accrued_rewards.read()
+    let (local total: felt) = total_staked.read(erc20_address)
+    let (local deposited: felt) = user_amount_staked.read(address, erc20_address)
+    let (local s_0: felt) = accrued_rewards_at_time_of_stake.read(address, erc20_address)
+    let (local s: felt) = total_porportional_accrued_rewards.read(erc20_address)
     let (local reward: felt, remainder: felt) = unsigned_div_rem(deposited * (s - s_0), erc20_rounded_digit)
 
     IERC20.transfer(contract_address=erc20_address, recipient=address, amount=Uint256(amount + reward,0))
 
-    user_amount_staked.write(address, deposited - amount)
-    total_staked.write(total - amount)
+    user_amount_staked.write(address, erc20_address, deposited - amount)
+    total_staked.write(erc20_address, total - amount)
     return ()
 end
 
@@ -261,7 +261,7 @@ func proxy_distribute{
 
     #TODO: test this , for safety need to convert distribute to use Uint256
     #tempvar new_reward = current_balance - previous_balance
-    _distribute(new_reward)
+    _distribute(new_reward, erc20_address)
 
     erc20_balance_at_time_of_last_snapshot.write(erc20_address, current_balance.low)
     return ()
@@ -303,7 +303,7 @@ func get_user_balance{
         range_check_ptr
     }(user: felt, erc20_address: felt) -> (amount: felt):
     alloc_locals
-    let (local amount) = user_amount_staked.read(user)
+    let (local amount) = user_amount_staked.read(user, erc20_address)
     return (amount)
 end
 
@@ -312,9 +312,9 @@ func get_total_staked{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (total: felt):
+    }(erc20_address: felt) -> (total: felt):
     alloc_locals
-    let (local total) = total_staked.read()
+    let (local total) = total_staked.read(erc20_address)
     return (total)
 end
 
@@ -323,9 +323,9 @@ func get_S{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (S: felt):
+    }(erc20_address: felt) -> (S: felt):
     alloc_locals
-    let (local S) = total_porportional_accrued_rewards.read()
+    let (local S) = total_porportional_accrued_rewards.read(erc20_address)
     return (S)
 end
 
