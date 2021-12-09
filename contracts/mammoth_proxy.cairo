@@ -96,6 +96,11 @@ end
 func market_maker_address() -> (market_maker_address: felt):
 end
 
+#approved erc20s
+@storage_var
+func approved_erc20s(erc20_address: felt) -> (bool: felt):
+end
+
 @constructor
 func constructor{
         syscall_ptr : felt*, 
@@ -182,6 +187,7 @@ func mammoth_deposit{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
+    require_approved_erc20(erc20_address)
 
     call_deposit(amount, address, erc20_address)
     call_mint(recipient=address, amount=amount)
@@ -194,6 +200,7 @@ func mammoth_withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
+    require_approved_erc20(erc20_address)
 
     call_withdraw(amount, address, erc20_address)
     call_burn(recipient=address, amount=amount)
@@ -207,6 +214,7 @@ func mammoth_distribute{
         range_check_ptr
     }(erc20_address: felt, new_reward: felt):
     require_call_from_owner()
+    require_approved_erc20(erc20_address)
     call_distribute(erc20_address, new_reward)
     return ()
 end
@@ -224,6 +232,17 @@ func require_call_from_owner{
     let (caller_address: felt) = get_caller_address()
     let (approved_caller: felt) = owner.read()
     assert caller_address = approved_caller
+    return ()
+end
+
+@view
+func require_approved_erc20{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt):
+    let (approval: felt) = approved_erc20s.read(erc20_address)
+    assert approval = 1
     return ()
 end
 
@@ -265,6 +284,18 @@ func set_market_maker_contract_address{
 
     market_maker_address.write(address)
     return ()
+end
+
+@external
+func add_approved_erc20{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt):
+    require_call_from_owner()
+
+    approved_erc20s.write(erc20_address, 1)
+    return()
 end
 
 #TODO: add approve_mm function called by owner only and approves MM to spend token from pool contract
@@ -349,4 +380,14 @@ func get_pool_address{
     return (pa)
 end
 
+@view
+func is_erc20_approved{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt) -> (bool: felt):
+    alloc_locals
+    let (local bool) = approved_erc20s.read(erc20_address)
+    return (bool)
+end
 

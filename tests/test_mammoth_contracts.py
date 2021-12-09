@@ -51,6 +51,31 @@ async def test_set_pool_address(
 
 
 @pytest.mark.asyncio
+async def test_approve_erc20(
+    signer_factory, account_factory, proxy_factory, erc20_factory
+):
+    signer = signer_factory
+    user_account, _ = account_factory
+    proxy_contract, proxy_address = proxy_factory
+    _, erc20_address = erc20_factory
+
+    # check value before approval
+    approval = await proxy_contract.is_erc20_approved(erc20_address).call()
+    assert approval.result[0] != 1
+
+    await signer.send_transaction(
+        account=user_account,
+        to=proxy_address,
+        selector_name="add_approved_erc20",
+        calldata=[erc20_address],
+    )
+
+    # check value after approval
+    approval = await proxy_contract.is_erc20_approved(erc20_address).call()
+    assert approval.result[0] == 1
+
+
+@pytest.mark.asyncio
 async def test_approve_pool(
     signer_factory, account_factory, pool_factory, erc20_factory
 ):
