@@ -105,15 +105,19 @@ func constructor{
         owner_address: felt,
     ):
     owner.write(owner_address)
-    ret
+    return ()
 end
 
-func call_mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    recipient:felt, amount: felt):
-    alloc_locals
-    let (local c) = token_address.read()
+func call_mint{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(
+    recipient: felt, 
+    amount: felt):
+    let (c) = token_address.read()
     ITokenContract.proxy_mint(contract_address=c, recipient=recipient, amount=amount)
-    ret
+    return ()
 end
 
 func call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -121,7 +125,7 @@ func call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     alloc_locals
     let (local c) = token_address.read()
     ITokenContract.proxy_burn(contract_address=c, user=recipient, amount=amount)
-    ret
+    return ()
 end
 
 ##########
@@ -140,7 +144,7 @@ func call_deposit{
 
     let (local pool) = pool_address.read()
     IPoolContract.proxy_deposit(contract_address=pool, amount=amount, address=address, erc20_address=erc20_address)
-    ret
+    return ()
 end
 
 func call_withdraw{
@@ -152,7 +156,7 @@ func call_withdraw{
 
     let (local pool) = pool_address.read()
     IPoolContract.proxy_withdraw(contract_address=pool, amount=amount, address=address, erc20_address=erc20_address)
-    ret
+    return ()
 end
 
 @external
@@ -165,7 +169,7 @@ func call_distribute{
 
     let (local pool) = pool_address.read()
     IPoolContract.proxy_distribute(contract_address=pool, erc20_address=erc20_address)
-    ret
+    return ()
 end
 
 ##########
@@ -182,7 +186,7 @@ func mammoth_deposit{
 
     call_deposit(amount, address, erc20_address)
     call_mint(recipient=address, amount=amount)
-    ret
+    return ()
 end
 
 @external
@@ -194,23 +198,23 @@ func mammoth_withdraw{
 
     call_withdraw(amount, address, erc20_address)
     call_burn(recipient=address, amount=amount)
-    ret
+    return ()
 end
 
 ##########
 #Require Owner
 ##########
 
-func _require_call_from_owner{
+@view
+func require_call_from_owner{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }():
-    alloc_locals
-    let (local caller_address: felt) = get_caller_address()
-    let (local approved_caller: felt) = owner.read()
+    let (caller_address: felt) = get_caller_address()
+    let (approved_caller: felt) = owner.read()
     assert caller_address = approved_caller
-    ret
+    return ()
 end
 
 ##########
@@ -223,10 +227,10 @@ func set_token_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    call _require_call_from_owner
+    require_call_from_owner()
 
     token_address.write(address)
-    ret
+    return ()
 end
 
 @external
@@ -235,10 +239,10 @@ func set_pool_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    call _require_call_from_owner
+    require_call_from_owner()
 
     pool_address.write(address)
-    ret
+    return ()
 end
 
 @external
@@ -247,10 +251,10 @@ func set_market_maker_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    call _require_call_from_owner
+    require_call_from_owner()
 
     market_maker_address.write(address)
-    ret
+    return ()
 end
 
 #TODO: add approve_mm function called by owner only and approves MM to spend token from pool contract
@@ -268,7 +272,7 @@ func _require_call_from_mm{
     let (local caller_address: felt) = get_caller_address()
     let (local approved_caller: felt) = market_maker_address.read()
     assert caller_address = approved_caller
-    ret
+    return ()
 end
 
 #token_contract_address should be address of ETH ERC20
@@ -280,12 +284,12 @@ func call_approve_mammoth_pool_liquidity{
         range_check_ptr
     }(amount: felt, token_contract_address: felt, exchange_address: felt):
     alloc_locals
-    call _require_call_from_owner
+    require_call_from_owner()
 
     let (local pool) = pool_address.read()
     #TODO: fix the .low in amount in next line
     IPoolContract.proxy_approve(contract_address=pool, amount=amount, token_contract_address=token_contract_address, spender_address=exchange_address)
-    ret
+    return ()
 end
 
 #func APPROVE liquidity from pool contract for swap on exchange contract
@@ -306,7 +310,7 @@ func call_fill_order{
     
     call _require_call_from_mm
     IExchangeContract.fill_order(contract_address, buy_order, sell_order, fill_price, base_fill_quantity)
-    ret
+    return ()
 end
 
 ##########

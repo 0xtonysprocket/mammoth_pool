@@ -48,7 +48,7 @@ namespace IERC20:
     func transfer(recipient: felt, amount: felt):
     end
 
-    func transfer_from(sender: felt, recipient: felt, amount: felt):
+    func transferFrom(sender: felt, recipient: felt, amount: Uint256):
     end
 
     func approve(spender: felt, amount: felt):
@@ -96,7 +96,7 @@ func constructor{
         range_check_ptr
     }(proxy: felt):
     _proxy.write(proxy)
-    ret
+    return ()
 end
 
 ##########
@@ -123,7 +123,7 @@ func _deposit{
 
     let (local this_contract) = get_contract_address()
 
-    IERC20.transfer_from(contract_address=erc20_address, sender=address, recipient=this_contract, amount=amount)
+    IERC20.transferFrom(contract_address=erc20_address, sender=address, recipient=this_contract, amount=Uint256(amount, 0))
 
     return ()
     end
@@ -211,7 +211,7 @@ func _require_call_from_proxy{
     let (local caller_address: felt) = get_caller_address()
     let (local approved_caller: felt) = _proxy.read()
     assert caller_address = approved_caller
-    ret
+    return ()
 end
 
 ##########
@@ -276,7 +276,7 @@ func proxy_approve{
     _require_call_from_proxy()
 
     IERC20.approve(contract_address=token_contract_address, spender=spender_address, amount=amount)
-    ret
+    return ()
 end
 
 ##########

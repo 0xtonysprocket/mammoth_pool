@@ -331,7 +331,7 @@ func _require_call_from_proxy{
     let (local caller_address: felt) = get_caller_address()
     let (local approved_caller: felt) = _proxy.read()
     assert caller_address = approved_caller
-    ret
+    return ()
 end
 
 @external
@@ -339,9 +339,9 @@ func proxy_mint{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(recipient: felt, amount: Uint256):
-    call _require_call_from_proxy
-    _mint(recipient, amount)
+    }(recipient: felt, amount: felt):
+    _require_call_from_proxy()
+    _mint(recipient, Uint256(amount,0))
     return()
 end
 
@@ -350,9 +350,9 @@ func proxy_burn{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(user: felt, amount: Uint256):
-    call _require_call_from_proxy
-    _burn(user, amount)
+    }(user: felt, amount: felt):
+    _require_call_from_proxy()
+    _burn(user, Uint256(amount,0))
     return()
 end
 
