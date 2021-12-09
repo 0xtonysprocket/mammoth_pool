@@ -12,7 +12,6 @@ Goals:
 
 TODO:
 
-* Make any ERC20 depositable in the pool
 * Assign balances to the proxy contract instead of pool contract so it is UPGRADEABLE
 * Have the LP contract mint LP tokens that are different for different liquidity provided
 * Test external MM calling fill_order with liquidity from pool
