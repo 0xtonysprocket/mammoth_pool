@@ -16,3 +16,7 @@ TODO:
 * Have the LP contract mint LP tokens that are different for different liquidity provided
 * Test external MM calling fill_order with liquidity from pool
 * Implement profit share mechanism
+* Make "fill_order" method in proxy contract generalized for any potential exchange contract
+* Create market maker vault mechanism
+* Implement 3pool invariant
+* test out approved market maker trading 
