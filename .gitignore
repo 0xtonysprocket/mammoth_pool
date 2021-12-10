@@ -1,5 +1,6 @@
 builds
 .env
 .vscode
+.pytest_cache
 test.txt
 __pycache__/

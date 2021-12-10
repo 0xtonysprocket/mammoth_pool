@@ -83,22 +83,22 @@ end
 
 #store the address of the token contract
 @storage_var
-func token_address() -> (contract_address: felt):
+func lp_token_address(pool_address: felt) -> (contract_address: felt):
 end
 
 #store the address of the pool contract
 @storage_var
-func pool_address() -> (contract_address: felt):
+func approved_pool_address(pool_address: felt) -> (bool: felt):
 end
 
 #store market maker address
 @storage_var
-func market_maker_address() -> (market_maker_address: felt):
+func approved_market_makers(market_maker_address: felt) -> (bool: felt):
 end
 
 #approved erc20s
 @storage_var
-func approved_erc20s(erc20_address: felt) -> (bool: felt):
+func approved_erc20s(pool_address: felt, erc20_address: felt) -> (bool: felt):
 end
 
 @constructor
@@ -118,18 +118,20 @@ func call_mint{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(
+    pool_address: felt,
     recipient: felt, 
     amount: felt):
-    let (c) = token_address.read()
-    ITokenContract.proxy_mint(contract_address=c, recipient=recipient, amount=amount)
+    let (lp_address) = lp_token_address.read(pool_address)
+    ITokenContract.proxy_mint(contract_address=lp_address, recipient=recipient, amount=amount)
     return ()
 end
 
 func call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    recipient:felt, amount: felt):
-    alloc_locals
-    let (local c) = token_address.read()
-    ITokenContract.proxy_burn(contract_address=c, user=recipient, amount=amount)
+    pool_address: felt,
+    recipient: felt, 
+    amount: felt):
+    let (lp_address) = lp_token_address.read(pool_address)
+    ITokenContract.proxy_burn(contract_address=lp_address, user=recipient, amount=amount)
     return ()
 end
 
@@ -144,11 +146,8 @@ func call_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, erc20_address: felt):
-    alloc_locals
-
-    let (local pool) = pool_address.read()
-    IPoolContract.proxy_deposit(contract_address=pool, amount=amount, address=address, erc20_address=erc20_address)
+    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    IPoolContract.proxy_deposit(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     return ()
 end
 
@@ -156,11 +155,8 @@ func call_withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, erc20_address: felt):
-    alloc_locals
-
-    let (local pool) = pool_address.read()
-    IPoolContract.proxy_withdraw(contract_address=pool, amount=amount, address=address, erc20_address=erc20_address)
+    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    IPoolContract.proxy_withdraw(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     return ()
 end
 
@@ -168,11 +164,8 @@ func call_distribute{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt, new_reward: felt):
-    alloc_locals
-
-    let (local pool) = pool_address.read()
-    IPoolContract.proxy_distribute(contract_address=pool, erc20_address=erc20_address, new_reward=new_reward)
+    }(pool_address: felt, erc20_address: felt, new_reward: felt):
+    IPoolContract.proxy_distribute(contract_address=pool_address, erc20_address=erc20_address, new_reward=new_reward)
     return ()
 end
 
@@ -186,11 +179,12 @@ func mammoth_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, erc20_address: felt):
-    require_approved_erc20(erc20_address)
+    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    require_approved_pool(pool_address)
+    require_approved_erc20_for_pool(pool_address, erc20_address)
 
-    call_deposit(amount, address, erc20_address)
-    call_mint(recipient=address, amount=amount)
+    call_deposit(amount, address, pool_address, erc20_address)
+    call_mint(pool_address=pool_address, recipient=address, amount=amount)
     return ()
 end
 
@@ -199,11 +193,12 @@ func mammoth_withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, erc20_address: felt):
-    require_approved_erc20(erc20_address)
+    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    require_approved_pool(pool_address)
+    require_approved_erc20_for_pool(pool_address, erc20_address)
 
-    call_withdraw(amount, address, erc20_address)
-    call_burn(recipient=address, amount=amount)
+    call_withdraw(amount, address, pool_address, erc20_address)
+    call_burn(pool_address=pool_address, recipient=address, amount=amount)
     return ()
 end
 
@@ -212,10 +207,12 @@ func mammoth_distribute{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt, new_reward: felt):
+    }(pool_address: felt, erc20_address: felt, new_reward: felt):
     require_call_from_owner()
-    require_approved_erc20(erc20_address)
-    call_distribute(erc20_address, new_reward)
+    require_approved_pool(pool_address)
+    require_approved_erc20_for_pool(pool_address, erc20_address)
+
+    call_distribute(pool_address, erc20_address, new_reward)
     return ()
 end
 
@@ -236,12 +233,24 @@ func require_call_from_owner{
 end
 
 @view
-func require_approved_erc20{
+func require_approved_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt):
-    let (approval: felt) = approved_erc20s.read(erc20_address)
+    }(pool_address: felt):
+    let (approval: felt) = approved_pool_address.read(pool_address)
+    assert approval = 1
+    return ()
+end
+    
+
+@view
+func require_approved_erc20_for_pool{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt, erc20_address: felt):
+    let (approval: felt) =  approved_erc20s.read(pool_address, erc20_address)
     assert approval = 1
     return ()
 end
@@ -251,50 +260,50 @@ end
 ##########
 
 @external
-func set_token_contract_address{
+func map_pool_to_lp_address{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt, lp_address: felt):
+    require_call_from_owner()
+
+    lp_token_address.write(pool_address, lp_address)
+    return ()
+end
+
+@external
+func add_approved_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
     require_call_from_owner()
 
-    token_address.write(address)
+    approved_pool_address.write(address, 1)
     return ()
 end
 
 @external
-func set_pool_contract_address{
+func approve_market_maker_contract_address{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
     require_call_from_owner()
 
-    pool_address.write(address)
+    approved_market_makers.write(address, 1)
     return ()
 end
 
 @external
-func set_market_maker_contract_address{
+func add_approved_erc20_for_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(address: felt):
+    }(pool_address: felt, erc20_address: felt):
     require_call_from_owner()
 
-    market_maker_address.write(address)
-    return ()
-end
-
-@external
-func add_approved_erc20{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(erc20_address: felt):
-    require_call_from_owner()
-
-    approved_erc20s.write(erc20_address, 1)
+    approved_erc20s.write(pool_address, erc20_address, 1)
     return()
 end
 
@@ -304,34 +313,35 @@ end
 #Market Maker Functions
 ##########
 
-func _require_call_from_mm{
+func require_call_from_mm{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }():
     alloc_locals
     let (local caller_address: felt) = get_caller_address()
-    let (local approved_caller: felt) = market_maker_address.read()
-    assert caller_address = approved_caller
+    let (local approved_caller: felt) = approved_market_makers.read(caller_address)
+    assert approved_caller = 1
     return ()
 end
 
+#not sure if we need this function yet
 #token_contract_address should be address of ETH ERC20
 #exchange address should be zigzag exchange address for now
-@external
-func call_approve_mammoth_pool_liquidity{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(amount: felt, token_contract_address: felt, exchange_address: felt):
-    alloc_locals
-    require_call_from_owner()
+#@external
+#func call_approve_mammoth_pool_liquidity{
+#        syscall_ptr : felt*, 
+#        pedersen_ptr : HashBuiltin*,
+#        range_check_ptr
+#    }(amount: felt, token_contract_address: felt, exchange_address: felt):
+#    alloc_locals
+#    require_call_from_owner()
 
-    let (local pool) = pool_address.read()
-    #TODO: fix the .low in amount in next line
-    IPoolContract.proxy_approve(contract_address=pool, amount=amount, token_contract_address=token_contract_address, spender_address=exchange_address)
-    return ()
-end
+#    let (local pool) = pool_address.read()
+#    #TODO: fix the .low in amount in next line
+#    IPoolContract.proxy_approve(contract_address=pool, amount=amount, token_contract_address=token_contract_address, spender_address=exchange_address)
+#    return ()
+#end
 
 #func APPROVE liquidity from pool contract for swap on exchange contract
 #require call from MM
@@ -349,7 +359,7 @@ func call_fill_order{
     fill_price: PriceRatio,
     base_fill_quantity: felt):
     
-    call _require_call_from_mm
+    require_call_from_mm()
     IExchangeContract.fill_order(contract_address, buy_order, sell_order, fill_price, base_fill_quantity)
     return ()
 end
@@ -359,24 +369,24 @@ end
 ##########
 
 @view
-func get_token_address{
+func get_token_address_for_pool{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (address: felt):
+    }(pool_address) -> (address: felt):
     alloc_locals
-    let (local ta) = token_address.read()
+    let (local ta) = lp_token_address.read(pool_address)
     return (ta)
 end
 
 @view
-func get_pool_address{
+func is_pool_approved{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (address: felt):
+    }(address: felt) -> (bool: felt):
     alloc_locals
-    let (local pa) = pool_address.read()
+    let (local pa) = approved_pool_address.read(address)
     return (pa)
 end
 
@@ -385,9 +395,9 @@ func is_erc20_approved{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt) -> (bool: felt):
+    }(pool_address: felt, erc20_address: felt) -> (bool: felt):
     alloc_locals
-    let (local bool) = approved_erc20s.read(erc20_address)
+    let (local bool) = approved_erc20s.read(pool_address, erc20_address)
     return (bool)
 end
 

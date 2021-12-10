@@ -1,0 +1,61 @@
+DESCRIPTION OF MECHANISM FOR ORDER BOOK MM TO USE LIQUIDITY FROM MAMMOTH POOL
+
+Step 1: MM gets whitelisted by mammoth pool (now this is done manually in future can be done by vote with gov token)
+    Whitelist mapping: (address_of_mm) -> (bool)
+        Updateable by owner of mammoth_proxy (one day could be a multisig)
+
+Step 2: MM opens a vault with mammoth pool with X amount of colatteral where X is a sum of (token * mammoth_price) 
+    for all tokens in the mammoth pool
+
+Step 3: MM can now call trade functions on any approved order book using liquidity from the pool
+
+Step 4: After each trade the MM will pay mammoth_pool *fee* (example: .03%)
+
+Step 5: Mammoth_pool will recalculate the internal price invariant using https://curve.fi/files/crypto-pools-paper.pdf and 
+    if needed, update the internal asset price. 
+
+    Let us define the following: [NOTE: prices are intentionally not denominated as we could denominate price with any choice of asset in the pool
+        but would be cool to use ETH as the base instead of USDC]
+    
+    The following numbers are bounded from 0 < n < infinity
+    p_0 = initial internal asset price
+    p_1 = new internal asset price 
+    X = MM amount of collateral in vault
+    a = amount of base asset swapped (the amount taken from the pool will by definition be equal to the amount used in the order book)
+    b = amount of quote asset mammoth_pool expects based on p_0
+    b_* = amount of quote asset received by the MM trade in the order book
+    Y = the balance owed from MM vault to mammoth pool
+    MM = market maker
+    MP = mammoth pool
+    
+
+    - Trade:
+    1. MM spots a trade swapping a for b_*, a <-> b_*
+    2. MM calls order book trade function with liquidity from MP
+    3. Before the trade, MP runs the following logic:
+        - if Y + a > X
+            then revert_trade "not enough collateral in MM vault"
+    3. MP receives b_* in exchange for a, a <-> b_*
+    4. MP was expecting b based on p_0 in exchange for a so it runs the following logic
+        - Case 1: b_* > b
+            let mm_*debt* = Y - (b_* - b)
+
+            if mm_*debt* > 0
+                MP performs following update
+                Y = mm_*debt* # new amount owed by MM is decreased
+
+            if mm_*debt* < 0
+                MP performs the following updates
+                Y = 0
+                X = X + ((b_* - b) - Y) # increase vault collateral
+
+        - Case 2: b_* < b
+            MP performs following update
+                Y = Y + (b - b_*)
+
+    5. MP updates internal price oracle using the invariant
+
+    Conceptually this process allows for the order book MM to use internal mammoth pool liquidity up until the risk
+    threshhold determined by their level of collateralization. The MM could theoretically trade millions of USD worth of volume
+    with only one hundred thousand USD in collateralization. In the future a DAO and multisig could whitelist MMs based on collateralization
+    and proof of performance

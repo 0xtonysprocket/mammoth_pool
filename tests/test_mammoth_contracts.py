@@ -10,27 +10,28 @@ SIMULATED_PROFIT = 10 * ERC20_DIGIT
 
 
 @pytest.mark.asyncio
-async def test_set_token_address(
-    signer_factory, account_factory, proxy_factory, lp_token_factory
+async def test_map_pool_to_lp_address(
+    signer_factory, account_factory, proxy_factory, pool_factory, lp_token_factory
 ):
     signer = signer_factory
     user_account, _ = account_factory
     proxy_contract, proxy_address = proxy_factory
+    _, pool_address = pool_factory
     _, lp_address = lp_token_factory
 
     await signer.send_transaction(
         account=user_account,
         to=proxy_address,
-        selector_name="set_token_contract_address",
-        calldata=[lp_address],
+        selector_name="map_pool_to_lp_address",
+        calldata=[pool_address, lp_address],
     )
 
-    stored_token = await proxy_contract.get_token_address().call()
+    stored_token = await proxy_contract.get_token_address_for_pool(pool_address).call()
     assert stored_token.result == (lp_address,)
 
 
 @pytest.mark.asyncio
-async def test_set_pool_address(
+async def test_approve_pool_address(
     signer_factory, account_factory, proxy_factory, pool_factory
 ):
     signer = signer_factory
@@ -38,45 +39,54 @@ async def test_set_pool_address(
     proxy_contract, proxy_address = proxy_factory
     _, pool_address = pool_factory
 
+    # check pool address is not approved
+    stored_pool = await proxy_contract.is_pool_approved(pool_address).call()
+    assert stored_pool.result[0] != 1
+
     await signer.send_transaction(
         account=user_account,
         to=proxy_address,
-        selector_name="set_pool_contract_address",
+        selector_name="add_approved_pool",
         calldata=[pool_address],
     )
 
     # check pool address properly stored
-    stored_pool = await proxy_contract.get_pool_address().call()
-    assert stored_pool.result == (pool_address,)
+    stored_pool = await proxy_contract.is_pool_approved(pool_address).call()
+    assert stored_pool.result[0] == 1
 
 
 @pytest.mark.asyncio
-async def test_approve_erc20(
-    signer_factory, account_factory, proxy_factory, erc20_factory
+async def test_approve_erc20_for_pool(
+    signer_factory, account_factory, proxy_factory, erc20_factory, pool_factory
 ):
     signer = signer_factory
     user_account, _ = account_factory
     proxy_contract, proxy_address = proxy_factory
+    _, pool_address = pool_factory
     _, erc20_address = erc20_factory
 
     # check value before approval
-    approval = await proxy_contract.is_erc20_approved(erc20_address).call()
+    approval = await proxy_contract.is_erc20_approved(
+        pool_address, erc20_address
+    ).call()
     assert approval.result[0] != 1
 
     await signer.send_transaction(
         account=user_account,
         to=proxy_address,
-        selector_name="add_approved_erc20",
-        calldata=[erc20_address],
+        selector_name="add_approved_erc20_for_pool",
+        calldata=[pool_address, erc20_address],
     )
 
     # check value after approval
-    approval = await proxy_contract.is_erc20_approved(erc20_address).call()
+    approval = await proxy_contract.is_erc20_approved(
+        pool_address, erc20_address
+    ).call()
     assert approval.result[0] == 1
 
 
 @pytest.mark.asyncio
-async def test_approve_pool(
+async def test_approve_pool_for_transfer(
     signer_factory, account_factory, pool_factory, erc20_factory
 ):
     signer = signer_factory
@@ -109,7 +119,7 @@ async def test_mammoth_deposit(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    pool_contract, _ = pool_factory
+    pool_contract, pool_address = pool_factory
     lp_token_contract, _ = lp_token_factory
     _, proxy_address = proxy_factory
     _, erc20_address = erc20_factory
@@ -119,7 +129,7 @@ async def test_mammoth_deposit(
         account=user_account,
         to=proxy_address,
         selector_name="mammoth_deposit",
-        calldata=[INITIAL_DEPOSIT, user, erc20_address],
+        calldata=[INITIAL_DEPOSIT, user, pool_address, erc20_address],
     )
 
     # new total stake
@@ -158,7 +168,7 @@ async def test_mammoth_distribute(
 
     signer = signer_factory
     user_account, _ = account_factory
-    pool_contract, _ = pool_factory
+    pool_contract, pool_address = pool_factory
     _, proxy_address = proxy_factory
     _, erc20_address = erc20_factory
 
@@ -168,7 +178,7 @@ async def test_mammoth_distribute(
         to=proxy_address,
         selector_name="mammoth_distribute",
         # erc20_address says which rewards to distribute
-        calldata=[erc20_address, SIMULATED_PROFIT],
+        calldata=[pool_address, erc20_address, SIMULATED_PROFIT],
     )
 
     # check the reward sum function is correct
@@ -189,7 +199,7 @@ async def test_mammoth_withdraw(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    pool_contract, _ = pool_factory
+    pool_contract, pool_address = pool_factory
     lp_token_contract, _ = lp_token_factory
     _, proxy_address = proxy_factory
     erc20_contract, erc20_address = erc20_factory
@@ -199,7 +209,7 @@ async def test_mammoth_withdraw(
         account=user_account,
         to=proxy_address,
         selector_name="mammoth_withdraw",
-        calldata=[WITHDRAW_AMOUNT, user, erc20_address],
+        calldata=[WITHDRAW_AMOUNT, user, pool_address, erc20_address],
     )
 
     # new total stake
