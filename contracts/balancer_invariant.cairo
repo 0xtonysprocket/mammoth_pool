@@ -27,8 +27,14 @@ end
 func swap_fee() -> (fee: Ratio):
 end
 
+#exit fee
 @storage_var
-func pool_token_supply() = (supply: felt)
+func exit_fee() -> (fee: Ratio):
+end
+
+#total supply of pool tokens
+@storage_var
+func pool_token_supply() -> (supply: felt)
 end
 
 
@@ -49,7 +55,8 @@ func get_spot_price{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(token_a: felt, token_b: felt) -> (spot_price: Ratio):
+    }(  token_a: felt, 
+        token_b: felt) -> (spot_price: Ratio):
     alloc_locals
 
     local a_balance: felt) = total_staked.read(token_a)
@@ -73,6 +80,9 @@ func get_spot_price{
     return (spot_price)
 end
 
+###########################
+# DEPOSITS AND WITHDRAWALS
+###########################
 
 #**********************************************************************************************
 #calcPoolOutGivenSingleIn                                                                  //
@@ -89,14 +99,14 @@ func get_pool_minted_given_single_in{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt, amount_of_a_in: felt) -> (pool_tokens_out: Ratio):
+    }(  erc20_address: felt, 
+        amount_of_a_in: felt,
+        a_balance: felt,
+        supply: felt,
+        a_weight: Ratio,
+        total_weight: Ratio,
+        swap_fee: Ratio) -> (pool_tokens_out: Ratio):
     alloc_locals
-
-    local (a_balance: felt) = total_staked.read(erc20_address)
-    local (supply: felt) = pool_token_supply.read()
-    local (total_weight: Ratio) = total_weight.read()
-    local (a_weight: Ratio) = token_weight.read(erc20_address)
-    local (fee: Ratio) = swap_fee.read()
 
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
@@ -120,13 +130,14 @@ func get_pool_minted_given_single_in{
     return (amount_pool_tokens_out)
 end
 
-@view
-func get_single_in_given_pool_out{
-        syscall_ptr : felt*,
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(erc20_address: felt, pool_amount_out: felt) -> (amount_of_a_in: felt):
-end
+#IMPLEMENT LATER
+#@view
+#func get_single_in_given_pool_out{
+#        syscall_ptr : felt*,
+#        pedersen_ptr : HashBuiltin*,
+#        range_check_ptr
+#    }(erc20_address: felt, pool_amount_out: felt) -> (amount_of_a_in: felt):
+#end
 
 
 #**********************************************************************************************
@@ -146,24 +157,103 @@ func get_single_out_given_pool_in{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt, pool_amount_in: felt) -> (amount_token_out: Ratio):
+    }(  erc20_address: felt, 
+        pool_amount_in: felt,
+        a_balance: felt,
+        supply: felt,
+        a_weight: Ratio,
+        total_weight: Ratio,
+        swap_fee: Ratio,
+        exit_fee: Ratio) -> (amount_token_out: Ratio):
     alloc_locals
 
-    local (a_balance: felt) = total_staked.read(erc20_address)
-    local (supply: felt) = pool_token_supply.read()
-    local (total_weight: Ratio) = total_weight.read()
-    local (a_weight: Ratio) = token_weight.read(erc20_address)
-    local (fee: Ratio) = swap_fee.read()
+    # needed for dereferencing ratios
+    let (__fp__, _) = get_fp_and_pc()
 
+    #calculate main ratio
+    local (one_minus_exit_fee: Ratio) = Ratio(exit_fee.d - exit_fee.n, exit_fee.d)
+    local (times_pool_in: Ratio) = ratio_mul(one_minus_exit_fee, Ratio(pool_amount_in, 1))
+    local (pool_supply_minus: Ratio) = Ratio(supply * times_pool_in.d - times_pool_in.n, times_pool_in.d)
+    local (divided_by_ps: Ratio) = ratio_div(pool_supply_minus, Ratio(supply, 1))
 
+    local (exponent: Ratio) = ratio_div(total_weight, a_weight)
+
+    local (raised_to_exponent: Ratio) = ratio_pow(divided_by_ps, exponent.n)
+    local (take_root_of_exponent: Ratio) = ratio_nth_root(raised_to_exponent, exponent.d)
+    local (times_balance_out: Ratio) = ratio_mul(take_root_of_exponent, Ratio(a_balance, 1))
+    local (first_ratio: Ratio) = Ratio(a_balance * times_balance_out.d - times_balance_out.n, times_balance_out.d)
+
+    #calculate other ratio
+    local (step_one: Ratio) = ratio_diff(total_weight, a_weight)
+    
+    local (step_one_times_fee: Ratio) = ratio_mul(step_one, fee)
+    local (second_ratio: Ratio) = (step_one_times_fee.d - step_one_times_fee.n, step_one_times_fee.d)
+
+    #multiply together
+    local (amount_token_out: Ratio) = ratio_mul(first_ratio, second_ratio)
+
+    return (amount_token_out)
 end
 
+#IMPLEMENT LATER
+#@view
+#func get_pool_in_given_single_out{
+#        syscall_ptr : felt*,
+#        pedersen_ptr : HashBuiltin*,
+#        range_check_ptr
+#    }(erc20_address: felt, amount_of_a_out: felt) -> (pool_tokens_in: felt):
+#end
+
+###########################
+# SWAPS
+###########################
+
+#**********************************************************************************************
+#calcOutGivenIn                                                                            //
+#aO = tokenAmountOut                                                                       //
+#bO = tokenBalanceOut                                                                      //
+#bI = tokenBalanceIn              /      /            bI             \    (wI / wO) \      //
+#aI = tokenAmountIn    aO = bO * |  1 - | --------------------------  | ^            |     //
+#wI = tokenWeightIn               \      \ ( bI + ( aI * ( 1 - sF )) /              /      //
+#wO = tokenWeightOut                                                                       //
+#sF = swapFee                                                                              //
+#**********************************************************************************************/
+
 @view
-func get_pool_in_given_single_out{
+func get_out_given_in{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(erc20_address: felt, amount_of_a_out: felt) -> (pool_tokens_in: felt):
+    }(  erc20_address: felt, 
+        amount_of_a_in: felt,
+        a_balance: felt,
+        a_weight: Ratio,
+        b_balance: felt,
+        b_weight: Ratio,
+        swap_fee: Ratio) -> (amount_of_b_out: Ratio):
+    alloc_locals
+
+    # needed for dereferencing ratios
+    let (__fp__, _) = get_fp_and_pc()
+
+    local (token_balance_in: Ratio) = Ratio(a_balance, 1)
+    local (token_amount_in: Ratio) = Ratio(amount_of_a_in, 1)
+    local (token_balance_out: Ratio) = Ratio(b_balance, 1)
+
+    local (one_minus_swap_fee: Ratio) = (swap_fee.d - swap_fee.n, swap_fee.d)
+    local (times_tai: Ratio) = ratio_mul(one_minus_swap_fee, token_amount_in)
+    local (plus_balance_in: Ratio) = ratio_add(token_balance_in, times_tai)
+    local (balance_in_divided_by: Ratio) = ratio_div(token_balance_in, plus_balance_in)
+
+    local (exponent: Ratio) = ratio_div(a_weight, b_weight)
+
+    local (raised_to_exponent: Ratio) = ratio_pow(balance_in_divided_by, exponent.n)
+    local (take_root_of_exponent: Ratio) = ratio_nth_root(raised_to_exponent, exponent.d)
+
+    local (one_minus_all: Ratio) = (take_root_of_exponent.d - take_root_of_exponent.n, take_root_of_exponent.d)
+    local (amount_of_b_out: Ratio) = ratio_mul(token_balance_out, one_minus_all)
+
+    return (amount_of_b_out)
 end
 
 ##########
