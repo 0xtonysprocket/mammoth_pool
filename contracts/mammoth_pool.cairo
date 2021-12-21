@@ -19,14 +19,6 @@ from starkware.cairo.common.uint256 import (
 
 #NOTE: rewards in this contract are distributed per 1000000000 wei or .000000001 ETH 
 
-#using structs to wrap felt fo syntactic types, 
-#structs will be initialized using functions with additional checks ont he type
-
-#struct
-struct Address:
-    member address: felt
-end
-
 ##########
 #INTERFACES
 ##########
@@ -56,6 +48,17 @@ namespace IERC20:
 end
 
 ##########
+# STRUCTS
+##########
+
+#n -> numerator
+#d -> denominator
+struct Ratio:
+    member n: felt
+    member d: felt
+end
+
+##########
 #STORAGE VAR AND CONSTRUCTOR
 ##########
 
@@ -64,9 +67,24 @@ end
 func _proxy() -> (res: felt):
 end
 
-#total amount deposited
+#total amount deposited of a given erc20
 @storage_var
 func total_staked(erc20_address: felt) -> (value: felt):
+end
+
+#pool weight of a given erc20 (1/w)
+@storage_var
+func token_weight(erc20_address: felt) -> (weight: Ratio):
+end
+
+#sum of all weights for normalization
+@storage_var
+func total_weight() -> (total_weight: felt):
+end
+
+#swap fee
+@storage_var
+func swap_fee() -> (fee: Ratio):
 end
 
 #amount of accrued rewards
@@ -111,6 +129,13 @@ func _deposit{
     }(amount: felt, address: felt, erc20_address: felt) -> ():
     alloc_locals
 
+
+    # read out token balance, token weight, total weight
+    # get out given single in
+    # update token balance
+    # transferFrom
+    # return out given single in
+
     #TODO: handle case where they are already staked
     let (local staked: felt) = total_staked.read(erc20_address)
     let (local current_accrued_rewards: felt) = total_porportional_accrued_rewards.read(erc20_address)
@@ -132,6 +157,7 @@ func _deposit{
 #internal distribute FUNC
 #new reward calculation ->  current_balance - total_porportional_accrued_rewards
 #should be run every X units of time
+# NO LONGER NEED WITH BALANCER
 func _distribute{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
@@ -162,6 +188,11 @@ func _withdraw{
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
     alloc_locals
+
+    # read out token_balance, token weight, total weight
+    # get single out given LP in
+    # transfer
+    # update balances
 
     #TODO: handle case where they withdraw less than full amount
     let erc20_rounded_digit = 1000000000
@@ -329,5 +360,94 @@ func get_S{
     return (S)
 end
 
+#########
+# BALANCER STYLE MATH
+# CONSTANT VALUE INVARIANT
+#########
+
+#
+#   a_balance/a_weight          fee.denominator
+#           /               *           /
+#   b_balance/b_weight          fee.denominator - fee.numerator
+#
+@view
+func get_spot_price{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(token_a: felt, token_b: felt) -> (spot_price: Ratio):
+    alloc_locals
+
+    local a_balance: felt) = total_staked.read(token_a)
+    local a_weight: Ratio) = token_weight.read(token_a)
+    local b_balance: felt) = total_staked.read(token_b)
+    local b_weight: Ratio) = token_weight.read(token_b)
+    local fee: Ratio) = swap_fee.read()
+
+    # needed for dereferencing ratios
+    let (__fp__, _) = get_fp_and_pc()
+
+    let (local num_n: felt, local num_d: felt) = (n=a_balance * a_weight.n, d=a_weight.d)
+    let (local den_n: felt, local den_d: felt) = (n=b_balance * b_weight.n, d=b_weight.d)
+
+    let (spot_price: Ratio) = Ratio(n=num_n * den_d  * fee.d, d=den_n * num_d * (fee.d - fee.n))
+
+    #sanity
+    assert_not_zero(spot_price.n)
+    assert_not_zero(spot_price.d)
+
+    return (spot_price)
+end
 
 
+#
+#
+#
+#
+#
+#
+@view
+func get_pool_minted_given_single_in{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt, amount_of_a_in: felt) -> (pool_tokens_out: felt):
+    alloc_locals
+
+    local a_balance: felt) = total_staked.read(erc20_address)
+    local (a_weight_num: felt, a_weight_den: felt) = token_weight.read(erc20_address)
+    local (fee_num: felt, fee_den: felt) = swap_fee.read()
+
+
+    # always positive if weights are normalized
+    local (step_one_num: felt, inside_den: felt) = (a_balance + amount_of_a_in, a_balance)
+    
+    local (times_fee_num: felt, times_fee_den: felt) = (inside_num * fee_num, inside_den * fee_den)
+    local (step_three_num: felt, step_three_den: felt) = (times_fee_den - times_fee_num, times_fee_den)
+    local (step_four_num: felt, step_four_den: felt) = 
+
+end
+
+@view
+func get_single_in_given_pool_out{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt, pool_amount_out: felt) -> (amount_of_a_in: felt):
+end
+
+@view
+func get_single_out_given_pool_in{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt, pool_amount_in: felt) -> (amount_of_a_out: felt):
+end
+
+@view
+func get_pool_in_given_single_out{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt, amount_of_a_out: felt) -> (pool_tokens_in: felt):
+end
