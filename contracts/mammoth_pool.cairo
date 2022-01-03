@@ -401,10 +401,7 @@ end
 
 
 #
-#
-#
-#
-#
+#    LP_supply * ((1 + amount_in/balanceOf)^(weight) - 1)
 #
 @view
 func get_pool_minted_given_single_in{
@@ -420,7 +417,7 @@ func get_pool_minted_given_single_in{
 
 
     # always positive if weights are normalized
-    local (step_one_num: felt, inside_den: felt) = (a_balance + amount_of_a_in, a_balance)
+    local (step_one_num: felt, step_one_den: felt) = (a_balance + amount_of_a_in, a_balance)
     
     local (times_fee_num: felt, times_fee_den: felt) = (inside_num * fee_num, inside_den * fee_den)
     local (step_three_num: felt, step_three_den: felt) = (times_fee_den - times_fee_num, times_fee_den)

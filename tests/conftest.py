@@ -28,7 +28,7 @@ ACCOUNT_CONTRACT = os.path.join(
 )
 
 BALANCER_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../contracts/balancer_invariant.cairo"
+    os.path.dirname(__file__), "../contracts/balancer_math.cairo"
 )
 
 ERC20_DIGIT = 1000000000
@@ -125,13 +125,12 @@ async def erc20_factory(starknet_factory, account_factory):
 
     return erc20_contract, erc20_contract.contract_address
 
+
 @pytest.fixture(scope="module")
 async def balancer_factory(starknet_factory, account_factory):
     starknet = starknet_factory
     _, user = account_factory
 
-    balancer_contract = await starknet.deploy(
-        source=BALANCER_CONTRACT
-    )
+    balancer_contract = await starknet.deploy(source=BALANCER_CONTRACT)
 
     return balancer_contract, balancer_contract.contract_address

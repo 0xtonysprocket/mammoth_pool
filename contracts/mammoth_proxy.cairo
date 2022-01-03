@@ -60,6 +60,21 @@ namespace IPoolContract:
     end
 end
 
+@contract_interface
+namespace IBMATHContract:
+    func proxy_approve(amount: felt, token_contract_address: felt, spender_address: felt):
+    end
+
+    func proxy_deposit(amount: felt, address: felt, erc20_address: felt):
+    end
+
+    func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
+    end
+
+    func proxy_distribute(erc20_address: felt, new_reward: felt):
+    end
+end
+
 #ZigZagExchange
 @contract_interface
 namespace IExchangeContract:
@@ -99,6 +114,36 @@ end
 #approved erc20s
 @storage_var
 func approved_erc20s(pool_address: felt, erc20_address: felt) -> (bool: felt):
+end
+
+#total amount deposited of a given erc20
+@storage_var
+func total_staked(erc20_address: felt) -> (value: felt):
+end
+
+#pool weight of a given erc20 (1/w)
+@storage_var
+func token_weight(erc20_address: felt) -> (weight: Ratio):
+end
+
+#sum of all weights for normalization
+@storage_var
+func total_weight() -> (total_weight: Ratio):
+end
+
+#swap fee
+@storage_var
+func swap_fee() -> (fee: Ratio):
+end
+
+#exit fee
+@storage_var
+func exit_fee() -> (fee: Ratio):
+end
+
+#total supply of pool tokens
+@storage_var
+func pool_token_supply() -> (supply: felt):
 end
 
 @constructor
