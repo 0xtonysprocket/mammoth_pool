@@ -27,6 +27,10 @@ ACCOUNT_CONTRACT = os.path.join(
     os.path.dirname(__file__), "../lib/openzeppelin/contracts/Account.cairo"
 )
 
+BALANCER_CONTRACT = os.path.join(
+    os.path.dirname(__file__), "../contracts/balancer_invariant.cairo"
+)
+
 ERC20_DIGIT = 1000000000
 MINT_AMOUNT = 1000 * ERC20_DIGIT
 
@@ -120,3 +124,14 @@ async def erc20_factory(starknet_factory, account_factory):
     )
 
     return erc20_contract, erc20_contract.contract_address
+
+@pytest.fixture(scope="module")
+async def balancer_factory(starknet_factory, account_factory):
+    starknet = starknet_factory
+    _, user = account_factory
+
+    balancer_contract = await starknet.deploy(
+        source=BALANCER_CONTRACT
+    )
+
+    return balancer_contract, balancer_contract.contract_address
