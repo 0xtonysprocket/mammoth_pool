@@ -16,13 +16,6 @@ from ratio import Ratio
 #STRUCTS
 ##########
 
-#n -> numerator
-#d -> denominator
-struct Ratio:
-    member n: felt
-    member d: felt
-end
-
 struct PriceRatio:
     member numerator: felt
     member denominator: felt
@@ -52,6 +45,9 @@ namespace ITokenContract:
 
     func proxy_burn(user: felt, amount: felt):
     end
+
+    func get_total_supply() -> (res: felt):
+    end
 end
 
 @contract_interface
@@ -65,38 +61,7 @@ namespace IPoolContract:
     func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
     end
 
-    func proxy_distribute(erc20_address: felt, new_reward: felt):
-    end
-end
-
-@contract_interface
-namespace IBMATHContract:
-    func get_spot_price(a_balance: felt, a_weight: Ratio, b_balance: felt, b_weight: Ratio, fee: Ratio):
-    end
-
-    func get_pool_minted_given_single_in(amount_of_a_in: felt,
-        a_balance: felt,
-        supply: felt,
-        a_weight: Ratio,
-        total_weight: Ratio,
-        swap_fee: Ratio):
-    end
-
-    func get_single_out_given_pool_in(  pool_amount_in: felt,
-        a_balance: felt,
-        supply: felt,
-        a_weight: Ratio,
-        total_weight: Ratio,
-        swap_fee: Ratio,
-        exit_fee: Ratio):
-    end
-
-    func get_out_given_in(  amount_of_a_in: felt,
-        a_balance: felt,
-        a_weight: Ratio,
-        b_balance: felt,
-        b_weight: Ratio,
-        swap_fee: Ratio):
+    func get_total_staked(erc20_address: felt):
     end
 end
 
@@ -141,34 +106,24 @@ end
 func approved_erc20s(pool_address: felt, erc20_address: felt) -> (bool: felt):
 end
 
-#total amount deposited of a given erc20
-@storage_var
-func total_staked(erc20_address: felt) -> (value: felt):
-end
-
 #pool weight of a given erc20 (1/w)
 @storage_var
-func token_weight(erc20_address: felt) -> (weight: Ratio):
+func token_weight(pool_address: felt, erc20_address: felt) -> (weight: Ratio):
 end
 
 #sum of all weights for normalization
 @storage_var
-func total_weight() -> (total_weight: Ratio):
+func total_weight(pool_address: felt) -> (total_weight: Ratio):
 end
 
 #swap fee
 @storage_var
-func swap_fee() -> (fee: Ratio):
+func swap_fee(pool_address: felt) -> (fee: Ratio):
 end
 
 #exit fee
 @storage_var
-func exit_fee() -> (fee: Ratio):
-end
-
-#total supply of pool tokens
-@storage_var
-func pool_token_supply() -> (supply: felt):
+func exit_fee(pool_address: felt) -> (fee: Ratio):
 end
 
 @constructor
@@ -209,9 +164,6 @@ end
 #POOL CONTRACT
 ##########
 
-#TODO: make these calls safer by storing a list of valid erc20 addresses for the pool
-#do this either here or in pool contract
-
 func call_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
@@ -230,15 +182,6 @@ func call_withdraw{
     return ()
 end
 
-func call_distribute{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(pool_address: felt, erc20_address: felt, new_reward: felt):
-    IPoolContract.proxy_distribute(contract_address=pool_address, erc20_address=erc20_address, new_reward=new_reward)
-    return ()
-end
-
 ##########
 #MAMMOTH EXTERNALS
 ##########
@@ -249,12 +192,13 @@ func mammoth_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    }(amount_to_deposit: felt, user_address: felt, pool_address: felt, erc20_address: felt):
     require_approved_pool(pool_address)
     require_approved_erc20_for_pool(pool_address, erc20_address)
 
-    call_deposit(amount, address, pool_address, erc20_address)
-    call_mint(pool_address=pool_address, recipient=address, amount=amount)
+    let amount_to_mint: felt = view_pool_minted_given_single_in()
+    call_deposit(amount_to_deposit, user_address, pool_address, erc20_address)
+    call_mint(pool_address=pool_address, recipient=user_address, amount=amount)
     return ()
 end
 
@@ -263,31 +207,105 @@ func mammoth_withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    }(pool_amount_in: felt, user_address: felt, pool_address: felt, erc20_address: felt):
     require_approved_pool(pool_address)
     require_approved_erc20_for_pool(pool_address, erc20_address)
 
-    call_withdraw(amount, address, pool_address, erc20_address)
-    call_burn(pool_address=pool_address, recipient=address, amount=amount)
+    let amount_to_withdraw: felt = view_single_out_given_pool_in(pool_amount_in, pool_address, erc20_address)
+    call_withdraw(amount_to_withdraw, user_address, pool_address, erc20_address)
+    call_burn(pool_address=pool_address, recipient=user_address, amount=amount)
     return ()
 end
 
 @external
-func mammoth_distribute{
+func mammoth_swap{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_address: felt, erc20_address: felt, new_reward: felt):
-    require_call_from_owner()
+    }(amount_in: felt, user_address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt):
     require_approved_pool(pool_address)
-    require_approved_erc20_for_pool(pool_address, erc20_address)
+    require_approved_erc20_for_pool(pool_address, erc20_address_in)
+    require_approved_erc20_for_pool(pool_address, erc20_address_out)
 
-    call_distribute(pool_address, erc20_address, new_reward)
-    return ()
+    let amount_out: felt = view_out_given_in(amount_in, pool_address, erc20_address_in, erc20_address_out)
+    call_deposit(amount_in, user_address, pool_address, erc20_address_in)
+    call_withdraw(amount_out, user_address, pool_address, erc20_address_out)
 end
 
 ##########
-#Require Owner
+#MATH
+##########
+
+@view
+func view_single_out_given_pool_in{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_amount_in: felt, pool_address: felt, erc20_address: felt) -> (amount_to_withdraw: felt):
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
+
+    let lp_address = lp_token_address.read(pool_address)
+    let supply_uint: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
+    let supply: felt = supply_uint[0]
+    let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address)
+    let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
+    let total_weight: Ratio = total_weight.read(pool_address)
+    let swap_fee: Ratio = swap_fee.read(pool_address)
+    let exit_fee: Ratio = exit_fee.read(pool_address)
+
+    let ratio_out: Ratio = get_single_out_given_pool_in(pool_amount_in: felt, a_balance: felt, supply: felt, a_weight: Ratio, total_weight: Ratio, swap_fee: Ratio, exit_fee: Ratio)
+    let (amount_to_withdraw: felt, _) = unsigned_div_rem(ratio_out.n, ratio_out.d)
+
+    return (amount_to_withdraw)
+end
+
+@view
+func view_pool_minted_given_single_in{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount_to_deposit: felt, pool_address: felt, erc20_address: felt) -> (amount_to_withdraw: felt):
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
+
+    let lp_address = lp_token_address.read(pool_address)
+    let supply_uint: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
+    let supply: felt = supply_uint[0]
+    let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address)
+    let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
+    let total_weight: Ratio = total_weight.read(pool_address)
+    let swap_fee: Ratio = swap_fee.read(pool_address)
+
+    let ratio_minted: Ratio = get_pool_minted_given_single_in(amount_to_deposit: felt, a_balance: felt, supply: felt, a_weight: Ratio, total_weight: Ratio, swap_fee: Ratio)
+    let (amount_to_mint: felt, _) = unsigned_div_rem(ratio_minted.n, ratio_minted.d)
+
+    return (amount_to_mint)
+end
+
+@view
+func view_out_given_in{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount_in: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (amount_out: felt):
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
+
+    let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address_in)
+    let a_weight: Ratio = token_weight.read(pool_address, erc20_address_in)
+    let b_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address_out)
+    let b_weight: Ratio = token_weight.read(pool_address, erc20_address_out)
+    let swap_fee: Ratio = swap_fee.read(pool_address)
+
+    let ratio_out: Ratio = get_out_given_in(  amount_in: felt, a_balance: felt, a_weight: Ratio, b_balance: felt, b_weight: Ratio, swap_fee: Ratio)
+    let (amount_out: felt, _) = unsigned_div_rem(ratio_out.n, ratio_out.d)
+
+    return (amount_out)
+end
+
+##########
+#Require Functions
 ##########
 
 @view
@@ -346,10 +364,12 @@ func add_approved_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(address: felt):
+    }(pool_address: felt, swap_fee: Ratio, exit_fee: Ratio):
     require_call_from_owner()
 
     approved_pool_address.write(address, 1)
+    swap_fee.write(pool_address, swap_fee)
+    exit_fee.write(pool_address, exit_fee)
     return ()
 end
 
@@ -370,10 +390,15 @@ func add_approved_erc20_for_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_address: felt, erc20_address: felt):
+    }(pool_address: felt, erc20_address: felt, weight: Ratio):
     require_call_from_owner()
 
     approved_erc20s.write(pool_address, erc20_address, 1)
+    token_weight.write(pool_address, erc20_address, weight)
+    
+    let old_total_weight: Ratio = total_weight.read(pool_address)
+    let new_total: Ratio = ratio_add(old_total_weight, weight)
+    total_weight.write(pool_address, new_total)
     return()
 end
 

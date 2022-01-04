@@ -39,6 +39,9 @@ async def test_approve_pool_address(
     proxy_contract, proxy_address = proxy_factory
     _, pool_address = pool_factory
 
+    swap_fee = (2, 1000)  # .02%
+    exit_fee = (2, 1000)  # .02%
+
     # check pool address is not approved
     stored_pool = await proxy_contract.is_pool_approved(pool_address).call()
     assert stored_pool.result[0] != 1
@@ -47,7 +50,7 @@ async def test_approve_pool_address(
         account=user_account,
         to=proxy_address,
         selector_name="add_approved_pool",
-        calldata=[pool_address],
+        calldata=[pool_address, swap_fee, exit_fee],
     )
 
     # check pool address properly stored
@@ -65,6 +68,8 @@ async def test_approve_erc20_for_pool(
     _, pool_address = pool_factory
     _, erc20_address = erc20_factory
 
+    weight = (1, 3)  # .33
+
     # check value before approval
     approval = await proxy_contract.is_erc20_approved(
         pool_address, erc20_address
@@ -75,7 +80,7 @@ async def test_approve_erc20_for_pool(
         account=user_account,
         to=proxy_address,
         selector_name="add_approved_erc20_for_pool",
-        calldata=[pool_address, erc20_address],
+        calldata=[pool_address, erc20_address, weight],
     )
 
     # check value after approval
