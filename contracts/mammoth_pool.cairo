@@ -8,7 +8,6 @@
 #7. 
 
 %lang starknet
-%builtins pedersen range_check ecdsa
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
@@ -16,6 +15,8 @@ from starkware.cairo.common.math import (assert_not_zero, assert_le, unsigned_di
 from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt, uint256_unsigned_div_rem
 )
+
+from ratio import Ratio
 
 #NOTE: rewards in this contract are distributed per 1000000000 wei or .000000001 ETH 
 
@@ -45,17 +46,6 @@ namespace IERC20:
 
     func approve(spender: felt, amount: felt):
     end
-end
-
-##########
-# STRUCTS
-##########
-
-#n -> numerator
-#d -> denominator
-struct Ratio:
-    member n: felt
-    member d: felt
 end
 
 ##########
@@ -358,93 +348,4 @@ func get_S{
     alloc_locals
     let (local S) = total_porportional_accrued_rewards.read(erc20_address)
     return (S)
-end
-
-#########
-# BALANCER STYLE MATH
-# CONSTANT VALUE INVARIANT
-#########
-
-#
-#   a_balance/a_weight          fee.denominator
-#           /               *           /
-#   b_balance/b_weight          fee.denominator - fee.numerator
-#
-@view
-func get_spot_price{
-        syscall_ptr : felt*,
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(token_a: felt, token_b: felt) -> (spot_price: Ratio):
-    alloc_locals
-
-    local a_balance: felt) = total_staked.read(token_a)
-    local a_weight: Ratio) = token_weight.read(token_a)
-    local b_balance: felt) = total_staked.read(token_b)
-    local b_weight: Ratio) = token_weight.read(token_b)
-    local fee: Ratio) = swap_fee.read()
-
-    # needed for dereferencing ratios
-    let (__fp__, _) = get_fp_and_pc()
-
-    let (local num_n: felt, local num_d: felt) = (n=a_balance * a_weight.n, d=a_weight.d)
-    let (local den_n: felt, local den_d: felt) = (n=b_balance * b_weight.n, d=b_weight.d)
-
-    let (spot_price: Ratio) = Ratio(n=num_n * den_d  * fee.d, d=den_n * num_d * (fee.d - fee.n))
-
-    #sanity
-    assert_not_zero(spot_price.n)
-    assert_not_zero(spot_price.d)
-
-    return (spot_price)
-end
-
-
-#
-#    LP_supply * ((1 + amount_in/balanceOf)^(weight) - 1)
-#
-@view
-func get_pool_minted_given_single_in{
-        syscall_ptr : felt*,
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(erc20_address: felt, amount_of_a_in: felt) -> (pool_tokens_out: felt):
-    alloc_locals
-
-    local a_balance: felt) = total_staked.read(erc20_address)
-    local (a_weight_num: felt, a_weight_den: felt) = token_weight.read(erc20_address)
-    local (fee_num: felt, fee_den: felt) = swap_fee.read()
-
-
-    # always positive if weights are normalized
-    local (step_one_num: felt, step_one_den: felt) = (a_balance + amount_of_a_in, a_balance)
-    
-    local (times_fee_num: felt, times_fee_den: felt) = (inside_num * fee_num, inside_den * fee_den)
-    local (step_three_num: felt, step_three_den: felt) = (times_fee_den - times_fee_num, times_fee_den)
-    local (step_four_num: felt, step_four_den: felt) = 
-
-end
-
-@view
-func get_single_in_given_pool_out{
-        syscall_ptr : felt*,
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(erc20_address: felt, pool_amount_out: felt) -> (amount_of_a_in: felt):
-end
-
-@view
-func get_single_out_given_pool_in{
-        syscall_ptr : felt*,
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(erc20_address: felt, pool_amount_in: felt) -> (amount_of_a_out: felt):
-end
-
-@view
-func get_pool_in_given_single_out{
-        syscall_ptr : felt*,
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(erc20_address: felt, amount_of_a_out: felt) -> (pool_tokens_in: felt):
 end

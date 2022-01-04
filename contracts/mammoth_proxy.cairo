@@ -1,5 +1,4 @@
 %lang starknet
-%builtins pedersen range_check ecdsa
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
@@ -7,12 +6,22 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt
 )
 
+from balancer_math import (get_spot_price, get_pool_minted_given_single_in, get_single_out_given_pool_in, get_out_given_in)
+from ratio import Ratio
+
 # proxy contract for depositing to Mammoth pool, receiving LP tokens, 
 # and for MM to interact with mammoth pool liquidity 
 
 ##########
 #STRUCTS
 ##########
+
+#n -> numerator
+#d -> denominator
+struct Ratio:
+    member n: felt
+    member d: felt
+end
 
 struct PriceRatio:
     member numerator: felt
@@ -62,16 +71,32 @@ end
 
 @contract_interface
 namespace IBMATHContract:
-    func proxy_approve(amount: felt, token_contract_address: felt, spender_address: felt):
+    func get_spot_price(a_balance: felt, a_weight: Ratio, b_balance: felt, b_weight: Ratio, fee: Ratio):
     end
 
-    func proxy_deposit(amount: felt, address: felt, erc20_address: felt):
+    func get_pool_minted_given_single_in(amount_of_a_in: felt,
+        a_balance: felt,
+        supply: felt,
+        a_weight: Ratio,
+        total_weight: Ratio,
+        swap_fee: Ratio):
     end
 
-    func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
+    func get_single_out_given_pool_in(  pool_amount_in: felt,
+        a_balance: felt,
+        supply: felt,
+        a_weight: Ratio,
+        total_weight: Ratio,
+        swap_fee: Ratio,
+        exit_fee: Ratio):
     end
 
-    func proxy_distribute(erc20_address: felt, new_reward: felt):
+    func get_out_given_in(  amount_of_a_in: felt,
+        a_balance: felt,
+        a_weight: Ratio,
+        b_balance: felt,
+        b_weight: Ratio,
+        swap_fee: Ratio):
     end
 end
 
