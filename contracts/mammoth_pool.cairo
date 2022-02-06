@@ -57,26 +57,6 @@ end
 func _proxy() -> (res: felt):
 end
 
-#total amount deposited of a given erc20
-@storage_var
-func total_staked(erc20_address: felt) -> (value: felt):
-end
-
-#pool weight of a given erc20 (1/w)
-@storage_var
-func token_weight(erc20_address: felt) -> (weight: Ratio):
-end
-
-#sum of all weights for normalization
-@storage_var
-func total_weight() -> (total_weight: felt):
-end
-
-#swap fee
-@storage_var
-func swap_fee() -> (fee: Ratio):
-end
-
 @constructor
 func constructor{
         syscall_ptr : felt*, 
@@ -98,16 +78,9 @@ func _deposit{
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt) -> ():
     alloc_locals
-
-    let (local staked: felt) = total_staked.read(erc20_address)
-    let (local current_accrued_rewards: felt) = total_porportional_accrued_rewards.read(erc20_address)
-
-    total_staked.write(erc20_address, staked + amount)
-
     let (local this_contract) = get_contract_address()
 
     IERC20.transferFrom(contract_address=erc20_address, sender=address, recipient=this_contract, amount=Uint256(amount, 0))
-
     return ()
     end
 
@@ -117,11 +90,7 @@ func _withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    alloc_locals
-
     IERC20.transfer(contract_address=erc20_address, recipient=address, amount=Uint256(amount + reward,0))
-
-    total_staked.write(erc20_address, total - amount)
     return ()
 end
 
@@ -219,15 +188,4 @@ func get_ERC20_balance{
     let (local this_contract) = get_contract_address()
     let (res) = IERC20.balanceOf(contract_address=contract_address, account=this_contract)
     return (res.low)
-end
-
-@view
-func get_total_staked{
-        syscall_ptr : felt*,
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(erc20_address: felt) -> (total: felt):
-    alloc_locals
-    let (local total) = total_staked.read(erc20_address)
-    return (total)
 end

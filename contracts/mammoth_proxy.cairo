@@ -2,12 +2,14 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
+from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.math import (assert_not_zero, assert_le, unsigned_div_rem)
 from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt
 )
 
 from balancer_math import (get_spot_price, get_pool_minted_given_single_in, get_single_out_given_pool_in, get_out_given_in)
-from ratio import Ratio
+from ratio import Ratio, ratio_add
 
 # proxy contract for depositing to Mammoth pool, receiving LP tokens, 
 # and for MM to interact with mammoth pool liquidity 
@@ -46,7 +48,7 @@ namespace ITokenContract:
     func proxy_burn(user: felt, amount: felt):
     end
 
-    func get_total_supply() -> (res: felt):
+    func get_total_supply():
     end
 end
 
@@ -196,9 +198,9 @@ func mammoth_deposit{
     require_approved_pool(pool_address)
     require_approved_erc20_for_pool(pool_address, erc20_address)
 
-    let amount_to_mint: felt = view_pool_minted_given_single_in()
+    let amount_to_mint: felt = view_pool_minted_given_single_in(amount_to_deposit, pool_address, erc20_address)
     call_deposit(amount_to_deposit, user_address, pool_address, erc20_address)
-    call_mint(pool_address=pool_address, recipient=user_address, amount=amount)
+    call_mint(pool_address=pool_address, recipient=user_address, amount=amount_to_mint)
     return ()
 end
 
@@ -213,7 +215,7 @@ func mammoth_withdraw{
 
     let amount_to_withdraw: felt = view_single_out_given_pool_in(pool_amount_in, pool_address, erc20_address)
     call_withdraw(amount_to_withdraw, user_address, pool_address, erc20_address)
-    call_burn(pool_address=pool_address, recipient=user_address, amount=amount)
+    call_burn(pool_address=pool_address, recipient=user_address, amount=pool_amount_in)
     return ()
 end
 
@@ -230,6 +232,7 @@ func mammoth_swap{
     let amount_out: felt = view_out_given_in(amount_in, pool_address, erc20_address_in, erc20_address_out)
     call_deposit(amount_in, user_address, pool_address, erc20_address_in)
     call_withdraw(amount_out, user_address, pool_address, erc20_address_out)
+    return()
 end
 
 ##########
@@ -242,19 +245,21 @@ func view_single_out_given_pool_in{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(pool_amount_in: felt, pool_address: felt, erc20_address: felt) -> (amount_to_withdraw: felt):
+    alloc_locals
+
     # needed for dereferencing struct
     let (__fp__, _) = get_fp_and_pc()
 
-    let lp_address = lp_token_address.read(pool_address)
+    let lp_address: felt = lp_token_address.read(pool_address)
     let supply_uint: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
-    let supply: felt = supply_uint[0]
+    let supply: felt = supply_uint.low
     let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address)
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
-    let total_weight: Ratio = total_weight.read(pool_address)
-    let swap_fee: Ratio = swap_fee.read(pool_address)
-    let exit_fee: Ratio = exit_fee.read(pool_address)
+    let t_weight: Ratio = total_weight.read(pool_address)
+    let s_fee: Ratio = swap_fee.read(pool_address)
+    let e_fee: Ratio = exit_fee.read(pool_address)
 
-    let ratio_out: Ratio = get_single_out_given_pool_in(pool_amount_in: felt, a_balance: felt, supply: felt, a_weight: Ratio, total_weight: Ratio, swap_fee: Ratio, exit_fee: Ratio)
+    let ratio_out: Ratio = get_single_out_given_pool_in(pool_amount_in, a_balance, supply, a_weight, t_weight, s_fee, e_fee)
     let (amount_to_withdraw: felt, _) = unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_to_withdraw)
@@ -269,15 +274,15 @@ func view_pool_minted_given_single_in{
     # needed for dereferencing struct
     let (__fp__, _) = get_fp_and_pc()
 
-    let lp_address = lp_token_address.read(pool_address)
+    let lp_address: felt = lp_token_address.read(pool_address)
     let supply_uint: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
-    let supply: felt = supply_uint[0]
+    let supply: felt = supply_uint.low
     let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address)
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
-    let total_weight: Ratio = total_weight.read(pool_address)
-    let swap_fee: Ratio = swap_fee.read(pool_address)
+    let t_weight: Ratio = total_weight.read(pool_address)
+    let s_fee: Ratio = swap_fee.read(pool_address)
 
-    let ratio_minted: Ratio = get_pool_minted_given_single_in(amount_to_deposit: felt, a_balance: felt, supply: felt, a_weight: Ratio, total_weight: Ratio, swap_fee: Ratio)
+    let ratio_minted: Ratio = get_pool_minted_given_single_in(amount_to_deposit, a_balance, supply, a_weight, t_weight, s_fee)
     let (amount_to_mint: felt, _) = unsigned_div_rem(ratio_minted.n, ratio_minted.d)
 
     return (amount_to_mint)
@@ -296,9 +301,9 @@ func view_out_given_in{
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address_in)
     let b_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address_out)
     let b_weight: Ratio = token_weight.read(pool_address, erc20_address_out)
-    let swap_fee: Ratio = swap_fee.read(pool_address)
+    let s_fee: Ratio = swap_fee.read(pool_address)
 
-    let ratio_out: Ratio = get_out_given_in(  amount_in: felt, a_balance: felt, a_weight: Ratio, b_balance: felt, b_weight: Ratio, swap_fee: Ratio)
+    let ratio_out: Ratio = get_out_given_in(  amount_in, a_balance, a_weight, b_balance, b_weight, s_fee)
     let (amount_out: felt, _) = unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_out)
@@ -348,28 +353,17 @@ end
 ##########
 
 @external
-func map_pool_to_lp_address{
+func create_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_address: felt, lp_address: felt):
+    }(lp_address: felt, pool_address: felt, s_fee: Ratio, e_fee: Ratio):
     require_call_from_owner()
 
+    approved_pool_address.write(pool_address, 1)
     lp_token_address.write(pool_address, lp_address)
-    return ()
-end
-
-@external
-func add_approved_pool{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(pool_address: felt, swap_fee: Ratio, exit_fee: Ratio):
-    require_call_from_owner()
-
-    approved_pool_address.write(address, 1)
-    swap_fee.write(pool_address, swap_fee)
-    exit_fee.write(pool_address, exit_fee)
+    swap_fee.write(pool_address, s_fee)
+    exit_fee.write(pool_address, e_fee)
     return ()
 end
 
@@ -396,9 +390,8 @@ func add_approved_erc20_for_pool{
     approved_erc20s.write(pool_address, erc20_address, 1)
     token_weight.write(pool_address, erc20_address, weight)
     
-    let old_total_weight: Ratio = total_weight.read(pool_address)
-    let new_total: Ratio = ratio_add(old_total_weight, weight)
-    total_weight.write(pool_address, new_total)
+    #ALERT: RIGHT NOW MANUALLY SET TOTAL WEIGHT AT 1/1 so on us to make sure that is the case
+    total_weight.write(pool_address, Ratio(1,1))
     return()
 end
 
@@ -468,11 +461,34 @@ func get_token_address_for_pool{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_address) -> (address: felt):
+    }(pool_address: felt) -> (address: felt):
     alloc_locals
     let (local ta) = lp_token_address.read(pool_address)
     return (ta)
 end
+
+@view
+func get_swap_fee_for_pool{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt) -> (fee: felt):
+    alloc_locals
+    let (local ta) = swap_fee.read(pool_address)
+    return (ta)
+end
+
+@view
+func get_exit_fee_for_pool{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt) -> (fee: felt):
+    alloc_locals
+    let (local ta) = exit_fee.read(pool_address)
+    return (ta)
+end
+
 
 @view
 func is_pool_approved{
@@ -494,5 +510,16 @@ func is_erc20_approved{
     alloc_locals
     let (local bool) = approved_erc20s.read(pool_address, erc20_address)
     return (bool)
+end
+
+@view
+func get_weight_for_token{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt, erc20_address: felt) -> (weight: felt):
+    alloc_locals
+    let (local ta) = token_weight.read(pool_address, erc20_address)
+    return (ta)
 end
 

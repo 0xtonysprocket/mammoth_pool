@@ -8,15 +8,13 @@ Goals:
 * Whitelisted market makers can use the liquidity to call the fill_order function on the zigzag contract
 * Users get paid a variable yield that can be updated by the owner of the contract
 * Users get credited their yield when they withdraw from the contract
-* There should be some profit sharing mechanism between MMs and LPs
 
 TODO:
 
-* Assign balances to the proxy contract instead of pool contract so it is UPGRADEABLE
-* Have the LP contract mint LP tokens that are different for different liquidity provided
 * Test external MM calling fill_order with liquidity from pool
-* Implement profit share mechanism
 * Make "fill_order" method in proxy contract generalized for any potential exchange contract
 * Create market maker vault mechanism
-* Implement 3pool invariant
-* test out approved market maker trading 
+* Test balancer pools with multiple pools
+* test out approved market maker trading
+
+NOTE: testing currently incomplete

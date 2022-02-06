@@ -127,6 +127,40 @@ async def erc20_factory(starknet_factory, account_factory):
 
 
 @pytest.fixture(scope="module")
+async def erc20_factory_2(starknet_factory, account_factory):
+    starknet = starknet_factory
+    _, user = account_factory
+
+    erc_name = int("TEST_2".encode().hex(), 16)
+    erc_symbol = int("T_2".encode().hex(), 16)
+
+    erc20_contract = await starknet.deploy(
+        source=ERC20_CONTRACT,
+        # extra 0 to handle the fact that ERC needs Uint256 as input
+        constructor_calldata=[erc_name, erc_symbol, MINT_AMOUNT, 0, user],
+    )
+
+    return erc20_contract, erc20_contract.contract_address
+
+
+@pytest.fixture(scope="module")
+async def erc20_factory_3(starknet_factory, account_factory):
+    starknet = starknet_factory
+    _, user = account_factory
+
+    erc_name = int("TEST_3".encode().hex(), 16)
+    erc_symbol = int("T_3".encode().hex(), 16)
+
+    erc20_contract = await starknet.deploy(
+        source=ERC20_CONTRACT,
+        # extra 0 to handle the fact that ERC needs Uint256 as input
+        constructor_calldata=[erc_name, erc_symbol, MINT_AMOUNT, 0, user],
+    )
+
+    return erc20_contract, erc20_contract.contract_address
+
+
+@pytest.fixture(scope="module")
 async def balancer_factory(starknet_factory, account_factory):
     starknet = starknet_factory
     _, user = account_factory

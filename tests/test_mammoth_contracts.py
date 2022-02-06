@@ -10,7 +10,7 @@ SIMULATED_PROFIT = 10 * ERC20_DIGIT
 
 
 @pytest.mark.asyncio
-async def test_map_pool_to_lp_address(
+async def test_create_pool(
     signer_factory, account_factory, proxy_factory, pool_factory, lp_token_factory
 ):
     signer = signer_factory
@@ -19,98 +19,102 @@ async def test_map_pool_to_lp_address(
     _, pool_address = pool_factory
     _, lp_address = lp_token_factory
 
+    swap_fee = (2, 1000)  # .02%
+    exit_fee = (2, 1000)  # .02%
+
     await signer.send_transaction(
         account=user_account,
         to=proxy_address,
-        selector_name="map_pool_to_lp_address",
-        calldata=[pool_address, lp_address],
+        selector_name="create_pool",
+        calldata=[pool_address, lp_address, swap_fee, exit_fee],
     )
 
     stored_token = await proxy_contract.get_token_address_for_pool(pool_address).call()
     assert stored_token.result == (lp_address,)
 
+    stored_token = await proxy_contract.get_swap_fee_for_pool(pool_address).call()
+    assert stored_token.result == (swap_fee,)
 
-@pytest.mark.asyncio
-async def test_approve_pool_address(
-    signer_factory, account_factory, proxy_factory, pool_factory
-):
-    signer = signer_factory
-    user_account, _ = account_factory
-    proxy_contract, proxy_address = proxy_factory
-    _, pool_address = pool_factory
-
-    swap_fee = (2, 1000)  # .02%
-    exit_fee = (2, 1000)  # .02%
-
-    # check pool address is not approved
-    stored_pool = await proxy_contract.is_pool_approved(pool_address).call()
-    assert stored_pool.result[0] != 1
-
-    await signer.send_transaction(
-        account=user_account,
-        to=proxy_address,
-        selector_name="add_approved_pool",
-        calldata=[pool_address, swap_fee, exit_fee],
-    )
-
-    # check pool address properly stored
-    stored_pool = await proxy_contract.is_pool_approved(pool_address).call()
-    assert stored_pool.result[0] == 1
+    stored_token = await proxy_contract.get_exit_fee_for_pool(pool_address).call()
+    assert stored_token.result == (exit_fee,)
 
 
 @pytest.mark.asyncio
 async def test_approve_erc20_for_pool(
-    signer_factory, account_factory, proxy_factory, erc20_factory, pool_factory
+    signer_factory,
+    account_factory,
+    proxy_factory,
+    erc20_factory,
+    erc20_factory_2,
+    erc20_factory_3,
+    pool_factory,
 ):
     signer = signer_factory
     user_account, _ = account_factory
     proxy_contract, proxy_address = proxy_factory
     _, pool_address = pool_factory
     _, erc20_address = erc20_factory
+    _, erc20_address_2 = erc20_factory_2
+    _, erc20_address_3 = erc20_factory_3
+    list_of_erc = [erc20_address, erc20_address_2, erc20_address_3]
 
     weight = (1, 3)  # .33
 
-    # check value before approval
-    approval = await proxy_contract.is_erc20_approved(
-        pool_address, erc20_address
-    ).call()
-    assert approval.result[0] != 1
+    for erc in list_of_erc:
+        # check value before approval
+        approval = await proxy_contract.is_erc20_approved(
+            pool_address, erc20_address
+        ).call()
+        assert approval.result[0] != 1
 
-    await signer.send_transaction(
-        account=user_account,
-        to=proxy_address,
-        selector_name="add_approved_erc20_for_pool",
-        calldata=[pool_address, erc20_address, weight],
-    )
+        await signer.send_transaction(
+            account=user_account,
+            to=proxy_address,
+            selector_name="add_approved_erc20_for_pool",
+            calldata=[pool_address, erc, weight],
+        )
 
-    # check value after approval
-    approval = await proxy_contract.is_erc20_approved(
-        pool_address, erc20_address
-    ).call()
-    assert approval.result[0] == 1
+        # check value after approval
+        approval = await proxy_contract.is_erc20_approved(pool_address, erc).call()
+        assert approval.result[0] == 1
+
+        stored_token = await proxy_contract.get_weight_for_token(
+            pool_address, erc
+        ).call()
+        assert stored_token.result == (weight,)
 
 
 @pytest.mark.asyncio
 async def test_approve_pool_for_transfer(
-    signer_factory, account_factory, pool_factory, erc20_factory
+    signer_factory,
+    account_factory,
+    erc20_factory,
+    erc20_factory_2,
+    erc20_factory_3,
+    pool_factory,
 ):
     signer = signer_factory
     user_account, user = account_factory
-    erc20_contract, erc20_address = erc20_factory
     _, pool_address = pool_factory
+    erc20_contract, erc20_address = erc20_factory
+    erc20_contract_2, erc20_address_2 = erc20_factory_2
+    erc20_contract_3, erc20_address_3 = erc20_factory_3
+    list_of_erc_address = [erc20_address, erc20_address_2, erc20_address_3]
+    list_of_erc_contract = [erc20_contract, erc20_contract_2, erc20_contract_3]
 
-    # approve ERC20 to be deposited to POOL
-    await signer.send_transaction(
-        account=user_account,
-        to=erc20_address,
-        selector_name="approve",
-        # extra 0 because of Uint256
-        calldata=[pool_address, INITIAL_DEPOSIT, 0],
-    )
+    for erc_address, erc_contract in zip(list_of_erc_address, list_of_erc_contract):
+        # approve ERC20 to be deposited to POOL
+        await signer.send_transaction(
+            account=user_account,
+            to=erc_address,
+            selector_name="approve",
+            # extra 0 because of Uint256
+            calldata=[pool_address, INITIAL_DEPOSIT, 0],
+        )
 
-    # check that correct amount is allowed
-    pool_allowance = await erc20_contract.allowance(user, pool_address).call()
-    assert pool_allowance.result == ((INITIAL_DEPOSIT, 0),)
+        # check that correct amount is allowed
+        pool_allowance = await erc_contract.allowance(user, pool_address).call()
+        assert pool_allowance.result == ((INITIAL_DEPOSIT, 0),)
 
 
 @pytest.mark.asyncio
@@ -140,14 +144,6 @@ async def test_mammoth_deposit(
     # new total stake
     total_staked = await pool_contract.get_total_staked(erc20_address).call()
     assert total_staked.result == (INITIAL_DEPOSIT,)
-
-    # total accrued rewards check
-    S = await pool_contract.get_S(erc20_address).call()
-    assert S.result == (0,)
-
-    # check user balance
-    user_balance = await pool_contract.get_user_balance(user, erc20_address).call()
-    assert user_balance.result == (INITIAL_DEPOSIT,)
 
     # check lp tokens were minted that represent same amount as initial deposit
     user_lp_balance = await lp_token_contract.balance_of(user).call()
