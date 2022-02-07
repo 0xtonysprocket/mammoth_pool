@@ -2,17 +2,17 @@
     {
         "members": [
             {
-                "name": "low",
+                "name": "n",
                 "offset": 0,
                 "type": "felt"
             },
             {
-                "name": "high",
+                "name": "d",
                 "offset": 1,
                 "type": "felt"
             }
         ],
-        "name": "Uint256",
+        "name": "Ratio",
         "size": 2,
         "type": "struct"
     },
@@ -93,6 +93,372 @@
     {
         "inputs": [
             {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "y",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_mul",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "y",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_div",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "m",
+                "type": "felt"
+            }
+        ],
+        "name": "ratio_pow",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base",
+                "type": "felt"
+            },
+            {
+                "name": "exponent",
+                "type": "felt"
+            }
+        ],
+        "name": "pow",
+        "outputs": [
+            {
+                "name": "result",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "felt"
+            },
+            {
+                "name": "y",
+                "type": "felt"
+            }
+        ],
+        "name": "diff",
+        "outputs": [
+            {
+                "name": "result",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "m",
+                "type": "felt"
+            },
+            {
+                "name": "error",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_nth_root_binary",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "first_ratio",
+                "type": "Ratio"
+            },
+            {
+                "name": "second_ratio",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_add",
+        "outputs": [
+            {
+                "name": "sum",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base_ratio",
+                "type": "Ratio"
+            },
+            {
+                "name": "other_ratio",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_diff",
+        "outputs": [
+            {
+                "name": "diff",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "first_ratio",
+                "type": "Ratio"
+            },
+            {
+                "name": "second_ratio",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_less_than_or_eq",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "m",
+                "type": "felt"
+            },
+            {
+                "name": "precision",
+                "type": "felt"
+            }
+        ],
+        "name": "nth_root_by_digit",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "a_balance",
+                "type": "felt"
+            },
+            {
+                "name": "a_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "b_balance",
+                "type": "felt"
+            },
+            {
+                "name": "b_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "fee",
+                "type": "Ratio"
+            }
+        ],
+        "name": "get_spot_price",
+        "outputs": [
+            {
+                "name": "spot_price",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_of_a_in",
+                "type": "felt"
+            },
+            {
+                "name": "a_balance",
+                "type": "felt"
+            },
+            {
+                "name": "supply",
+                "type": "felt"
+            },
+            {
+                "name": "a_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "total_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Ratio"
+            }
+        ],
+        "name": "get_pool_minted_given_single_in",
+        "outputs": [
+            {
+                "name": "pool_tokens_out",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "felt"
+            },
+            {
+                "name": "a_balance",
+                "type": "felt"
+            },
+            {
+                "name": "supply",
+                "type": "felt"
+            },
+            {
+                "name": "a_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "total_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "exit_fee",
+                "type": "Ratio"
+            }
+        ],
+        "name": "get_single_out_given_pool_in",
+        "outputs": [
+            {
+                "name": "amount_token_out",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_of_a_in",
+                "type": "felt"
+            },
+            {
+                "name": "a_balance",
+                "type": "felt"
+            },
+            {
+                "name": "a_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "b_balance",
+                "type": "felt"
+            },
+            {
+                "name": "b_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Ratio"
+            }
+        ],
+        "name": "get_out_given_in",
+        "outputs": [
+            {
+                "name": "amount_of_b_out",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "owner_address",
                 "type": "felt"
             }
@@ -104,22 +470,15 @@
     {
         "inputs": [
             {
-                "name": "erc20_address",
-                "type": "felt"
-            }
-        ],
-        "name": "call_distribute",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "amount",
+                "name": "amount_to_deposit",
                 "type": "felt"
             },
             {
-                "name": "address",
+                "name": "user_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
                 "type": "felt"
             },
             {
@@ -134,11 +493,15 @@
     {
         "inputs": [
             {
-                "name": "amount",
+                "name": "pool_amount_in",
                 "type": "felt"
             },
             {
-                "name": "address",
+                "name": "user_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
                 "type": "felt"
             },
             {
@@ -153,52 +516,194 @@
     {
         "inputs": [
             {
-                "name": "address",
-                "type": "felt"
-            }
-        ],
-        "name": "set_token_contract_address",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "address",
-                "type": "felt"
-            }
-        ],
-        "name": "set_pool_contract_address",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "address",
-                "type": "felt"
-            }
-        ],
-        "name": "set_market_maker_contract_address",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "amount",
-                "type": "Uint256"
-            },
-            {
-                "name": "token_contract_address",
+                "name": "amount_in",
                 "type": "felt"
             },
             {
-                "name": "exchange_address",
+                "name": "user_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_in",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_out",
                 "type": "felt"
             }
         ],
-        "name": "call_approve_mammoth_pool_liquidity",
+        "name": "mammoth_swap",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "view_single_out_given_pool_in",
+        "outputs": [
+            {
+                "name": "amount_to_withdraw",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_to_deposit",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "view_pool_minted_given_single_in",
+        "outputs": [
+            {
+                "name": "amount_to_withdraw",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_in",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_in",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_out",
+                "type": "felt"
+            }
+        ],
+        "name": "view_out_given_in",
+        "outputs": [
+            {
+                "name": "amount_out",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "require_call_from_owner",
+        "outputs": [],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            }
+        ],
+        "name": "require_approved_pool",
+        "outputs": [],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "require_approved_erc20_for_pool",
+        "outputs": [],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "lp_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "s_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "e_fee",
+                "type": "Ratio"
+            }
+        ],
+        "name": "create_pool",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "approve_market_maker_contract_address",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            },
+            {
+                "name": "weight",
+                "type": "Ratio"
+            }
+        ],
+        "name": "add_approved_erc20_for_pool",
         "outputs": [],
         "type": "function"
     },
@@ -227,6 +732,116 @@
         ],
         "name": "call_fill_order",
         "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_token_address_for_pool",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_swap_fee_for_pool",
+        "outputs": [
+            {
+                "name": "fee",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_exit_fee_for_pool",
+        "outputs": [
+            {
+                "name": "fee",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "is_pool_approved",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "is_erc20_approved",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_weight_for_token",
+        "outputs": [
+            {
+                "name": "weight",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]

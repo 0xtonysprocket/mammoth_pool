@@ -1,7 +1,6 @@
 # mammoth_pool
 Starknet pool to provide non-custodial liquidity to order book market makers
 
-
 # Goals:
 
 * Users can deposit and withdraw any ERC-20 token into the contract any time they want
@@ -56,3 +55,15 @@ NOTE: testing currently incomplete
 ### View
 
 * all normal methods for ERC 20
+
+## DEPLOYMENT INSTRUCTIONS
+
+* Set STARKNET_NETWORK and PRIV_KEY variables in .env
+* run *python deploy_account.py* or set current_account.json manually
+* run *python compile_contracts.py* from root
+* run *python deploy_contracts.py* from root
+
+## INFO
+
+* Find the current owner account in *current_account.json*
+* Find the current contract addresses in *current_deployment_info.json*

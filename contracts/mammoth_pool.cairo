@@ -16,7 +16,7 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt, uint256_unsigned_div_rem
 )
 
-from ratio import Ratio
+from lib.local_cairo.ratio import Ratio
 
 #NOTE: rewards in this contract are distributed per 1000000000 wei or .000000001 ETH 
 
@@ -90,7 +90,7 @@ func _withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=Uint256(amount + reward,0))
+    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=Uint256(amount,0))
     return ()
 end
 

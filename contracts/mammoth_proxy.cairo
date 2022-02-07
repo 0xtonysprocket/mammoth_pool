@@ -8,8 +8,8 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt
 )
 
-from balancer_math import (get_spot_price, get_pool_minted_given_single_in, get_single_out_given_pool_in, get_out_given_in)
-from ratio import Ratio, ratio_add
+from lib.local_cairo.balancer_math import (get_spot_price, get_pool_minted_given_single_in, get_single_out_given_pool_in, get_out_given_in)
+from lib.local_cairo.ratio import Ratio, ratio_add
 
 # proxy contract for depositing to Mammoth pool, receiving LP tokens, 
 # and for MM to interact with mammoth pool liquidity 
@@ -472,7 +472,7 @@ func get_swap_fee_for_pool{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_address: felt) -> (fee: felt):
+    }(pool_address: felt) -> (fee: Ratio):
     alloc_locals
     let (local ta) = swap_fee.read(pool_address)
     return (ta)
@@ -483,7 +483,7 @@ func get_exit_fee_for_pool{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_address: felt) -> (fee: felt):
+    }(pool_address: felt) -> (fee: Ratio):
     alloc_locals
     let (local ta) = exit_fee.read(pool_address)
     return (ta)
@@ -517,7 +517,7 @@ func get_weight_for_token{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_address: felt, erc20_address: felt) -> (weight: felt):
+    }(pool_address: felt, erc20_address: felt) -> (weight: Ratio):
     alloc_locals
     let (local ta) = token_weight.read(pool_address, erc20_address)
     return (ta)
