@@ -56,6 +56,11 @@ NOTE: testing currently incomplete
 
 * all normal methods for ERC 20
 
+## INFO
+
+* Find the current owner account in *current_account.json*
+* Find the current contract addresses in *current_deployment_info.json*
+
 ## DEPLOYMENT INSTRUCTIONS
 
 * Set STARKNET_NETWORK and PRIV_KEY variables in .env
@@ -63,7 +68,13 @@ NOTE: testing currently incomplete
 * run *python compile_contracts.py* from root
 * run *python deploy_contracts.py* from root
 
-## INFO
+## POOL CREATION INSTRUCTIONS
 
-* Find the current owner account in *current_account.json*
-* Find the current contract addresses in *current_deployment_info.json*
+* Call *create_pool* with owner account on proxy contract. Input: lp_address, pool_address, swap_fee, exit_fee
+* NOTE: swap_fee and exit_fee should be structs like (1,2) that represents 1/2 or a .5 fee
+* Call *add_approved_erc20_for_pool* with owner account on proxy for each ERC20. Input: pool_address, ERC20_address, weight
+* NOTE: weight in same form at swap_fee/exit_fee
+
+
+- Create pool through proxy with pool address
+- Add the ERC20 address to approved pool with 1/3 weight each

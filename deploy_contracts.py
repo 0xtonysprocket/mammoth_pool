@@ -22,15 +22,11 @@ def create_command(name_of_contract, input_list):
     for i in input_list:
         cmd_list.append(i)
 
-    print(cmd_list)
-
     return " ".join(cmd_list)
 
 
 def run_deploy_command(cmd):
     output = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    print(output)
-    print(output.stdout)
     output = str(output.stdout).replace(":", "\n").split("\n")
 
     address = output[2].strip(" ").strip("\n")
