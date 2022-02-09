@@ -104,7 +104,6 @@ async def create_pool():
         account_contract.address,
         proxy_contract.address,
         selector,
-        calldata_len,
         compute_hash_on_elements(calldata),
         nonce,
     ]
@@ -136,7 +135,6 @@ async def create_pool():
             account_contract.address,
             proxy_contract.address,
             selector,
-            calldata_len,
             compute_hash_on_elements(calldata),
             nonce,
         ]
