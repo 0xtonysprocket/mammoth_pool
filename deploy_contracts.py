@@ -6,7 +6,7 @@ import json
 dotenv.load_dotenv()
 
 CONTRACTS_TO_COMPILE = ["mammoth_token", "mammoth_pool", "mammoth_proxy"]
-ACCOUNT = json.load(open("current_account.json"))["address"]
+ACCOUNT = json.load(open("current_state_info/current_account.json"))["address"]
 
 
 def create_command(name_of_contract, input_list):
@@ -20,7 +20,7 @@ def create_command(name_of_contract, input_list):
     ]
 
     for i in input_list:
-        cmd_list.append(i)
+        cmd_list.append(str(i))
 
     return " ".join(cmd_list)
 
@@ -43,7 +43,7 @@ def deploy(name, input_list):
 dict_of_contract_info = {key: None for key in CONTRACTS_TO_COMPILE}
 
 # deploy proxy
-proxy_address, proxy_tx = deploy("mammoth_proxy", [ACCOUNT])
+proxy_address, proxy_tx = deploy("mammoth_proxy", [int(ACCOUNT, 16)])
 
 # deploy pool
 pool_address, pool_tx = deploy("mammoth_pool", [proxy_address])

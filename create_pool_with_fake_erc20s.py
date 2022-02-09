@@ -6,6 +6,11 @@ import asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.public.abi import get_selector_from_name
 from starkware.cairo.common.hash_state import compute_hash_on_elements
+from starkware.crypto.signature.signature import (
+    pedersen_hash,
+    private_to_stark_key,
+    sign,
+)
 from starknet_py.utils.crypto.facade import sign_calldata, hash_message
 from starknet_py.contract import Contract
 from starknet_py.net.client import Client, BadRequest
@@ -13,7 +18,9 @@ from lib.openzeppelin.tests.utils.Signer import Signer, hash_message
 
 dotenv.load_dotenv()
 
-ACCOUNT = int(json.load(open("current_state_info/current_account.json"))["address"], 16)
+KEY = int(os.getenv("PRIV_KEY"))
+
+ACCOUNT = json.load(open("current_state_info/current_account.json"))["address"]
 
 PROXY = int(
     json.load(open("current_state_info/current_deployment_info.json"))["PROXY"][
@@ -42,49 +49,85 @@ ERCS = [
 SIGNER = Signer(int(os.getenv("PRIV_KEY")))
 
 
+def create_invoke_command(address, name_of_contract, function_name, input_list):
+    cmd_list = [
+        f"starknet",
+        f"invoke",
+        f"--address",
+        f"{address}",
+        f"--abi",
+        f"interfaces/{name_of_contract}_abi.json",
+        f"--function",
+        f"{function_name}",
+        f'--network={os.getenv("STARKNET_NETWORK")}',
+        f"--inputs",
+    ]
+
+    for i in input_list:
+        cmd_list.append(str(i))
+
+    return " ".join(cmd_list)
+
+
+def run_invoke_command(cmd):
+    output = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    print(output)
+    output = str(output.stdout).replace(":", "\n").split("\n")
+
+    address = output[2].strip(" ").strip("\n")
+    tx_hash = output[4].strip(" ").strip("\n")
+    return address, tx_hash
+
+
+def custom_invoke(address, c_name, f_name, input_list):
+    cmd = create_invoke_command(address, c_name, f_name, input_list)
+    a, t = run_invoke_command(cmd)
+    return a, t
+
+
 async def create_pool():
     account_contract = await Contract.from_address(ACCOUNT, Client("testnet"))
     proxy_contract = await Contract.from_address(PROXY, Client("testnet"))
 
+    print(account_contract.address)
+
     swap_fee = (1, 1000)
     exit_fee = (1, 1000)
 
-    print("creating pool")
-
-    # Create Pool
     (nonce,) = await account_contract.functions["get_nonce"].call()
     selector = proxy_contract.functions["create_pool"].get_selector("create_pool")
     calldata = [LP, POOL, swap_fee[0], swap_fee[1], exit_fee[0], exit_fee[1]]
+    calldata_len = len(calldata)
 
-    message_hash = hash_message(ACCOUNT, PROXY, selector, calldata, nonce)
-    sig_r, sig_s = SIGNER.sign(message_hash)
-    sig = [sig_r, sig_s]
+    c_hash = compute_hash_on_elements(calldata)
+    message = [
+        account_contract.address,
+        proxy_contract.address,
+        selector,
+        c_hash,
+        nonce,
+    ]
+    message_hash = compute_hash_on_elements(message)
+    public_key = private_to_stark_key(KEY)
+    signature = sign(msg_hash=message_hash, priv_key=KEY)
 
-    prepared = await account_contract.functions["execute"].invoke(
-        to=PROXY, selector=selector, calldata=calldata, nonce=nonce, signature=sig
+    print(f"Public key: {public_key}")
+    print(f"Signature: {signature}")
+
+    input_list = (
+        [proxy_contract.address, selector, calldata_len]
+        + calldata
+        + [nonce]
+        + [signature[0], signature[1]]
     )
 
-    """
-    calldata_hash = compute_hash_on_elements(calldata)
-    list_of_args = [ACCOUNT, PROXY, selector] + calldata + [nonce]
+    print(input_list)
 
-    # msg_hash = hash_message(ACCOUNT, PROXY, selector, call)
+    print("creating pool")
 
-    print(SIGNER.private_key)
-    print(list_of_args)
+    output = custom_invoke(ACCOUNT, "Account", "execute", input_list)
 
-    sig = sign_calldata(calldata=list_of_args, priv_key=SIGNER.private_key)
-    # message_hash = hash_message(ACCOUNT, PROXY, selector, calldata, nonce)
-    # sig_r, sig_s = SIGNER.sign(message_hash)
-    # sig = [sig_r, sig_s]
-    invocation = await prepared.invoke(sig)
-
-    print(invocation)
-
-    output = await invocation.wait_for_acceptance()
-    """
-
-    print(prepared)
+    print(output)
 
     (stored,) = await proxy_contract.functions["is_pool_approved"].call(POOL)
     print(stored)
