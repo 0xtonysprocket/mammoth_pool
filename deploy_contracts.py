@@ -62,5 +62,5 @@ dict_of_contract_info = {
     "LP": {"address": lp_token_address, "tx": lp_token_tx},
 }
 
-with open("current_deployment_info.json", "w") as file:
+with open("current_state_info/current_deployment_info.json", "w") as file:
     file.write(str(dict_of_contract_info))

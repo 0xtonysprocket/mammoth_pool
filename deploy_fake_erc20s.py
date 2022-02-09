@@ -98,5 +98,5 @@ for inputs in LIST_OF_ERC:
 
     list_of_fake_ercs.append(fake_erc)
 
-with open("fake_ercs.json", "w") as file:
+with open("current_state_info/fake_ercs.json", "w") as file:
     file.write(str(list_of_fake_ercs))

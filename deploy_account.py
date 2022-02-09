@@ -37,5 +37,5 @@ tx_hash = output[4].strip(" ").strip("\n")
 
 dict_of_contract_info = {"address": address, "tx": tx_hash}
 
-with open("current_account.json", "w") as file:
+with open("current_state_info/current_account.json", "w") as file:
     file.write(str(dict_of_contract_info))
