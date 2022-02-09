@@ -5,7 +5,7 @@ import json
 import asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.public.abi import get_selector_from_name
-from starkware.cairo.common.hash_state import compute_hash_on_elements
+from starkware.cairo.common.hash_chain import compute_hash_chain
 from starkware.crypto.signature.signature import (
     pedersen_hash,
     private_to_stark_key,
@@ -49,7 +49,9 @@ ERCS = [
 SIGNER = Signer(int(os.getenv("PRIV_KEY")))
 
 
-def create_invoke_command(address, name_of_contract, function_name, input_list):
+def create_invoke_command(
+    address, name_of_contract, function_name, input_list, signature
+):
     cmd_list = [
         f"starknet",
         f"invoke",
@@ -66,12 +68,13 @@ def create_invoke_command(address, name_of_contract, function_name, input_list):
     for i in input_list:
         cmd_list.append(str(i))
 
+    cmd_list.extend([f"--signature", f"{signature[0]}", f"{signature[1]}"])
+
     return " ".join(cmd_list)
 
 
 def run_invoke_command(cmd):
     output = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    print(output)
     output = str(output.stdout).replace(":", "\n").split("\n")
 
     address = output[2].strip(" ").strip("\n")
@@ -79,8 +82,8 @@ def run_invoke_command(cmd):
     return address, tx_hash
 
 
-def custom_invoke(address, c_name, f_name, input_list):
-    cmd = create_invoke_command(address, c_name, f_name, input_list)
+def custom_invoke(address, c_name, f_name, input_list, signature):
+    cmd = create_invoke_command(address, c_name, f_name, input_list, signature)
     a, t = run_invoke_command(cmd)
     return a, t
 
@@ -88,8 +91,6 @@ def custom_invoke(address, c_name, f_name, input_list):
 async def create_pool():
     account_contract = await Contract.from_address(ACCOUNT, Client("testnet"))
     proxy_contract = await Contract.from_address(PROXY, Client("testnet"))
-
-    print(account_contract.address)
 
     swap_fee = (1, 1000)
     exit_fee = (1, 1000)
@@ -99,73 +100,56 @@ async def create_pool():
     calldata = [LP, POOL, swap_fee[0], swap_fee[1], exit_fee[0], exit_fee[1]]
     calldata_len = len(calldata)
 
-    c_hash = compute_hash_on_elements(calldata)
     message = [
         account_contract.address,
         proxy_contract.address,
         selector,
-        c_hash,
+        calldata_len,
+        compute_hash_chain(calldata),
         nonce,
     ]
-    message_hash = compute_hash_on_elements(message)
+    message_hash = compute_hash_chain(message)
     public_key = private_to_stark_key(KEY)
     signature = sign(msg_hash=message_hash, priv_key=KEY)
 
-    print(f"Public key: {public_key}")
-    print(f"Signature: {signature}")
+    print(public_key)
 
-    input_list = (
-        [proxy_contract.address, selector, calldata_len]
-        + calldata
-        + [nonce]
-        + [signature[0], signature[1]]
-    )
-
-    print(input_list)
+    input_list = [proxy_contract.address, selector, calldata_len] + calldata + [nonce]
 
     print("creating pool")
 
-    output = custom_invoke(ACCOUNT, "Account", "execute", input_list)
-
-    print(output)
-
-    (stored,) = await proxy_contract.functions["is_pool_approved"].call(POOL)
-    print(stored)
-    assert stored == 1
+    output = custom_invoke(ACCOUNT, "Account", "execute", input_list, signature)
 
     # add ERC20s
 
     weight = (1, 3)
 
     for erc in ERCS:
-        print(ERCS)
         (nonce,) = await account_contract.functions["get_nonce"].call()
-        selector = get_selector_from_name("create_pool")
+        selector = proxy_contract.functions["add_approved_erc20_for_pool"].get_selector(
+            "add_approved_erc20_for_pool"
+        )
         calldata = [POOL, erc, weight[0], weight[1]]
-        prepared = account_contract.functions["execute"].prepare(
-            to=PROXY, selector=selector, calldata_len=4, calldata=calldata, nonce=nonce
+        calldata_len = len(calldata)
+
+        message = [
+            account_contract.address,
+            proxy_contract.address,
+            selector,
+            calldata_len,
+            compute_hash_chain(calldata),
+            nonce,
+        ]
+        message_hash = compute_hash_chain(message)
+        public_key = private_to_stark_key(KEY)
+        signature = sign(msg_hash=message_hash, priv_key=KEY)
+
+        input_list = (
+            [proxy_contract.address, selector, calldata_len] + calldata + [nonce]
         )
 
-        calldata_hash = compute_hash_on_elements(calldata)
-        list_of_args = [ACCOUNT, PROXY, selector, 6, calldata_hash, nonce]
-
-        signature = sign_calldata(
-            calldata,
-            int(SIGNER.private_key),
-        )
-        # message_hash = hash_message(ACCOUNT, PROXY, selector, calldata, nonce)
-        # sig_r, sig_s = SIGNER.sign(message_hash)
-        # sig = [sig_r, sig_s]
-
-        invocation = await prepared.invoke(signature=signature)
-        output = await invocation.wait_for_acceptance()
-
+        output = custom_invoke(ACCOUNT, "Account", "execute", input_list, signature)
         print(output)
-
-        (stored,) = await account_contract.functions["is_erc20_approved"].call(
-            POOL, erc
-        )
-        assert stored == 1
 
 
 asyncio.run(create_pool())
@@ -175,3 +159,7 @@ pool_info = {"address": POOL, "ERCS": ERCS, "WEIGHTS": [1 / 3, 1 / 3, 1 / 3]}
 
 with open("current_state_info/current_pools.json", "w") as file:
     file.write(str(pool_info))
+
+# starknet get_transaction --network=alpha-goerli --hash 0x526f1452ee713fd8e6c7f48356f55f710bc6068e9fc030fa902fb8bc2d8d54b
+# starknet call --address 0x0621732f44e94f87ea7bdf661b91c673c3474f5435f525841b22546a110b1575 --abi interfaces/mammoth_proxy_abi.json --function is_pool_approved --network=alpha-goerli --inputs 2516519815876024141294889625043874098513365214412152841115365739035238114886
+# starknet call --address 0x0621732f44e94f87ea7bdf661b91c673c3474f5435f525841b22546a110b1575 --abi interfaces/mammoth_proxy_abi.json --function is_erc20_approved --network=alpha-goerli --inputs 2516519815876024141294889625043874098513365214412152841115365739035238114886 3008342054797560466431410563411897767681813824745356771867807079720604459920
