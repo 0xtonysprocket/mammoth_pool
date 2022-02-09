@@ -5,7 +5,7 @@ import json
 import asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.public.abi import get_selector_from_name
-from starkware.cairo.common.hash_chain import compute_hash_chain
+from starkware.cairo.common.hash_state import compute_hash_on_elements
 from starkware.crypto.signature.signature import (
     pedersen_hash,
     private_to_stark_key,
@@ -105,10 +105,10 @@ async def create_pool():
         proxy_contract.address,
         selector,
         calldata_len,
-        compute_hash_chain(calldata),
+        compute_hash_on_elements(calldata),
         nonce,
     ]
-    message_hash = compute_hash_chain(message)
+    message_hash = compute_hash_on_elements(message)
     public_key = private_to_stark_key(KEY)
     signature = sign(msg_hash=message_hash, priv_key=KEY)
 
@@ -137,10 +137,10 @@ async def create_pool():
             proxy_contract.address,
             selector,
             calldata_len,
-            compute_hash_chain(calldata),
+            compute_hash_on_elements(calldata),
             nonce,
         ]
-        message_hash = compute_hash_chain(message)
+        message_hash = compute_hash_on_elements(message)
         public_key = private_to_stark_key(KEY)
         signature = sign(msg_hash=message_hash, priv_key=KEY)
 
