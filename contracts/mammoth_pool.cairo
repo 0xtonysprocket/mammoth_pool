@@ -183,9 +183,9 @@ func get_ERC20_balance{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(contract_address: felt) -> (res: felt):
+    }(erc20_address: felt) -> (res: felt):
     alloc_locals
     let (local this_contract) = get_contract_address()
-    let (res) = IERC20.balanceOf(contract_address=contract_address, account=this_contract)
+    let (res) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
     return (res.low)
 end

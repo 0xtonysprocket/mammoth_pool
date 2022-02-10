@@ -305,7 +305,7 @@
     {
         "inputs": [
             {
-                "name": "contract_address",
+                "name": "erc20_address",
                 "type": "felt"
             }
         ],

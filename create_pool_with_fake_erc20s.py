@@ -118,6 +118,8 @@ async def create_pool():
     output = custom_invoke(ACCOUNT, "Account", "execute", input_list, signature)
     print(f"creat_pool {output}")
 
+
+"""
     # add ERC20s
 
     weight = (1, 3)
@@ -147,6 +149,7 @@ async def create_pool():
 
         output = custom_invoke(ACCOUNT, "Account", "execute", input_list, signature)
         print(output)
+"""
 
 
 asyncio.run(create_pool())
@@ -157,6 +160,6 @@ pool_info = {"address": POOL, "ERCS": ERCS, "WEIGHTS": [1 / 3, 1 / 3, 1 / 3]}
 with open("current_state_info/current_pools.json", "w") as file:
     file.write(str(pool_info))
 
-# starknet get_transaction --network=alpha-goerli --hash 0x7f37f860fba944f342635f9474f2a80200295b9d2183619804d6a0e9f70b15a
+# starknet get_transaction --network=alpha-goerli --hash 0xcd847bfaf50e8b89b3f8137bd1faf6f350cc602d0900e76d9983b13ba61154
 # starknet call --address 0x0496ac0b1dd0bcec538f696cd171623bfb5557142bacf38f1a7c4e151cd40651 --abi interfaces/mammoth_proxy_abi.json --function is_pool_approved --network=alpha-goerli --inputs 0x06a375089b7d770df6d92c2aa6c45bc4c2051da9070f261bec577d04a67414cf
 # starknet call --address 0x0496ac0b1dd0bcec538f696cd171623bfb5557142bacf38f1a7c4e151cd40651 --abi interfaces/mammoth_proxy_abi.json --function is_erc20_approved --network=alpha-goerli --inputs 0x06a375089b7d770df6d92c2aa6c45bc4c2051da9070f261bec577d04a67414cf 0x0723c4d60564756107a2f5aa405c20288fad6951c652f57ed5ccbaa6da17badc

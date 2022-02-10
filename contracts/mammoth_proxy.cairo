@@ -63,7 +63,7 @@ namespace IPoolContract:
     func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
     end
 
-    func get_total_staked(erc20_address: felt):
+    func get_ERC20_balance(erc20_address: felt):
     end
 end
 
@@ -253,7 +253,7 @@ func view_single_out_given_pool_in{
     let lp_address: felt = lp_token_address.read(pool_address)
     let supply_uint: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
     let supply: felt = supply_uint.low
-    let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address)
+    let a_balance: felt = IPoolContract.get_ERC20_balance(contract_address=pool_address, erc20_address=erc20_address)
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
     let t_weight: Ratio = total_weight.read(pool_address)
     let s_fee: Ratio = swap_fee.read(pool_address)
@@ -277,7 +277,7 @@ func view_pool_minted_given_single_in{
     let lp_address: felt = lp_token_address.read(pool_address)
     let supply_uint: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
     let supply: felt = supply_uint.low
-    let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address)
+    let a_balance: felt = IPoolContract.get_ERC20_balance(contract_address=pool_address, erc20_address=erc20_address)
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
     let t_weight: Ratio = total_weight.read(pool_address)
     let s_fee: Ratio = swap_fee.read(pool_address)
@@ -297,9 +297,9 @@ func view_out_given_in{
     # needed for dereferencing struct
     let (__fp__, _) = get_fp_and_pc()
 
-    let a_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address_in)
+    let a_balance: felt = IPoolContract.get_ERC20_balance(contract_address=pool_address, erc20_address=erc20_address_in)
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address_in)
-    let b_balance: felt = IPoolContract.get_total_staked(contract_address=pool_address, erc20_address=erc20_address_out)
+    let b_balance: felt = IPoolContract.get_ERC20_balance(contract_address=pool_address, erc20_address=erc20_address_out)
     let b_weight: Ratio = token_weight.read(pool_address, erc20_address_out)
     let s_fee: Ratio = swap_fee.read(pool_address)
 
