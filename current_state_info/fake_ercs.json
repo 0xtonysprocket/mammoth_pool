@@ -2,25 +2,25 @@
   {
     "name": "8387236824532337731",
     "symbol": "362208773187",
-    "initial": "100000",
+    "initial": "999",
     "recipient": "0",
-    "address": "0x06a6a94887bf9bdfaf3b080a4a8769a3ddeec99240cf24b7f484939b4398e390",
-    "tx": "0x662013ebf1a925e6a1816219c2ba6a3f086e2802d3101a810d9333da8f5b78f"
+    "address": "0x05e3dbd111ae4b27cdc8e8ac03fc0cd45d6873f109979c9461f03df7d805901a",
+    "tx": "0x17c6376d9ca895f17b836e4a1e037ae2e0eaa2621d23c019f9d7da0a426ab91"
   },
   {
     "name": "332362947078350105962862",
     "symbol": "17987",
-    "initial": "100000",
+    "initial": "999",
     "recipient": "0",
-    "address": "0x02b9f472382e960f9e6487bcad56892c528574c71f10b004c4a816468b88bcf6",
-    "tx": "0x698dc4f3eed889df300e65dc43244b2112cdfbca84115411db13122c61b395e"
+    "address": "0x05b8094b3a64e727a6d1a24ee368929bc76b3611b5b50491bfb76ae60411825d",
+    "tx": "0x1629a38fe5b8873df028f4407eac8df66e965e6514e1eb14a6f376110a09088"
   },
   {
     "name": "32762643844781128",
     "symbol": "361939424328",
-    "initial": "100000",
+    "initial": "999",
     "recipient": "0",
-    "address": "0x027a7652ab6290ccab4666dd695fbdca1751478439464fe07c345b9a18b70af3",
-    "tx": "0x3d1bdcecbadd0b2c8003e377d97454af3afc060d5b871f40459a678254c8856"
+    "address": "0x0723c4d60564756107a2f5aa405c20288fad6951c652f57ed5ccbaa6da17badc",
+    "tx": "0x1c3dc85c61745063c4bb72a1efcb09e5a72120732d51209c955f3182a44f313"
   }
 ]

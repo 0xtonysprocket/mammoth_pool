@@ -6,14 +6,16 @@ from lib.openzeppelin.tests.utils.Signer import str_to_felt
 
 dotenv.load_dotenv()
 
-POOL = json.load(open("current_deployment_info.json"))["POOL"]["address"]
+POOL = json.load(open("current_state_info/current_deployment_info.json"))["POOL"][
+    "address"
+]
 
 print(POOL)
 
 ERC1 = [
     str(str_to_felt("testUSDC")),
     str(str_to_felt("TUSDC")),
-    str(100000),
+    str(999),
     str(0),
     str(POOL),
 ]
@@ -21,7 +23,7 @@ ERC1 = [
 ERC2 = [
     str(str_to_felt("FantieCoin")),
     str(str_to_felt("FC")),
-    str(100000),
+    str(999),
     str(0),
     str(POOL),
 ]
@@ -29,7 +31,7 @@ ERC2 = [
 ERC3 = [
     str(str_to_felt("testETH")),
     str(str_to_felt("TEETH")),
-    str(100000),
+    str(999),
     str(0),
     str(POOL),
 ]
@@ -91,7 +93,7 @@ for inputs in LIST_OF_ERC:
         "name": inputs[0],
         "symbol": inputs[1],
         "initial": inputs[2],
-        "recipient": inputs[3],
+        "recipient": inputs[4],
         "address": a,
         "tx": tx,
     }

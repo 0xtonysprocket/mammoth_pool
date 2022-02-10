@@ -41,9 +41,7 @@ LP = int(
     16,
 )
 
-ERCS = [
-    int(x["address"], 16) for x in json.load(open("current_state_info/fake_ercs.json"))
-]
+ERC = int(json.load(open("current_state_info/fake_ercs.json"))[0]["address"], 16)
 
 
 SIGNER = Signer(int(os.getenv("PRIV_KEY")))
@@ -88,16 +86,17 @@ def custom_invoke(address, c_name, f_name, input_list, signature):
     return a, t
 
 
-async def create_pool():
+async def approve_ercs():
     account_contract = await Contract.from_address(ACCOUNT, Client("testnet"))
     proxy_contract = await Contract.from_address(PROXY, Client("testnet"))
+    # add ERC20s
 
-    swap_fee = (1, 1000)
-    exit_fee = (1, 1000)
-
+    weight = (1, 3)
     (nonce,) = await account_contract.functions["get_nonce"].call()
-    selector = proxy_contract.functions["create_pool"].get_selector("create_pool")
-    calldata = [LP, POOL, swap_fee[0], swap_fee[1], exit_fee[0], exit_fee[1]]
+    selector = proxy_contract.functions["add_approved_erc20_for_pool"].get_selector(
+        "add_approved_erc20_for_pool"
+    )
+    calldata = [POOL, ERC, weight[0], weight[1]]
     calldata_len = len(calldata)
 
     message = [
@@ -111,52 +110,10 @@ async def create_pool():
     public_key = private_to_stark_key(KEY)
     signature = sign(msg_hash=message_hash, priv_key=KEY)
 
-    print(public_key)
-
     input_list = [proxy_contract.address, selector, calldata_len] + calldata + [nonce]
 
     output = custom_invoke(ACCOUNT, "Account", "execute", input_list, signature)
-    print(f"creat_pool {output}")
-
-    # add ERC20s
-
-    weight = (1, 3)
-
-    for erc in ERCS:
-        (nonce,) = await account_contract.functions["get_nonce"].call()
-        selector = proxy_contract.functions["add_approved_erc20_for_pool"].get_selector(
-            "add_approved_erc20_for_pool"
-        )
-        calldata = [POOL, erc, weight[0], weight[1]]
-        calldata_len = len(calldata)
-
-        message = [
-            account_contract.address,
-            proxy_contract.address,
-            selector,
-            compute_hash_on_elements(calldata),
-            nonce,
-        ]
-        message_hash = compute_hash_on_elements(message)
-        public_key = private_to_stark_key(KEY)
-        signature = sign(msg_hash=message_hash, priv_key=KEY)
-
-        input_list = (
-            [proxy_contract.address, selector, calldata_len] + calldata + [nonce]
-        )
-
-        output = custom_invoke(ACCOUNT, "Account", "execute", input_list, signature)
-        print(output)
+    print(output)
 
 
-asyncio.run(create_pool())
-
-
-pool_info = {"address": POOL, "ERCS": ERCS, "WEIGHTS": [1 / 3, 1 / 3, 1 / 3]}
-
-with open("current_state_info/current_pools.json", "w") as file:
-    file.write(str(pool_info))
-
-# starknet get_transaction --network=alpha-goerli --hash 0x7f37f860fba944f342635f9474f2a80200295b9d2183619804d6a0e9f70b15a
-# starknet call --address 0x0496ac0b1dd0bcec538f696cd171623bfb5557142bacf38f1a7c4e151cd40651 --abi interfaces/mammoth_proxy_abi.json --function is_pool_approved --network=alpha-goerli --inputs 0x06a375089b7d770df6d92c2aa6c45bc4c2051da9070f261bec577d04a67414cf
-# starknet call --address 0x0496ac0b1dd0bcec538f696cd171623bfb5557142bacf38f1a7c4e151cd40651 --abi interfaces/mammoth_proxy_abi.json --function is_erc20_approved --network=alpha-goerli --inputs 0x06a375089b7d770df6d92c2aa6c45bc4c2051da9070f261bec577d04a67414cf 0x0723c4d60564756107a2f5aa405c20288fad6951c652f57ed5ccbaa6da17badc
+asyncio.run(approve_ercs())
