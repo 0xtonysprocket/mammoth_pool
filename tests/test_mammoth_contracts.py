@@ -130,7 +130,7 @@ async def test_view_single_out_given_pool_in(
     ).call()
 
     desired = await balancer.get_single_out_given_pool_in(
-        100, 999, (1000, 0), (1, 3), (1, 1), (2, 1000), (2, 1000)
+        100, 999, 1000, (1, 3), (1, 1), (2, 1000), (2, 1000)
     ).call()
 
     print(tusdc_out)
