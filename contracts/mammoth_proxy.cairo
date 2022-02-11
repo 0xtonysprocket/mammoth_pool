@@ -15,28 +15,6 @@ from lib.local_cairo.ratio import Ratio, ratio_add
 # and for MM to interact with mammoth pool liquidity 
 
 ##########
-#STRUCTS
-##########
-
-struct PriceRatio:
-    member numerator: felt
-    member denominator: felt
-end
-
-struct Order:
-    member chain_id : felt
-    member user : felt
-    member base_asset : felt
-    member quote_asset : felt
-    member side : felt # 0 = buy, 1 = sell
-    member base_quantity : felt
-    member price : PriceRatio
-    member expiration : felt
-    member sig_r: felt
-    member sig_s: felt
-end
-
-##########
 #INTERFACES
 ##########
 
@@ -48,7 +26,7 @@ namespace ITokenContract:
     func proxy_burn(user: felt, amount: felt):
     end
 
-    func get_total_supply():
+    func get_total_supply() -> (res: Uint256):
     end
 end
 
@@ -63,18 +41,7 @@ namespace IPoolContract:
     func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
     end
 
-    func get_ERC20_balance(erc20_address: felt):
-    end
-end
-
-#ZigZagExchange
-@contract_interface
-namespace IExchangeContract:
-    func fill_order(
-        buy_order: Order, 
-        sell_order: Order,  
-        fill_price: PriceRatio,
-        base_fill_quantity: felt):
+    func get_ERC20_balance(erc20_address: felt) -> (res: felt):
     end
 end
 
@@ -251,7 +218,7 @@ func view_single_out_given_pool_in{
     let (__fp__, _) = get_fp_and_pc()
 
     let lp_address: felt = lp_token_address.read(pool_address)
-    let supply: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
+    let (local supply: Uint256) = ITokenContract.get_total_supply(contract_address=lp_address)
     let supply_felt: felt = supply.low
     let a_balance: felt = IPoolContract.get_ERC20_balance(contract_address=pool_address, erc20_address=erc20_address)
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
@@ -435,22 +402,22 @@ end
 #require call from MM
 
 #TODO: add in approval for MM to transfer tokens from the pool
-@external
-func call_fill_order{
-    syscall_ptr : felt*, 
-    pedersen_ptr : HashBuiltin*,
-    ecdsa_ptr : SignatureBuiltin*,
-    range_check_ptr}(
-    contract_address: felt,
-    buy_order: Order, 
-    sell_order: Order,  
-    fill_price: PriceRatio,
-    base_fill_quantity: felt):
+#@external
+#func call_fill_order{
+#    syscall_ptr : felt*, 
+#    pedersen_ptr : HashBuiltin*,
+#    ecdsa_ptr : SignatureBuiltin*,
+#    range_check_ptr}(
+#    contract_address: felt,
+#    buy_order: Order, 
+#    sell_order: Order,  
+#    fill_price: PriceRatio,
+#    base_fill_quantity: felt):
     
-    require_call_from_mm()
-    IExchangeContract.fill_order(contract_address, buy_order, sell_order, fill_price, base_fill_quantity)
-    return ()
-end
+#    require_call_from_mm()
+#    IExchangeContract.fill_order(contract_address, buy_order, sell_order, fill_price, base_fill_quantity)
+#    return ()
+#end
 
 ##########
 #VIEWS

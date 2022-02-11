@@ -1,12 +1,6 @@
 import pytest
 import math
-
-from .conftest import MINT_AMOUNT
-
-ERC20_DIGIT = 1000000000  # we pay out rewards per this amount
-INITIAL_DEPOSIT = 100 * ERC20_DIGIT
-WITHDRAW_AMOUNT = INITIAL_DEPOSIT
-SIMULATED_PROFIT = 10 * ERC20_DIGIT
+from hypothesis import given, strategies as st, settings
 
 
 @pytest.mark.asyncio
@@ -108,12 +102,12 @@ async def test_approve_pool_for_transfer(
             to=erc_address,
             selector_name="approve",
             # extra 0 because of Uint256
-            calldata=[pool_address, INITIAL_DEPOSIT, 0],
+            calldata=[pool_address, 10000000 + 1, 0],
         )
 
         # check that correct amount is allowed
         pool_allowance = await erc_contract.allowance(user, pool_address).call()
-        assert pool_allowance.result == ((INITIAL_DEPOSIT, 0),)
+        assert pool_allowance.result == ((10000000 + 1, 0),)
 
 
 @pytest.mark.asyncio
@@ -133,118 +127,187 @@ async def test_view_single_out_given_pool_in(
         100, 999, 1000, (1, 3), (1, 1), (2, 1000), (2, 1000)
     ).call()
 
-    print(tusdc_out)
+    assert tusdc_out.result[0] - desired.result[0][0] / desired.result[0][1] < 0.000005
+
+
+@pytest.mark.asyncio
+async def test_view_pool_minted_given_single_in(
+    proxy_factory, pool_factory, tusdc_factory, balancer_factory
+):
+    proxy_contract, _ = proxy_factory
+    _, pool_address = pool_factory
+    _, tusdc_address = tusdc_factory
+    balancer, _ = balancer_factory
+
+    lp_out = await proxy_contract.view_pool_minted_given_single_in(
+        100, pool_address, tusdc_address
+    ).call()
+
+    desired = await balancer.get_pool_minted_given_single_in(
+        100, 999, 1000, (1, 3), (1, 1), (2, 1000)
+    ).call()
+
+    assert lp_out.result[0] - desired.result[0][0] / desired.result[0][1] < 0.000005
+
+
+@pytest.mark.asyncio
+async def test_view_out_given_in(
+    proxy_factory, pool_factory, tusdc_factory, fc_factory, balancer_factory
+):
+    proxy_contract, _ = proxy_factory
+    _, pool_address = pool_factory
+    _, tusdc_address = tusdc_factory
+    _, fc_address = fc_factory
+    balancer, _ = balancer_factory
+
+    amount_out = await proxy_contract.view_out_given_in(
+        100, pool_address, tusdc_address, fc_address
+    ).call()
+
+    desired = await balancer.get_out_given_in(
+        100, 999, (1, 3), 999, (1, 3), (2, 1000)
+    ).call()
+
+    print(amount_out)
     print(desired)
 
-    assert tusdc_out.result - desired.result < 0.005
+    assert amount_out.result[0] - desired.result[0][0] / desired.result[0][1] < 0.000005
 
 
-"""
+# @given(
+#    x=st.integers(min_value=1, max_value=999),
+# )
+# @settings(deadline=None)
 @pytest.mark.asyncio
 async def test_mammoth_deposit(
     signer_factory,
     account_factory,
     proxy_factory,
     pool_factory,
-    erc20_factory,
+    fc_factory,
     lp_token_factory,
 ):
     signer = signer_factory
     user_account, user = account_factory
     pool_contract, pool_address = pool_factory
     lp_token_contract, _ = lp_token_factory
-    _, proxy_address = proxy_factory
-    _, erc20_address = erc20_factory
+    proxy_contract, proxy_address = proxy_factory
+    fc_contract, fc_address = fc_factory
+
+    await fc_contract.mint(user, (462 + 1, 0)).invoke()
+    initial_balance = await pool_contract.get_ERC20_balance(fc_address).call()
+    initial_user_lp = await lp_token_contract.balance_of(user).call()
+    lp_to_mint = await proxy_contract.view_pool_minted_given_single_in(
+        462, pool_address, fc_address
+    ).call()
 
     # deposit initial amount
     await signer.send_transaction(
         account=user_account,
         to=proxy_address,
         selector_name="mammoth_deposit",
-        calldata=[INITIAL_DEPOSIT, user, pool_address, erc20_address],
+        calldata=[462, user, pool_address, fc_address],
     )
 
-    # new total stake
-    total_staked = await pool_contract.get_total_staked(erc20_address).call()
-    assert total_staked.result == (INITIAL_DEPOSIT,)
+    # new erc balance
+    new_balance = await pool_contract.get_ERC20_balance(fc_address).call()
+    assert new_balance.result[0] - initial_balance.result[0] == 462
 
-    # check lp tokens were minted that represent same amount as initial deposit
-    user_lp_balance = await lp_token_contract.balance_of(user).call()
-    assert user_lp_balance.result[0] == (INITIAL_DEPOSIT, 0)
-
-
-@pytest.mark.asyncio
-async def test_manual_increase_to_simulate_profit(erc20_factory, pool_factory):
-    erc20_contract, _ = erc20_factory
-    _, pool_address = pool_factory
-
-    # increase pool contract erc20 balance (simulates profit from trading)
-    await erc20_contract._mint(pool_address, (SIMULATED_PROFIT, 0)).invoke()
-    contract_erc20_balance = await erc20_contract.balanceOf(pool_address).call()
-
-    assert contract_erc20_balance.result[0] == (INITIAL_DEPOSIT + SIMULATED_PROFIT, 0)
-
-
-@pytest.mark.asyncio
-async def test_mammoth_distribute(
-    signer_factory, account_factory, proxy_factory, erc20_factory, pool_factory
-):
-
-    signer = signer_factory
-    user_account, _ = account_factory
-    pool_contract, pool_address = pool_factory
-    _, proxy_address = proxy_factory
-    _, erc20_address = erc20_factory
-
-    # distribute rewards
-    await signer.send_transaction(
-        account=user_account,
-        to=proxy_address,
-        selector_name="mammoth_distribute",
-        # erc20_address says which rewards to distribute
-        calldata=[pool_address, erc20_address, SIMULATED_PROFIT],
+    # new lp balance
+    new_user_lp_balance = await lp_token_contract.balance_of(user).call()
+    assert (
+        new_user_lp_balance.result[0][0] - initial_user_lp.result[0][0]
+        == lp_to_mint.result[0]
     )
 
-    # check the reward sum function is correct
-    S = await pool_contract.get_S(erc20_address).call()
-    assert S.result == (
-        math.floor(((SIMULATED_PROFIT * ERC20_DIGIT) / INITIAL_DEPOSIT)),
-    )  # round down because of felt division in cairo
 
-
+# @given(
+#    x=st.integers(min_value=1, max_value=999),
+# )
+# @settings(deadline=None)
 @pytest.mark.asyncio
 async def test_mammoth_withdraw(
     signer_factory,
     account_factory,
     proxy_factory,
     pool_factory,
-    erc20_factory,
+    tusdc_factory,
     lp_token_factory,
 ):
     signer = signer_factory
     user_account, user = account_factory
     pool_contract, pool_address = pool_factory
     lp_token_contract, _ = lp_token_factory
-    _, proxy_address = proxy_factory
-    erc20_contract, erc20_address = erc20_factory
+    proxy_contract, proxy_address = proxy_factory
+    _, tusdc_address = tusdc_factory
+
+    initial_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
+    initial_user_lp = await lp_token_contract.balance_of(user).call()
+    tusdc_to_withdraw = await proxy_contract.view_single_out_given_pool_in(
+        534, pool_address, tusdc_address
+    ).call()
 
     # deposit initial amount
     await signer.send_transaction(
         account=user_account,
         to=proxy_address,
         selector_name="mammoth_withdraw",
-        calldata=[WITHDRAW_AMOUNT, user, pool_address, erc20_address],
+        calldata=[534, user, pool_address, tusdc_address],
     )
 
-    # new total stake
-    total_staked = await pool_contract.get_total_staked(erc20_address).call()
-    assert total_staked.result == (INITIAL_DEPOSIT - WITHDRAW_AMOUNT,)
+    # tusdc balance
+    new_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
+    assert (
+        initial_balance.result[0] - new_balance.result[0] == tusdc_to_withdraw.result[0]
+    )
 
-    # check that the user withdrew initial stake plus their allocated profits
-    contract_erc20_balance = await erc20_contract.balanceOf(user).call()
-    assert contract_erc20_balance.result[0] == (MINT_AMOUNT + SIMULATED_PROFIT, 0)
+    # check lp tokens were minted that represent same amount as initial deposit
+    new_user_lp_balance = await lp_token_contract.balance_of(user).call()
+    assert initial_user_lp.result[0][0] - new_user_lp_balance.result[0][0] == 534
 
-    # check that the LP contract burned the corresponding LP tokens
-    user_lp_balance = await lp_token_contract.balance_of(user).call()
-    assert user_lp_balance.result[0] == (0, 0)
-"""
+
+# @given(
+#    x=st.integers(min_value=1, max_value=999),
+# )
+# @settings(deadline=None)
+@pytest.mark.asyncio
+async def test_mammoth_swap(
+    signer_factory,
+    account_factory,
+    proxy_factory,
+    pool_factory,
+    tusdc_factory,
+    fc_factory,
+):
+    signer = signer_factory
+    user_account, user = account_factory
+    pool_contract, pool_address = pool_factory
+    proxy_contract, proxy_address = proxy_factory
+    tusdc_contract, tusdc_address = tusdc_factory
+    _, fc_address = fc_factory
+
+    await tusdc_contract.mint(user, (100 + 1, 0)).invoke()
+    initial_fc_balance = await pool_contract.get_ERC20_balance(fc_address).call()
+    initial_tusdc_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
+    fc_for_tusdc = await proxy_contract.view_out_given_in(
+        76, pool_address, tusdc_address, fc_address
+    ).call()
+
+    # deposit initial amount
+    await signer.send_transaction(
+        account=user_account,
+        to=proxy_address,
+        selector_name="mammoth_swap",
+        calldata=[76, user, pool_address, tusdc_address, fc_address],
+    )
+
+    # new usdc balance
+    new_tusdc_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
+    assert new_tusdc_balance.result[0] - initial_tusdc_balance.result[0] == 76
+
+    # new fc balance
+    new_fc_balance = await pool_contract.get_ERC20_balance(fc_address).call()
+    assert (
+        initial_fc_balance.result[0] - new_fc_balance.result[0]
+        == fc_for_tusdc.result[0]
+    )
