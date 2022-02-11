@@ -26,10 +26,11 @@ async def test_create_pool(
         account=user_account,
         to=proxy_address,
         selector_name="create_pool",
-        calldata=[pool_address, lp_address, swap_fee, exit_fee],
+        calldata=[lp_address, pool_address, *swap_fee, *exit_fee],
     )
 
     stored_token = await proxy_contract.get_token_address_for_pool(pool_address).call()
+    print(stored_token)
     assert stored_token.result == (lp_address,)
 
     stored_token = await proxy_contract.get_swap_fee_for_pool(pool_address).call()
@@ -44,34 +45,32 @@ async def test_approve_erc20_for_pool(
     signer_factory,
     account_factory,
     proxy_factory,
-    erc20_factory,
-    erc20_factory_2,
-    erc20_factory_3,
+    tusdc_factory,
+    fc_factory,
+    teeth_factory,
     pool_factory,
 ):
     signer = signer_factory
     user_account, _ = account_factory
     proxy_contract, proxy_address = proxy_factory
     _, pool_address = pool_factory
-    _, erc20_address = erc20_factory
-    _, erc20_address_2 = erc20_factory_2
-    _, erc20_address_3 = erc20_factory_3
-    list_of_erc = [erc20_address, erc20_address_2, erc20_address_3]
+    _, tusdc = tusdc_factory
+    _, fc = fc_factory
+    _, teeth = teeth_factory
+    list_of_erc = [tusdc, fc, teeth]
 
     weight = (1, 3)  # .33
 
     for erc in list_of_erc:
         # check value before approval
-        approval = await proxy_contract.is_erc20_approved(
-            pool_address, erc20_address
-        ).call()
+        approval = await proxy_contract.is_erc20_approved(pool_address, erc).call()
         assert approval.result[0] != 1
 
         await signer.send_transaction(
             account=user_account,
             to=proxy_address,
             selector_name="add_approved_erc20_for_pool",
-            calldata=[pool_address, erc, weight],
+            calldata=[pool_address, erc, *weight],
         )
 
         # check value after approval
@@ -88,19 +87,19 @@ async def test_approve_erc20_for_pool(
 async def test_approve_pool_for_transfer(
     signer_factory,
     account_factory,
-    erc20_factory,
-    erc20_factory_2,
-    erc20_factory_3,
+    tusdc_factory,
+    fc_factory,
+    teeth_factory,
     pool_factory,
 ):
     signer = signer_factory
     user_account, user = account_factory
     _, pool_address = pool_factory
-    erc20_contract, erc20_address = erc20_factory
-    erc20_contract_2, erc20_address_2 = erc20_factory_2
-    erc20_contract_3, erc20_address_3 = erc20_factory_3
-    list_of_erc_address = [erc20_address, erc20_address_2, erc20_address_3]
-    list_of_erc_contract = [erc20_contract, erc20_contract_2, erc20_contract_3]
+    tusdc, tusdc_address = tusdc_factory
+    fc, fc_address = fc_factory
+    teeth, teeth_address = teeth_factory
+    list_of_erc_address = [tusdc_address, fc_address, teeth_address]
+    list_of_erc_contract = [tusdc, fc, teeth]
 
     for erc_address, erc_contract in zip(list_of_erc_address, list_of_erc_contract):
         # approve ERC20 to be deposited to POOL
@@ -117,6 +116,30 @@ async def test_approve_pool_for_transfer(
         assert pool_allowance.result == ((INITIAL_DEPOSIT, 0),)
 
 
+@pytest.mark.asyncio
+async def test_view_single_out_given_pool_in(
+    proxy_factory, pool_factory, tusdc_factory, balancer_factory
+):
+    proxy_contract, _ = proxy_factory
+    _, pool_address = pool_factory
+    _, tusdc_address = tusdc_factory
+    balancer, _ = balancer_factory
+
+    tusdc_out = await proxy_contract.view_single_out_given_pool_in(
+        100, pool_address, tusdc_address
+    ).call()
+
+    desired = await balancer.get_single_out_given_pool_in(
+        100, 999, (1000, 0), (1, 3), (1, 1), (2, 1000), (2, 1000)
+    ).call()
+
+    print(tusdc_out)
+    print(desired)
+
+    assert tusdc_out.result - desired.result < 0.005
+
+
+"""
 @pytest.mark.asyncio
 async def test_mammoth_deposit(
     signer_factory,
@@ -224,3 +247,4 @@ async def test_mammoth_withdraw(
     # check that the LP contract burned the corresponding LP tokens
     user_lp_balance = await lp_token_contract.balance_of(user).call()
     assert user_lp_balance.result[0] == (0, 0)
+"""

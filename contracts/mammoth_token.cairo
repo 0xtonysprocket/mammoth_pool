@@ -65,12 +65,14 @@ func constructor{
     }(
         name: felt,
         symbol: felt,
-        proxy: felt
+        proxy: felt,
+        recipient: felt
     ):
     _name.write(name)
     _symbol.write(symbol)
-    decimals.write(18)
+    decimals.write(5)
     _proxy.write(proxy)
+    _mint(recipient,Uint256(1000, 0))
     return ()
 end
 

@@ -2,7 +2,7 @@ import os
 import asyncio
 import pytest
 
-from ..lib.openzeppelin.tests.utils.Signer import Signer
+from ..lib.openzeppelin.tests.utils.Signer import Signer, str_to_felt
 
 from starkware.starknet.testing.starknet import Starknet
 
@@ -20,7 +20,7 @@ LP_TOKEN_CONTRACT = os.path.join(
 )
 
 ERC20_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../lib/openzeppelin/contracts/token/ERC20.cairo"
+    os.path.dirname(__file__), "../lib/local_cairo/fakeERC20_mintable.cairo"
 )
 
 ACCOUNT_CONTRACT = os.path.join(
@@ -93,9 +93,10 @@ async def pool_factory(starknet_factory, proxy_factory):
 
 
 @pytest.fixture(scope="module")
-async def lp_token_factory(starknet_factory, proxy_factory):
+async def lp_token_factory(starknet_factory, proxy_factory, account_factory):
     starknet = starknet_factory
     _, proxy_address = proxy_factory
+    _, user = account_factory
 
     lp_name = int("TEST_LP".encode().hex(), 16)
     lp_symbol = int("TLP".encode().hex(), 16)
@@ -103,61 +104,70 @@ async def lp_token_factory(starknet_factory, proxy_factory):
     lp_token_contract = await starknet.deploy(
         source=LP_TOKEN_CONTRACT,
         # extra 0 to handle the fact that ERC needs Uint256 as input
-        constructor_calldata=[lp_name, lp_symbol, proxy_address],
+        constructor_calldata=[lp_name, lp_symbol, proxy_address, user],
     )
 
     return lp_token_contract, lp_token_contract.contract_address
 
 
 @pytest.fixture(scope="module")
-async def erc20_factory(starknet_factory, account_factory):
+async def tusdc_factory(starknet_factory, account_factory, pool_factory):
     starknet = starknet_factory
     _, user = account_factory
+    _, pool = pool_factory
 
-    erc_name = int("TEST".encode().hex(), 16)
-    erc_symbol = int("T".encode().hex(), 16)
-
-    erc20_contract = await starknet.deploy(
-        source=ERC20_CONTRACT,
-        # extra 0 to handle the fact that ERC needs Uint256 as input
-        constructor_calldata=[erc_name, erc_symbol, MINT_AMOUNT, 0, user],
+    tusdc = await starknet.deploy(
+        ERC20_CONTRACT,
+        constructor_calldata=[
+            str_to_felt("testUSDC"),
+            str_to_felt("TUSDC"),
+            999,
+            0,
+            pool,
+        ],
     )
 
-    return erc20_contract, erc20_contract.contract_address
+    return tusdc, tusdc.contract_address
 
 
 @pytest.fixture(scope="module")
-async def erc20_factory_2(starknet_factory, account_factory):
+async def fc_factory(starknet_factory, account_factory, pool_factory):
     starknet = starknet_factory
     _, user = account_factory
+    _, pool = pool_factory
 
-    erc_name = int("TEST_2".encode().hex(), 16)
-    erc_symbol = int("T_2".encode().hex(), 16)
-
-    erc20_contract = await starknet.deploy(
-        source=ERC20_CONTRACT,
-        # extra 0 to handle the fact that ERC needs Uint256 as input
-        constructor_calldata=[erc_name, erc_symbol, MINT_AMOUNT, 0, user],
+    fc = await starknet.deploy(
+        ERC20_CONTRACT,
+        constructor_calldata=[
+            str_to_felt("FantieCoin"),
+            str_to_felt("FC"),
+            999,
+            0,
+            pool,
+        ],
     )
 
-    return erc20_contract, erc20_contract.contract_address
+    return fc, fc.contract_address
 
 
 @pytest.fixture(scope="module")
-async def erc20_factory_3(starknet_factory, account_factory):
+async def teeth_factory(starknet_factory, account_factory, pool_factory):
     starknet = starknet_factory
     _, user = account_factory
+    _, pool = pool_factory
 
-    erc_name = int("TEST_3".encode().hex(), 16)
-    erc_symbol = int("T_3".encode().hex(), 16)
-
-    erc20_contract = await starknet.deploy(
-        source=ERC20_CONTRACT,
-        # extra 0 to handle the fact that ERC needs Uint256 as input
-        constructor_calldata=[erc_name, erc_symbol, MINT_AMOUNT, 0, user],
+    teeth = await starknet.deploy(
+        ERC20_CONTRACT,
+        constructor_calldata=[
+            str_to_felt("testETH"),
+            str_to_felt("TEETH"),
+            999,
+            0,
+            pool,
+        ],
     )
 
-    return erc20_contract, erc20_contract.contract_address
+    return teeth, teeth.contract_address
 
 
 @pytest.fixture(scope="module")

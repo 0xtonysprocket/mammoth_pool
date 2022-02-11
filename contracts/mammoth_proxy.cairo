@@ -251,15 +251,15 @@ func view_single_out_given_pool_in{
     let (__fp__, _) = get_fp_and_pc()
 
     let lp_address: felt = lp_token_address.read(pool_address)
-    let supply_uint: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
-    let supply: felt = supply_uint.low
+    let supply: Uint256 = ITokenContract.get_total_supply(contract_address=lp_address)
+    let supply_felt: felt = supply.low
     let a_balance: felt = IPoolContract.get_ERC20_balance(contract_address=pool_address, erc20_address=erc20_address)
     let a_weight: Ratio = token_weight.read(pool_address, erc20_address)
     let t_weight: Ratio = total_weight.read(pool_address)
     let s_fee: Ratio = swap_fee.read(pool_address)
     let e_fee: Ratio = exit_fee.read(pool_address)
 
-    let ratio_out: Ratio = get_single_out_given_pool_in(pool_amount_in, a_balance, supply, a_weight, t_weight, s_fee, e_fee)
+    let ratio_out: Ratio = get_single_out_given_pool_in(pool_amount_in, a_balance, supply_felt, a_weight, t_weight, s_fee, e_fee)
     let (amount_to_withdraw: felt, _) = unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_to_withdraw)
@@ -463,7 +463,7 @@ func get_token_address_for_pool{
         range_check_ptr
     }(pool_address: felt) -> (address: felt):
     alloc_locals
-    let (local ta) = lp_token_address.read(pool_address)
+    let (local ta: felt) = lp_token_address.read(pool_address)
     return (ta)
 end
 
@@ -474,7 +474,7 @@ func get_swap_fee_for_pool{
         range_check_ptr
     }(pool_address: felt) -> (fee: Ratio):
     alloc_locals
-    let (local ta) = swap_fee.read(pool_address)
+    let (local ta: Ratio) = swap_fee.read(pool_address)
     return (ta)
 end
 
@@ -497,7 +497,7 @@ func is_pool_approved{
         range_check_ptr
     }(address: felt) -> (bool: felt):
     alloc_locals
-    let (local pa) = approved_pool_address.read(address)
+    let (local pa: felt) = approved_pool_address.read(address)
     return (pa)
 end
 
@@ -508,7 +508,7 @@ func is_erc20_approved{
         range_check_ptr
     }(pool_address: felt, erc20_address: felt) -> (bool: felt):
     alloc_locals
-    let (local bool) = approved_erc20s.read(pool_address, erc20_address)
+    let (local bool: felt) = approved_erc20s.read(pool_address, erc20_address)
     return (bool)
 end
 
@@ -519,7 +519,7 @@ func get_weight_for_token{
         range_check_ptr
     }(pool_address: felt, erc20_address: felt) -> (weight: Ratio):
     alloc_locals
-    let (local ta) = token_weight.read(pool_address, erc20_address)
+    let (local ta: Ratio) = token_weight.read(pool_address, erc20_address)
     return (ta)
 end
 
