@@ -29,6 +29,10 @@
             {
                 "name": "proxy",
                 "type": "felt"
+            },
+            {
+                "name": "recipient",
+                "type": "felt"
             }
         ],
         "name": "constructor",

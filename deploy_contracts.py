@@ -51,7 +51,7 @@ pool_address, pool_tx = deploy("mammoth_pool", [proxy_address])
 # deploy LP token
 lp_name = hex(int("MAMMOTH_LP".encode().hex(), 16))
 lp_symbol = hex(int("MLP".encode().hex(), 16))
-token_input_list = [lp_name, lp_symbol, proxy_address]
+token_input_list = [lp_name, lp_symbol, proxy_address, ACCOUNT]
 
 lp_token_address, lp_token_tx = deploy("mammoth_token", token_input_list)
 
