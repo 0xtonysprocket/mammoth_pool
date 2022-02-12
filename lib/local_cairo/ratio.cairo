@@ -4,7 +4,10 @@
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_not_zero, assert_le, unsigned_div_rem
+from starkware.cairo.common.math import assert_not_zero, assert_le
+from starkware.cairo.common.uint256 import (
+    Uint256, uint256_add, uint256_sub, uint256_mul, uint256_le, uint256_lt, uint256_signed_nn
+)
 
 ##########
 # STRUCTS
@@ -13,8 +16,8 @@ from starkware.cairo.common.math import assert_not_zero, assert_le, unsigned_div
 # n -> numerator
 # d -> denominator
 struct Ratio:
-    member n : felt
-    member d : felt
+    member n : Uint256
+    member d : Uint256
 end
 
 ##########
@@ -30,7 +33,11 @@ func ratio_mul{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    return (Ratio(x.n * y.n, x.d * y.d))
+    let (local n: Uint256, _) = uint256_mul(x.n, y.n)
+    let (local d: Uint256, _) = uint256_mul(x.d, y.d)
+    local z: Ratio = Ratio(n, d)
+
+    return (z)
 end
 
 # divide x/y
@@ -42,25 +49,33 @@ func ratio_div{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    return (Ratio(x.n * y.d, x.d * y.n))
+    let (local n: Uint256, _) = uint256_mul(x.n, y.d)
+    let (local d: Uint256, _) = uint256_mul(x.d, y.n)
+
+    return (Ratio(n, d))
 end
 
 # x^m where x is element of rationals and m is element of naturals -> element of rationals
 @view
 func ratio_pow{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        x : Ratio, m : felt) -> (z : Ratio):
-    if m == 0:
-        return (Ratio(1, 1))
+        x : Ratio, m : Uint256) -> (z : Ratio):
+    alloc_locals
+
+    if m.low == 0:
+        return (Ratio(Uint256(1, 0), Uint256(1, 0)))
     end
 
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    let rest_of_product : Ratio = ratio_pow(x, m - 1)
-    let z : Ratio = ratio_mul(x, rest_of_product)
+    let (local y : Uint256) = uint256_sub(m, Uint256(1, 0))
+
+    let (local rest_of_product : Ratio) = ratio_pow(x, y)
+    let (local z: Ratio) = ratio_mul(x, rest_of_product)
 
     return (z)
 end
+
 
 @view
 func pow{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -88,104 +103,32 @@ func diff{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     end
 end
 
-# x^1/m where x = a/b with a and b in Z mod p and m in Z mod p
-@view
-func ratio_nth_root_binary{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        x : Ratio, m : felt, error : Ratio) -> (z : Ratio):
-    alloc_locals
-
-    # needed for dereferencing ratios
-    let (__fp__, _) = get_fp_and_pc()
-
-    # if ratio in [0, 1]
-    let le : felt = is_le(x.n, x.d)
-    if le == 1:
-        let low_candidate : Ratio = x
-        let high_candidate : Ratio = Ratio(1, 1)
-
-        let z : Ratio = _recursion_nth_root_binary(x, high_candidate, low_candidate, m, error)
-        return (z)
-        # if ratio in (1, ---]
-    else:
-        let low_candidate : Ratio = Ratio(1, 1)
-        let high_candidate : Ratio = x
-
-        let z : Ratio = _recursion_nth_root_binary(x, high_candidate, low_candidate, m, error)
-        return (z)
-    end
-end
-
-# recursion helper for nth root
-func _recursion_nth_root_binary{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        base_ratio : Ratio, high_candidate : Ratio, low_candidate : Ratio, m : felt,
-        error : Ratio) -> (nth_root : Ratio):
-    alloc_locals
-
-    # needed for dereferencing ratios
-    let (__fp__, _) = get_fp_and_pc()
-
-    let interval_sum : Ratio = ratio_add(high_candidate, low_candidate)
-    let (local candidate_root : Ratio) = ratio_div(interval_sum, Ratio(2, 1))
-
-    let less_than_error : felt = _less_than_error(base_ratio, candidate_root, m, error)
-
-    if less_than_error == 1:
-        return (candidate_root)
-    else:
-        let product : Ratio = ratio_pow(candidate_root, m)
-        let r_le : felt = ratio_less_than_or_eq(base_ratio, product)
-        if r_le == 1:
-            let new_high_candidate : Ratio = candidate_root
-            let result : Ratio = _recursion_nth_root_binary(
-                base_ratio, new_high_candidate, low_candidate, m, error)
-
-            return (result)
-        else:
-            let new_low_candidate : Ratio = candidate_root
-            let result : Ratio = _recursion_nth_root_binary(
-                base_ratio, high_candidate, new_low_candidate, m, error)
-
-            return (result)
-        end
-    end
-end
-
-# helper function for nth root check if candidate is close enough
-func _less_than_error{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        base_ratio : Ratio, candidate_root : Ratio, m : felt, error : Ratio) -> (bool : felt):
-    alloc_locals
-
-    # needed for dereferencing ratios
-    let (__fp__, _) = get_fp_and_pc()
-
-    let candidate_root_raised_to_m : Ratio = ratio_pow(candidate_root, m)
-
-    # ratio_diff is defined to check which input is larger and substract smaller from larger
-    let difference : Ratio = ratio_diff(base_ratio, candidate_root_raised_to_m)
-
-    let r_le : felt = ratio_less_than_or_eq(difference, error)
-    if r_le == 1:
-        return (1)
-    end
-
-    return (0)
-end
-
 # add x + y
 @view
 func ratio_add{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         first_ratio : Ratio, second_ratio : Ratio) -> (sum : Ratio):
+    alloc_locals
+
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    if first_ratio.d == second_ratio.d:
-        let sum : Ratio = Ratio(first_ratio.n + second_ratio.n, first_ratio.d)
-        return (sum)
+    if first_ratio.d.low == second_ratio.d.low:
+        if first_ratio.d.high == second_ratio.d.high:
+            let (local a: Uint256, is_overflow) = uint256_add(first_ratio.n, second_ratio.n)
+            assert (is_overflow) = 0
+            local sum : Ratio = Ratio(a, first_ratio.d)
+            return (sum)
+        end
     end
 
-    let sum : Ratio = Ratio(
-        first_ratio.n * second_ratio.d + second_ratio.n * first_ratio.d,
-        first_ratio.d * second_ratio.d)
+    let (local x: Uint256, _) = uint256_mul(first_ratio.n, second_ratio.d)
+    let (local y: Uint256, _) = uint256_mul(second_ratio.n, first_ratio.d)
+
+    let (local i: Uint256, _) = uint256_add(x, y)
+    let (local j: Uint256, _) = uint256_mul(first_ratio.d, second_ratio.d)
+    local sum : Ratio = Ratio(
+        i,
+        j)
     return (sum)
 end
 
@@ -193,30 +136,46 @@ end
 @view
 func ratio_diff{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         base_ratio : Ratio, other_ratio : Ratio) -> (diff : Ratio):
+    alloc_locals
+
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    if base_ratio.d == other_ratio.d:
-        let le : felt = is_le(other_ratio.n, base_ratio.n)
-        if le == 1:
-            let diff : Ratio = Ratio(base_ratio.n - other_ratio.n, base_ratio.d)
-            return (diff)
-        else:
-            let diff : Ratio = Ratio(other_ratio.n - base_ratio.n, base_ratio.d)
-            return (diff)
+    if base_ratio.d.low == other_ratio.d.low:
+        if base_ratio.d.high == other_ratio.d.high:
+            let le : felt = uint256_le(other_ratio.n, base_ratio.n)
+            if le == 1:
+                let z: Uint256 = uint256_sub(base_ratio.n, other_ratio.n)
+                let diff : Ratio = Ratio(z, base_ratio.d)
+                return (diff)
+            else:
+                let z: Uint256 = uint256_sub(other_ratio.n, base_ratio.n)
+                let diff : Ratio = Ratio(z, base_ratio.d)
+                return (diff)
+            end
         end
     end
 
-    let r_le : felt = is_le(other_ratio.n * base_ratio.d, base_ratio.n * other_ratio.d)
+    let (local x: Uint256, _) = uint256_mul(other_ratio.n, base_ratio.d)
+    let (local y: Uint256, _) = uint256_mul(base_ratio.n, other_ratio.d)
+    let r_le : felt = uint256_le(x, y)
     if r_le == 1:
+        let (local m: Uint256, _) = uint256_mul(base_ratio.n, other_ratio.d)
+        let (local n: Uint256, _) = uint256_mul(other_ratio.n, base_ratio.d)  
+        let o: Uint256 = uint256_sub(m, n)
+        let (local p: Uint256, _) = uint256_mul(base_ratio.d, other_ratio.d)
         let diff : Ratio = Ratio(
-            base_ratio.n * other_ratio.d - other_ratio.n * base_ratio.d,
-            base_ratio.d * other_ratio.d)
+            o,
+            p)
         return (diff)
     else:
+        let (local i: Uint256, _) = uint256_mul(other_ratio.n, base_ratio.d)
+        let (local j: Uint256, _) = uint256_mul(base_ratio.n, other_ratio.d)
+        let k: Uint256 = uint256_sub(i, j)
+        let (local l: Uint256, _) = uint256_mul(base_ratio.d, other_ratio.d)     
         let diff : Ratio = Ratio(
-            other_ratio.n * base_ratio.d - base_ratio.n * other_ratio.d,
-            base_ratio.d * other_ratio.d)
+            k,
+            l)
         return (diff)
     end
 end
@@ -224,10 +183,14 @@ end
 @view
 func ratio_less_than_or_eq{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         first_ratio : Ratio, second_ratio : Ratio) -> (bool : felt):
+    alloc_locals
+
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    let r_le : felt = is_le(first_ratio.n * second_ratio.d, second_ratio.n * first_ratio.d)
+    let (local x: Uint256, _) = uint256_mul(first_ratio.n, second_ratio.d)
+    let (local y: Uint256, _) = uint256_mul(second_ratio.n, first_ratio.d)
+    let r_le : felt = uint256_le(x, y)
     if r_le == 1:
         return (1)
     end
@@ -238,64 +201,72 @@ end
 # take nth root digit by digit until get to desired precision assuming 18 digits of decimals
 @view
 func nth_root_by_digit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        x : Ratio, m : felt, precision : felt) -> (z : Ratio):
+        x : Ratio, m : Uint256, precision : felt) -> (z : Ratio):
     alloc_locals
 
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
-
+    
     # edge case if m == 1
-    if m == 1:
+    if m.low == 1:
         return (x)
     end
 
     # edge case if ratio is 1
-    if x.n == x.d:
-        return (Ratio(1, 1))
+    if x.n.low == x.d.low:
+        if x.n.high == x.d.high:
+            return (Ratio(Uint256(1, 0), Uint256(1, 0)))
+        end
     end
 
     # calculate integer part
-    let digit : felt = 0
-    let base : felt = pow(10, digit)
-    let initial_guess : Ratio = Ratio(1, base)
+    local digit : felt = 0
+    let (local base : felt) = pow(10, digit)
+    local initial_guess : Ratio = Ratio(Uint256(1, 0), Uint256(base, 0))
     let (local integer_part_non_adjusted : Ratio) = recursive_find_integer_part(x, m, initial_guess)
 
-    let z : Ratio = find_precision_part(x, m, precision, digit, integer_part_non_adjusted)
+    let (local z : Ratio) = find_precision_part(x, m, precision, digit, integer_part_non_adjusted)
     # let z : Ratio = Ratio(numerator.n, precision_digits)
     return (z)
 end
 
 func recursive_find_integer_part{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        x : Ratio, m : felt, guess : Ratio) -> (z : Ratio):
+        x : Ratio, m : Uint256, guess : Ratio) -> (z : Ratio):
+    alloc_locals
+
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    let guess_to_m : Ratio = ratio_pow(guess, m)
-    let le : felt = ratio_less_than_or_eq(x, guess_to_m)
+    let (local guess_to_m : Ratio) = ratio_pow(guess, m)
+    let (local le : felt) = ratio_less_than_or_eq(x, guess_to_m)
 
     if le == 1:
-        let z : Ratio = Ratio(guess.n - 1, 1)
+        let (local k: Uint256) = uint256_sub(guess.n, Uint256(1, 0))
+        local z : Ratio = Ratio(k, Uint256(1, 0))
         return (z)
     else:
-        let new_guess : Ratio = Ratio(guess.n + 1, 1)
-        let z : Ratio = recursive_find_integer_part(x, m, new_guess)
+        let (local y: Uint256, is_overflow) = uint256_add(guess.n, Uint256(1, 0))
+        assert (is_overflow) = 0
+        local new_guess : Ratio = Ratio(y, guess.d)
+        let (local z : Ratio) = recursive_find_integer_part(x, m, new_guess)
         return (z)
     end
 end
 
 func recursive_find_part{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        x : Ratio, m : felt, guess : Ratio, count : felt) -> (z : Ratio):
+        x : Ratio, m : Uint256, guess : Ratio, count : felt) -> (z : Ratio):
     alloc_locals
 
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
     if count == 10:
-        return (Ratio(guess.n - 1, guess.d))
+        let (local y: Uint256) = uint256_sub(guess.n, Uint256(1, 0))
+        return (Ratio(y, guess.d))
     end
 
     let (local guess_to_m : Ratio) = ratio_pow(guess, m)
-    let le : felt = ratio_less_than_or_eq(guess_to_m, x)
+    let (local le : felt) = ratio_less_than_or_eq(guess_to_m, x)
     let r_le: felt = ratio_less_than_or_eq(x, guess_to_m)
 
     if le == 1:
@@ -303,28 +274,32 @@ func recursive_find_part{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
             return (guess)
         end
 
-        let new_count : felt = count + 1
-        let new_guess : Ratio = Ratio(guess.n + 1, guess.d)
-        let z : Ratio = recursive_find_part(x, m, new_guess, new_count)
+        local new_count : felt = count + 1
+        let (local q: Uint256, _) = uint256_add(guess.n, Uint256(1,0))
+        local new_guess : Ratio = Ratio(q, guess.d)
+        let (local z : Ratio) = recursive_find_part(x, m, new_guess, new_count)
         return (z)
     else:
-        let z : Ratio = Ratio(guess.n - 1, guess.d)
+        let (local q: Uint256) = uint256_sub(guess.n, Uint256(1,0))
+        local z : Ratio = Ratio(q, guess.d)
         return (z)
     end
 end
 
 func find_precision_part{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        current_x : Ratio, m : felt, precision : felt, digit : felt, current_root : Ratio) -> (
+        current_x : Ratio, m : Uint256, precision : felt, digit : felt, current_root : Ratio) -> (
         z : Ratio):
     alloc_locals
 
     # needed for dereferencing ratios
     let (__fp__, _) = get_fp_and_pc()
 
-    let current_digit : felt = digit + 1
-    let base : felt = pow(10, current_digit)
-    let initial_guess : Ratio = Ratio(current_root.n * 10 + 1, base)
-    let count : felt = 1
+    local current_digit : felt = digit + 1
+    let (local base : felt) = pow(10, current_digit)
+    let (local x: Uint256, _) = uint256_mul(current_root.n, Uint256(10, 0))
+    let (local w: Uint256, _) = uint256_add(x, Uint256(1,0))
+    local initial_guess : Ratio = Ratio(w, Uint256(base, 0))
+    local count : felt = 1
     let (local current_part : Ratio) = recursive_find_part(current_x, m, initial_guess, count)
 
     let le : felt = is_le(precision, current_digit)
@@ -332,7 +307,7 @@ func find_precision_part{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     if le == 1:
         return (current_part)
     else:
-        let z : Ratio = find_precision_part(current_x, m, precision, current_digit, current_part)
+        let (local z : Ratio) = find_precision_part(current_x, m, precision, current_digit, current_part)
         return (z)
     end
 end
