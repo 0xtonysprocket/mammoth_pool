@@ -2,9 +2,10 @@ import os
 import asyncio
 import pytest
 
-from ..lib.openzeppelin.tests.utils.Signer import Signer, str_to_felt
+# from ..lib.openzeppelin.tests.utils.Signer import Signer, str_to_felt
 
 from starkware.starknet.testing.starknet import Starknet
+
 
 # contract and library paths
 POOL_CONTRACT = os.path.join(
@@ -24,15 +25,12 @@ ERC20_CONTRACT = os.path.join(
 )
 
 ACCOUNT_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../lib/openzeppelin/contracts/Account.cairo"
+    os.path.dirname(__file__), "../contracts/lib/openzeppelin/contracts/Account.cairo"
 )
 
 BALANCER_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../contracts/balancer_math.cairo"
+    os.path.dirname(__file__), "../contracts/lib/balancer_math.cairo"
 )
-
-ERC20_DIGIT = 1000000000
-MINT_AMOUNT = 1000 * ERC20_DIGIT
 
 
 @pytest.fixture(scope="module")
@@ -47,6 +45,7 @@ async def starknet_factory():
     return starknet
 
 
+"""
 @pytest.fixture(scope="module")
 async def signer_factory():
     signer = Signer(12345)
@@ -168,12 +167,12 @@ async def teeth_factory(starknet_factory, account_factory, pool_factory):
     )
 
     return teeth, teeth.contract_address
+"""
 
 
 @pytest.fixture(scope="module")
-async def balancer_factory(starknet_factory, account_factory):
+async def balancer_factory(starknet_factory):
     starknet = starknet_factory
-    _, user = account_factory
 
     balancer_contract = await starknet.deploy(source=BALANCER_CONTRACT)
 

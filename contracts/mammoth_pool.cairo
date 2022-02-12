@@ -4,21 +4,18 @@
 #3. whitelisted MM access to atomic swaps with liquidity
 #4. controls on trades that can be executed
 #5. view token balance
-#6. view accrued return
-#7. 
 
 %lang starknet
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
-from starkware.cairo.common.math import (assert_not_zero, assert_le, unsigned_div_rem)
-from starkware.cairo.common.uint256 import (
-    Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt, uint256_unsigned_div_rem
+from starkware.cairo.common.uint256 import Uint256
+
+from contracts.lib.openzeppelin.contracts.Ownable_base import (
+    Ownable_initializer,
+    Ownable_only_owner
 )
-
-from lib.local_cairo.ratio import Ratio
-
-#NOTE: rewards in this contract are distributed per 1000000000 wei or .000000001 ETH 
+from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 ##########
 #INTERFACES
@@ -26,25 +23,35 @@ from lib.local_cairo.ratio import Ratio
 
 @contract_interface
 namespace IERC20:
-    func get_total_supply() -> (res: felt):
+    func name() -> (name: felt):
     end
 
-    func get_decimals() -> (res: felt):
+    func symbol() -> (symbol: felt):
     end
 
-    func balanceOf(account: felt) -> (res: Uint256):
+    func decimals() -> (decimals: felt):
     end
 
-    func allowance(owner: felt, spender: felt) -> (res: felt):
+    func totalSupply() -> (totalSupply: Uint256):
     end
 
-    func transfer(recipient: felt, amount: Uint256):
+    func balanceOf(account: felt) -> (balance: Uint256):
     end
 
-    func transferFrom(sender: felt, recipient: felt, amount: Uint256):
+    func allowance(owner: felt, spender: felt) -> (remaining: Uint256):
     end
 
-    func approve(spender: felt, amount: felt):
+    func transfer(recipient: felt, amount: Uint256) -> (success: felt):
+    end
+
+    func transferFrom(
+            sender: felt, 
+            recipient: felt, 
+            amount: Uint256
+        ) -> (success: felt):
+    end
+
+    func approve(spender: felt, amount: Uint256) -> (success: felt):
     end
 end
 
@@ -62,8 +69,9 @@ func constructor{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(proxy: felt):
+    }(proxy: felt, owner: felt):
     _proxy.write(proxy)
+    Ownable_initializer(owner)
     return ()
 end
 
@@ -76,12 +84,12 @@ func _deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, erc20_address: felt) -> ():
+    }(amount: Uint256, address: felt, erc20_address: felt) -> ():
     alloc_locals
     let (local this_contract) = get_contract_address()
 
-    IERC20.transferFrom(contract_address=erc20_address, sender=address, recipient=this_contract, amount=Uint256(amount, 0))
-    return ()
+    IERC20.transferFrom(contract_address=erc20_address, sender=address, recipient=this_contract, amount=amount)
+    return (TRUE)
     end
 
 #internal withdraw FUNC
@@ -89,35 +97,17 @@ func _withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, erc20_address: felt):
-    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=Uint256(amount,0))
-    return ()
+    }(amount: Uint256, address: felt, erc20_address: felt):
+    IERC20.transfer(contract_address=erc20_address, recipient=address, amount=amount)
+    return (TRUE)
 end
 
 ##########
 #HELPERS
 ##########
 
-#helper function to protect against unexpected behavior with division
-#this function takes in a numerator and a denominator and outputs 10 ^ x where
-#x is the digit of the first nonzero number in division
-#for example, if num is 1000 and denom is 100000 then this function returns 100 or 10^2
-func _find_first_non_zero_quotient{
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(numerator: felt, denominator: felt, next_digit: felt) -> (digit_of_non_zero_quotient: felt):
-    alloc_locals
-    let (local quotient: felt, local remainder: felt) = unsigned_div_rem(numerator, denominator)
-
-    if quotient != 0:
-        return (next_digit)
-    else:
-        return _find_first_non_zero_quotient(numerator * 10, denominator, next_digit * 10)
-    end
-end
-
 #helper function to require call from proxy
-func _require_call_from_proxy{
+func Only_proxy{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
@@ -133,20 +123,16 @@ end
 #EXTERNALS
 ##########
 
-#TODO: make these functions safer by storing a mapping of valid erc20 addresses
-#and requiring that the deposit and withdrawal are for valid erc20s
-#also could do this in proxy contract
-
 @external
 func proxy_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    _require_call_from_proxy()
+    Only_proxy()
 
     _deposit(amount, address, erc20_address)
-    return ()
+    return (TRUE)
 end
 
 @external
@@ -155,29 +141,32 @@ func proxy_withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, erc20_address: felt):
-    _require_call_from_proxy()
+    Only_proxy(TRUE)
 
     _withdraw(amount, address, erc20_address)
     return ()
 end
 
+##########
+#SETTERS
+##########
+
 @external
-func proxy_approve{
+func set_proxy{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, token_contract_address: felt, spender_address: felt):
-    _require_call_from_proxy()
+    }(new_proxy: felt):
+    Ownable_only_owner()
 
-    IERC20.approve(contract_address=token_contract_address, spender=spender_address, amount=amount)
-    return ()
+    _proxy.write(new_proxy)
+    return(TRUE)
 end
 
 ##########
 #VIEWS
 ##########
 
-#For ETH just put ETH ERC20 address
 @view
 func get_ERC20_balance{
         syscall_ptr : felt*,
@@ -187,5 +176,5 @@ func get_ERC20_balance{
     alloc_locals
     let (local this_contract) = get_contract_address()
     let (res) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
-    return (res.low)
+    return (res)
 end

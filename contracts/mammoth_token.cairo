@@ -14,10 +14,6 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt
 )
 
-#In this contract we implement the cairo ERC20 standard 
-#but assign minting and burning priveleges to only be from our
-#proxy contract
-
 #Structs
 
 struct ProxyAddress:

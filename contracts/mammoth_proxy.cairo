@@ -8,8 +8,13 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_le, uint256_lt
 )
 
-from lib.local_cairo.balancer_math import (get_spot_price, get_pool_minted_given_single_in, get_single_out_given_pool_in, get_out_given_in)
-from lib.local_cairo.ratio import Ratio, ratio_add
+from contracts.lib.balancer_math import (get_spot_price, get_pool_minted_given_single_in, get_single_out_given_pool_in, get_out_given_in)
+from contracts.lib.ratios.contracts.ratio import Ratio, ratio_add
+from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
+from contracts.lib.openzeppelin.contracts.Ownable_base import (
+    Ownable_initializer,
+    Ownable_only_owner
+)
 
 # proxy contract for depositing to Mammoth pool, receiving LP tokens, 
 # and for MM to interact with mammoth pool liquidity 
@@ -103,7 +108,7 @@ func constructor{
     }(
         owner_address: felt,
     ):
-    owner.write(owner_address)
+    Ownable_initializer(owner_address)
     return ()
 end
 
@@ -114,7 +119,7 @@ func call_mint{
     }(
     pool_address: felt,
     recipient: felt, 
-    amount: felt):
+    amount: Uint256):
     let (lp_address) = lp_token_address.read(pool_address)
     ITokenContract.proxy_mint(contract_address=lp_address, recipient=recipient, amount=amount)
     return ()
@@ -123,7 +128,7 @@ end
 func call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pool_address: felt,
     recipient: felt, 
-    amount: felt):
+    amount: Uint256):
     let (lp_address) = lp_token_address.read(pool_address)
     ITokenContract.proxy_burn(contract_address=lp_address, user=recipient, amount=amount)
     return ()
@@ -281,18 +286,6 @@ end
 ##########
 
 @view
-func require_call_from_owner{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }():
-    let (caller_address: felt) = get_caller_address()
-    let (approved_caller: felt) = owner.read()
-    assert caller_address = approved_caller
-    return ()
-end
-
-@view
 func require_approved_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
@@ -325,7 +318,7 @@ func create_pool{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(lp_address: felt, pool_address: felt, s_fee: Ratio, e_fee: Ratio):
-    require_call_from_owner()
+    Ownable_only_owner()
 
     approved_pool_address.write(pool_address, 1)
     lp_token_address.write(pool_address, lp_address)
@@ -340,7 +333,7 @@ func approve_market_maker_contract_address{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(address: felt):
-    require_call_from_owner()
+    Ownable_only_owner()
 
     approved_market_makers.write(address, 1)
     return ()
@@ -352,7 +345,7 @@ func add_approved_erc20_for_pool{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(pool_address: felt, erc20_address: felt, weight: Ratio):
-    require_call_from_owner()
+    Ownable_only_owner()
 
     approved_erc20s.write(pool_address, erc20_address, 1)
     token_weight.write(pool_address, erc20_address, weight)
@@ -390,7 +383,7 @@ end
 #        range_check_ptr
 #    }(amount: felt, token_contract_address: felt, exchange_address: felt):
 #    alloc_locals
-#    require_call_from_owner()
+#    Ownable_only_owner()
 
 #    let (local pool) = pool_address.read()
 #    #TODO: fix the .low in amount in next line
