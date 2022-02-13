@@ -11,7 +11,10 @@ from contracts.lib.openzeppelin.contracts.Ownable_base import (
     Ownable_transfer_ownership
 )
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
-from contracts.lib.Pool_base import deposit, withdraw
+from contracts.lib.Pool_base import (
+    Pool_deposit, 
+    Pool_withdraw
+)
 
 @constructor
 func constructor{
