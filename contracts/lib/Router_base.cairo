@@ -11,7 +11,6 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.starknet.common.syscalls import get_contract_address
 
 @contract_interface
 namespace IERC20:
@@ -59,24 +58,29 @@ namespace IPoolContract:
     end
 end
 
+#store the address of the pool contract
+@storage_var
+func approved_pool_address(pool_address: felt) -> (bool: felt):
+end
+
 func Router_call_mint{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(
     pool_address: felt,
+    lp_address: felt,
     recipient: felt, 
     amount: Uint256):
-    let (lp_address) = lp_token_address.read(pool_address)
     IERC20.mint(contract_address=lp_address, recipient=recipient, amount=amount)
     return ()
 end
 
 func Router_call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pool_address: felt,
+    lp_address: felt,
     recipient: felt, 
     amount: Uint256):
-    let (lp_address) = lp_token_address.read(pool_address)
     IERC20.burn(contract_address=lp_address, user=recipient, amount=amount)
     return ()
 end
@@ -96,5 +100,19 @@ func Router_call_withdraw{
         range_check_ptr
     }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
     IERC20.withdraw(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
+    return ()
+end
+
+func Router_create_pool{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(lp_address: felt, pool_address: felt, s_fee: Ratio, e_fee: Ratio):
+    Ownable_only_owner()
+
+    approved_pool_address.write(pool_address, 1)
+    lp_token_address.write(pool_address, lp_address)
+    swap_fee.write(pool_address, s_fee)
+    exit_fee.write(pool_address, e_fee)
     return ()
 end
