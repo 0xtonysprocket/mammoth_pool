@@ -81,7 +81,7 @@ func _approve_ercs{
     approved_erc20s.write(current_struct.erc_address, TRUE)
     token_weight.write(current_struct.erc_address, weight)
 
-    _approve_ercs(arr_len - 1, [arr + 1])
+    _approve_ercs(arr_len - 1, arr + ApprovedERC20.SIZE)
 
     return (TRUE)
 end
