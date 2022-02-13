@@ -122,6 +122,26 @@ func withdraw{
 end
 
 @external
+func swap{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(amount_in: Uint256, address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
+    alloc_locals
+    Ownable_only_owner()
+    Register_only_approved_erc20(erc20_address_in)
+    Register_only_approved_erc20(erc20_address_out)
+
+    let (local amount_out: Uint256) = view_out_given_in(amount_in, erc20_address_in, erc20_address_out)
+    let (local deposit_success: felt) = Pool_deposit(amount_in, address, erc20_address_in)
+    let (local withdraw_success: felt) = Pool_withdraw(amount_out, address, erc20_address_out)
+
+    assert deposit_success = TRUE
+    assert withdraw_success = TRUE
+
+    return (TRUE)
+
+@external
 func initialize_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
