@@ -11,6 +11,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 @contract_interface
 namespace IERC20:
@@ -58,6 +59,12 @@ namespace IPoolContract:
     end
 end
 
+@contract_interface
+namespace IPoolRegister:
+    func Register_initialize_pool(lp_address: felt, s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+    end
+end
+
 #store the address of the pool contract
 @storage_var
 func approved_pool_address(pool_address: felt) -> (bool: felt):
@@ -72,6 +79,7 @@ func Router_call_mint{
     lp_address: felt,
     recipient: felt, 
     amount: Uint256):
+    _only_approved_pool(pool_address)
     IERC20.mint(contract_address=lp_address, recipient=recipient, amount=amount)
     return ()
 end
@@ -81,6 +89,7 @@ func Router_call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     lp_address: felt,
     recipient: felt, 
     amount: Uint256):
+    _only_approved_pool(pool_address)
     IERC20.burn(contract_address=lp_address, user=recipient, amount=amount)
     return ()
 end
@@ -90,6 +99,7 @@ func Router_call_deposit{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    _only_approved_pool(pool_address)
     IERC20.deposit(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     return ()
 end
@@ -99,6 +109,7 @@ func Router_call_withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
+    _only_approved_pool(pool_address)
     IERC20.withdraw(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     return ()
 end
@@ -107,12 +118,21 @@ func Router_create_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(lp_address: felt, pool_address: felt, s_fee: Ratio, e_fee: Ratio):
-    Ownable_only_owner()
+    }(pool_address: felt, lp_address: felt, s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+    approved_pool_address.write(pool_address, TRUE)
+    IPoolRegister.Register_initialize_pool(contract_address=pool_address, lp_address=lp_address, s_fee=s_fee, e_fee=e_fee, erc_list_len=erc_list_len, erc_list=erc_list)
+    return (TRUE)
+end
 
-    approved_pool_address.write(pool_address, 1)
-    lp_token_address.write(pool_address, lp_address)
-    swap_fee.write(pool_address, s_fee)
-    exit_fee.write(pool_address, e_fee)
+func _only_approved_pool{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt):
+    alloc_locals
+
+    local approved: felt = approved_pool_address.read(pool_address)
+    assert approved = TRUE
+
     return ()
 end

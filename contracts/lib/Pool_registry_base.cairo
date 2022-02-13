@@ -79,16 +79,46 @@ func _approve_ercs{
     return (TRUE)
 end
 
-func Register_get_pool_info{
+func Register_get_pool_fees{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (s_fee: Ratio, e_fee: Ratio)
+    }() -> (s_fee: Ratio, e_fee: Ratio):
     alloc_locals
 
     local s: Ratio = swap_fee.read()
     local e: Ratio = exit_fee.read()
 
     return (s, e)
+end
+
+func Register_get_token_weight{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc_address: felt) -> (token_weight: Ratio):
+    alloc_locals
+    local tok_w: Ratio = token_weight.read(erc_address)
+    return (tok_w)
+end
+
+func Register_get_total_weight{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (total_weight: Ratio):
+    alloc_locals
+    local t_w: Ratio = total_weight.read()
+    return (t_w)
+end
+
+func Register_lp_address{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (lp_address: Ratio):
+    alloc_locals
+    local lp_address: felt = lp_token_address.read()
+    return (lp_address)
 end
 
