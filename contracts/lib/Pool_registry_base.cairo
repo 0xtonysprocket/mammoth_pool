@@ -71,17 +71,17 @@ func _approve_ercs{
 
     # needed for dereferencing struct
     let (__fp__, _) = get_fp_and_pc()
-    
-    if arr_len == 1:
+
+    if arr_len == 0:
         return (TRUE)
     end
 
-    let current_struct: ApprovedERC20 = [arr]
+    let current_struct: ApprovedERC20* = [&arr]
     local weight: Ratio = Ratio(Uint256(current_struct.low_num, current_struct.high_num), Uint256(current_struct.low_den, current_struct.high_den))
     approved_erc20s.write(current_struct.erc_address, TRUE)
     token_weight.write(current_struct.erc_address, weight)
 
-    _approve_ercs(arr_len - 1, arr + 1)
+    _approve_ercs(arr_len - 1, [arr + 1])
 
     return (TRUE)
 end
@@ -118,5 +118,14 @@ func Register_only_approved_erc20{
     let (approval: felt) =  approved_erc20s.read(erc20_address)
     assert approval = TRUE
     return ()
+end
+
+func Register_is_erc20_approved{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt) -> (approval: felt):
+    let (approval: felt) =  approved_erc20s.read(erc20_address)
+    return (approval)
 end
 

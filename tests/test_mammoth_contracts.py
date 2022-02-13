@@ -18,14 +18,14 @@ async def test_create_pool(
     signer = signer_factory
     user_account, _ = account_factory
     router_contract, router_address = router_factory
-    _, pool_address = pool_factory
+    pool_contract, pool_address = pool_factory
     _, tusdc_address = tusdc_factory
     _, fc_address = fc_factory
     _, teeth_address = teeth_factory
 
-    swap_fee = (2, 1000)  # .02%
-    exit_fee = (2, 1000)  # .02%
-    # weight of 1/3 represented as 1, 0, 3, 1
+    swap_fee = [to_uint(2), to_uint(1000)]  # .02%
+    exit_fee = [to_uint(2), to_uint(1000)]  # .02%
+    # weight of 1/3 represented as 1, 0, 3, 0
     erc_array_input = (
         tusdc_address,
         1,
@@ -50,15 +50,26 @@ async def test_create_pool(
         selector_name="create_pool",
         calldata=[
             pool_address,
-            *swap_fee,
-            *exit_fee,
-            15,
+            *swap_fee[0],
+            *swap_fee[1],
+            *exit_fee[0],
+            *exit_fee[1],
+            3,
             *erc_array_input,
         ],
     )
 
     stored_token = await router_contract.is_pool_approved(pool_address).call()
     assert stored_token.result == (1,)
+
+    erc_approval = await pool_contract.is_ERC20_approved(tusdc_address).call()
+    assert erc_approval.result == (1,)
+
+    erc_approval = await pool_contract.is_ERC20_approved(fc_address).call()
+    assert erc_approval.result == (1,)
+
+    erc_approval = await pool_contract.is_ERC20_approved(teeth_address).call()
+    assert erc_approval.result == (1,)
 
     # ADD MORE TESTS TO MAKE SURE POOL INITIALIZED PROPERLY
 

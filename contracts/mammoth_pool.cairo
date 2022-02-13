@@ -45,6 +45,7 @@ from contracts.lib.Pool_registry_base import (
     Register_get_pool_info,
     Register_get_token_weight,
     Register_only_approved_erc20,
+    Register_is_erc20_approved,
     ApprovedERC20
     )
 from contracts.lib.balancer_math import (
@@ -229,6 +230,17 @@ func get_ERC20_balance{
     let (local this_contract) = get_contract_address()
     let (res) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
     return (res)
+end
+
+@view
+func is_ERC20_approved{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt) -> (approved: felt):
+    alloc_locals
+    let (approved: felt) = Register_is_erc20_approved(erc20_address)
+    return (approved)
 end
 
 #########
