@@ -10,9 +10,10 @@ from contracts.lib.openzeppelin.contracts.Ownable_base import (
     Ownable_get_owner,
     Ownable_transfer_ownership
 )
+from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 # Mammoth
-from contracts.lib.ratios.constracts.ratio import Ratio
+from contracts.lib.ratios.contracts.ratio import Ratio
 from Router_base import (
     Router_call_deposit,
     Router_call_withdraw,
@@ -20,6 +21,7 @@ from Router_base import (
     Router_create_pool,
     Router_only_approved_pool
 )
+from Pool_registry_base import ApprovedERC20
 
 @constructor
 func constructor{
@@ -45,7 +47,7 @@ func create_pool{
     }(pool_address: felt, s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
     alloc_locals
     Ownable_only_owner()
-    
+
     let (local success: felt) = Router_create_pool(pool_address, s_fee, e_fee, erc_list_len, erc_list)
     assert success = TRUE
     return (TRUE)
@@ -60,7 +62,7 @@ func mammoth_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
     alloc_locals
     Router_only_approved_pool(pool_address)
     let (local success: felt) = Router_call_deposit(amount, address, pool_address, erc20_address)
@@ -73,7 +75,7 @@ func mammoth_withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
     alloc_locals
     Router_only_approved_pool(pool_address)
     let (local success: felt) = Router_call_withdraw(amount, address, pool_address, erc20_address)
@@ -86,7 +88,7 @@ func mammoth_swap{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
+    }(amount: Uint256, address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
     alloc_locals
     Router_only_approved_pool(pool_address)
     let (local success: felt) = Router_call_swap(amount, address, pool_address, erc20_address_in, erc20_address_out)

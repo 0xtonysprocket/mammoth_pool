@@ -7,7 +7,12 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.uint256 import Uint256
+
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
+
+from contracts.lib.ratios.contracts.ratio import Ratio
+from Pool_registry_base import ApprovedERC20
 
 @contract_interface
 namespace IPoolContract:
@@ -26,7 +31,7 @@ end
 
 @contract_interface
 namespace IPoolRegister:
-    func Register_initialize_pool(lp_address: felt, s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+    func Register_initialize_pool(s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
     end
 end
 
@@ -39,7 +44,7 @@ func Router_call_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
     alloc_locals
     let (local success: felt) = IPoolContract.deposit(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     assert success = TRUE
@@ -50,7 +55,8 @@ func Router_call_withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+    alloc_locals
     let (local success: felt) = IPoolContract.withdraw(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     assert success = TRUE
     return (TRUE)
@@ -60,7 +66,8 @@ func Router_call_swap{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: felt, address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
+    }(amount: Uint256, address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
+    alloc_locals
     let (local success: felt) = IPoolContract.swap(contract_address=pool_address, amount=amount, address=address, erc20_address_in=erc20_address_in, erc20_address_out=erc20_address_out)
     assert success = TRUE
     return (TRUE)
@@ -85,7 +92,7 @@ func Router_only_approved_pool{
     }(pool_address: felt):
     alloc_locals
 
-    local approved: felt = approved_pool_address.read(pool_address)
+    let (local approved: felt) = approved_pool_address.read(pool_address)
     assert approved = TRUE
 
     return ()
