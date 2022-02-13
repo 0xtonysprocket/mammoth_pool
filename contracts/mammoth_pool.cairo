@@ -9,15 +9,16 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 
-from contracts.lib.openzeppelin.contracts.Ownable_base import (
+#openzeppeling
+from contracts.Ownable_base import (
     Ownable_initializer,
     Ownable_only_owner,
     Ownable_get_owner,
     Ownable_transfer_ownership
 )
-from contracts.lib.openzeppelin.contracts.token.ERC20_base import (
+from contracts.token.ERC20_base import (
     ERC20_name,
     ERC20_symbol,
     ERC20_totalSupply,
@@ -34,19 +35,24 @@ from contracts.lib.openzeppelin.contracts.token.ERC20_base import (
     ERC20_mint,
     ERC20_burn
 )
-from contracts.lib.openzeppelin.contracts.Initializable import ( initialize, initialized )
-from contracts.lib.Pool_base import ( Pool_deposit, Pool_withdraw )
-from contracts.lib.Pool_registry_base import (
+from contracts.Initializable import ( initialize, initialized )
+from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
+
+#mammoth
+from Pool_base import ( Pool_deposit, Pool_withdraw )
+from Pool_registry_base import (
     Register_initialize_pool,
     Register_get_pool_info,
     Register_get_token_weight,
-    Register_only_approved_erc20
+    Register_only_approved_erc20,
+    ApprovedERC20
     )
-from contracts.lib.balancer_math import (
+from balancer_math import (
     get_out_given_in,
     get_pool_minted_given_single_in,
     get_single_out_given_pool_in,
     )
+from contracts.lib.ratios.contracts.ratio import Ratio
 
 @contract_interface
 namespace IERC20:
@@ -60,12 +66,12 @@ func constructor{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(
-        router: felt
-        name: felt,
-        symbol: felt,
-        initial_supply: Uint256,
-        recipient: felt
-        ):
+    router: felt,
+    name: felt,
+    symbol: felt,
+    initial_supply: Uint256,
+    recipient: felt
+    ):
     ERC20_initializer(name, symbol, initial_supply, recipient)
     Ownable_initializer(router)
     return ()
@@ -80,19 +86,19 @@ func deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount_to_deposit: Uint256, address: felt, erc20_address: felt) -> (pool_amount_to_mint: Uint256):
+    }(amount_to_deposit: Uint256, address: felt, erc20_address: felt) -> (success: felt):
     alloc_locals
     Ownable_only_owner()
     Register_only_approved_erc20(erc20_address)
 
-    let (local pool_amount_to_mint: Uint256) = view_pool_minted_given_single_in(amount, erc20_address)
+    let (local pool_amount_to_mint: Uint256) = view_pool_minted_given_single_in(amount_to_deposit, erc20_address)
     let (local success: felt) = Pool_deposit(amount_to_deposit, address, erc20_address)
     assert success = TRUE
 
     let (local mint_success: felt) = mint(address, pool_amount_to_mint)
     assert mint_success = TRUE
 
-    return (pool_amount_to_mint)
+    return (TRUE)
 end
 
 @external
@@ -100,7 +106,7 @@ func withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_amount_in: Uint256, address: felt, erc20_address: felt) -> (amount_out: Uint256):
+    }(pool_amount_in: Uint256, address: felt, erc20_address: felt) -> (success: felt):
     alloc_locals
     Ownable_only_owner()
     Register_only_approved_erc20(erc20_address)
@@ -140,7 +146,7 @@ func view_single_out_given_pool_in{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_amount_in: felt, erc20_address: felt) -> (amount_to_withdraw: Uint256):
+    }(pool_amount_in: Uint256, erc20_address: felt) -> (amount_to_withdraw: Uint256):
     alloc_locals
 
     let (local this_contract: felt) = get_contract_address()
@@ -149,9 +155,10 @@ func view_single_out_given_pool_in{
     let (local a_weight: Ratio) = Register_get_token_weight(erc20_address)
     let (local supply: Uint256) = totalSupply()
     let (local a_balance: Uint256) = get_ERC20_balance(erc20_address)
-    let (local amount_to_withdraw: Uint256) = get_single_out_given_pool_in(pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
+    let (local ratio_out: Ratio) = get_single_out_given_pool_in(pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
+    let (local amount_to_withdraw: Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
-    return ()
+    return (amount_to_withdraw)
 end
 
 @view
@@ -159,14 +166,15 @@ func view_pool_minted_given_single_in{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount_to_deposit: felt, erc20_address: felt) -> (amount_to_mint: Uint256):
+    }(amount_to_deposit: Uint256, erc20_address: felt) -> (amount_to_mint: Uint256):
     alloc_locals
 
     let (local swap_fee: Ratio, _, total_weight: Ratio) = Register_get_pool_info()
     let (local a_weight: Ratio) = Register_get_token_weight(erc20_address)
     let (local supply: Uint256) = totalSupply()
     let (local a_balance: Uint256) = get_ERC20_balance(erc20_address)
-    let (local amount_to_mint: Uint256) = get_pool_minted_given_single_in(amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
+    let (local ratio_out: Ratio) = get_pool_minted_given_single_in(amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
+    let (local amount_to_mint: Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_to_mint)
 end
@@ -176,7 +184,7 @@ func view_out_given_in{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount_in: felt, erc20_address_in: felt, erc20_address_out: felt) -> (amount_out: Uint256):
+    }(amount_in: Uint256, erc20_address_in: felt, erc20_address_out: felt) -> (amount_out: Uint256):
     alloc_locals
 
     let (local swap_fee: Ratio, _, _) = Register_get_pool_info()
@@ -184,7 +192,8 @@ func view_out_given_in{
     let (local a_weight: Ratio) = Register_get_token_weight(erc20_address_in)
     let (local b_balance: Uint256) = get_ERC20_balance(erc20_address_out)
     let (local b_weight: Ratio) = Register_get_token_weight(erc20_address_out)
-    let (local amount_out: Uint256) = get_out_given_in(amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
+    let (local ratio_out: Ratio) = get_out_given_in(amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
+    let (local amount_out: Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_out)
 end
@@ -343,8 +352,8 @@ func burn{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
-    }(from: felt, amount: Uint256) -> (success: felt):
+    }(account: felt, amount: Uint256) -> (success: felt):
     Ownable_only_owner()
-    ERC20_burn(from, amount)
-    return ()
+    ERC20_burn(account, amount)
+    return (TRUE)
 end

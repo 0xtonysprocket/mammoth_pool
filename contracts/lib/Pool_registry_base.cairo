@@ -4,7 +4,13 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_contract_address
+from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.uint256 import Uint256
+
+# local
 from contracts.lib.ratios.contracts.ratio import Ratio
+
+#OZ
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 #approved erc20s
@@ -38,7 +44,10 @@ end
 
 struct ApprovedERC20:
     member erc_address: felt
-    member weight: Ratio*
+    member low_num: felt
+    member high_num: felt
+    member low_den: felt
+    member high_den: felt
 end
 
 func Register_initialize_pool{
@@ -63,13 +72,14 @@ func _approve_ercs{
     # needed for dereferencing struct
     let (__fp__, _) = get_fp_and_pc()
     
-    if arr_len == 0:
+    if arr_len == 1:
         return (TRUE)
     end
 
-    let (local current_struct: ApprovedERC20) = [arr]
-    approved_erc20s.write(current_struct.erc_address)
-    token_weight.write(current_struct.erc20_address, current_struct.weight)
+    let current_struct: ApprovedERC20 = [arr]
+    local weight: Ratio = Ratio(Uint256(current_struct.low_num, current_struct.high_num), Uint256(current_struct.low_den, current_struct.high_den))
+    approved_erc20s.write(current_struct.erc_address, TRUE)
+    token_weight.write(current_struct.erc_address, weight)
 
     _approve_ercs(arr_len - 1, arr + 1)
 
@@ -83,9 +93,9 @@ func Register_get_pool_info{
     }() -> (s_fee: Ratio, e_fee: Ratio, tot_weight: Ratio):
     alloc_locals
 
-    local s: Ratio = swap_fee.read()
-    local e: Ratio = exit_fee.read()
-    local t_w: Ratio = total_weight.read()
+    let (local s: Ratio) = swap_fee.read()
+    let (local e: Ratio) = exit_fee.read()
+    let (local t_w: Ratio) = total_weight.read()
 
     return (s, e, t_w)
 end
@@ -96,7 +106,7 @@ func Register_get_token_weight{
         range_check_ptr
     }(erc_address: felt) -> (token_weight: Ratio):
     alloc_locals
-    local tok_w: Ratio = token_weight.read(erc_address)
+    let (local tok_w: Ratio) = token_weight.read(erc_address)
     return (tok_w)
 end
 

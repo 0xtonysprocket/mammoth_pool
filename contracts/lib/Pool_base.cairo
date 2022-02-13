@@ -4,6 +4,8 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_contract_address
+from starkware.cairo.common.uint256 import Uint256
+from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 ##########
 #INTERFACES
