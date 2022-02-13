@@ -1,3 +1,15 @@
 [submodule "lib/openzeppelin"]
 	path = lib/openzeppelin
 	url = https://github.com/OpenZeppelin/cairo-contracts.git
+[submodule "contracts/lib/cairo-contracts"]
+	path = contracts/lib/cairo-contracts
+	url = https://github.com/OpenZeppelin/cairo-contracts.git
+[submodule "contracts/lib/ratios_cairo"]
+	path = contracts/lib/ratios_cairo
+	url = https://github.com/andrepn/ratios_cairo.git
+[submodule "contracts/lib/ratios"]
+	path = contracts/lib/ratios
+	url = https://github.com/andrepn/ratios_cairo.git
+[submodule "contracts/lib/openzeppelin"]
+	path = contracts/lib/openzeppelin
+	url = https://github.com/OpenZeppelin/cairo-contracts.git
