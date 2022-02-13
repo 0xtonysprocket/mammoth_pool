@@ -23,6 +23,7 @@ from contracts.lib.ratios.contracts.ratio import (Ratio, ratio_mul, ratio_div, r
 #           /               *           /
 #   b_balance/b_weight          fee.denominator - fee.numerator
 #
+@view
 func get_spot_price{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
@@ -68,6 +69,7 @@ end
 #pS = poolSupply            \\                    tBi               /        /             //
 #sF = swapFee                \                                              /              //
 #**********************************************************************************************/
+@view
 func get_pool_minted_given_single_in{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
@@ -129,7 +131,7 @@ end
 #sF = swapFee                    *  | 1 - |  1 - ---- | * sF  |                            //
 #eF = exitFee                        \     \      tW /       /                             //
 #**********************************************************************************************/
-
+@view
 func get_single_out_given_pool_in{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
@@ -204,7 +206,7 @@ end
 #wO = tokenWeightOut                                                                       //
 #sF = swapFee                                                                              //
 #**********************************************************************************************/
-
+@view
 func get_out_given_in{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,

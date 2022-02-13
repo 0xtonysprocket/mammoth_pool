@@ -12,7 +12,7 @@ from starkware.cairo.common.uint256 import Uint256
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 from contracts.lib.ratios.contracts.ratio import Ratio
-from Pool_registry_base import ApprovedERC20
+from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @contract_interface
 namespace IPoolContract:

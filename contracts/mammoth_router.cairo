@@ -14,7 +14,7 @@ from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 # Mammoth
 from contracts.lib.ratios.contracts.ratio import Ratio
-from Router_base import (
+from contracts.lib.Router_base import (
     Router_call_deposit,
     Router_call_withdraw,
     Router_call_swap,
@@ -22,7 +22,7 @@ from Router_base import (
     Router_only_approved_pool,
     Router_pool_approved
 )
-from Pool_registry_base import ApprovedERC20
+from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @constructor
 func constructor{

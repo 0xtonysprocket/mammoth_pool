@@ -2,9 +2,8 @@ import os
 import asyncio
 import pytest
 
-# from ..lib.openzeppelin.tests.utils.Signer import Signer, str_to_felt
-
 from starkware.starknet.testing.starknet import Starknet
+from ..contracts.lib.openzeppelin.tests.utils import str_to_felt, Signer, to_uint
 
 
 # contract and library paths
@@ -12,16 +11,13 @@ POOL_CONTRACT = os.path.join(
     os.path.dirname(__file__), "../contracts/mammoth_pool.cairo"
 )
 
-PROXY_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../contracts/mammoth_proxy.cairo"
-)
-
-LP_TOKEN_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../contracts/mammoth_token.cairo"
+ROUTER_CONTRACT = os.path.join(
+    os.path.dirname(__file__), "../contracts/mammoth_router.cairo"
 )
 
 ERC20_CONTRACT = os.path.join(
-    os.path.dirname(__file__), "../lib/local_cairo/fakeERC20_mintable.cairo"
+    os.path.dirname(__file__),
+    "../contracts/lib/openzeppelin/contracts/token/ERC20_Mintable.cairo",
 )
 
 ACCOUNT_CONTRACT = os.path.join(
@@ -45,7 +41,6 @@ async def starknet_factory():
     return starknet
 
 
-"""
 @pytest.fixture(scope="module")
 async def signer_factory():
     signer = Signer(12345)
@@ -66,47 +61,40 @@ async def account_factory(starknet_factory, signer_factory):
 
 
 @pytest.fixture(scope="module")
-async def proxy_factory(starknet_factory, account_factory):
+async def router_factory(starknet_factory, account_factory):
     starknet = starknet_factory
     _, user = account_factory
 
-    proxy_contract = await starknet.deploy(
-        source=PROXY_CONTRACT,
+    router_contract = await starknet.deploy(
+        source=ROUTER_CONTRACT,
         constructor_calldata=[user],
     )
 
-    return proxy_contract, proxy_contract.contract_address
+    return router_contract, router_contract.contract_address
 
 
 @pytest.fixture(scope="module")
-async def pool_factory(starknet_factory, proxy_factory):
+async def pool_factory(starknet_factory, account_factory, router_factory):
     starknet = starknet_factory
-    _, proxy_address = proxy_factory
+    _, user = account_factory
+    _, router_address = router_factory
+
+    name = str_to_felt("MAMMOTH_LP")
+    symbol = str_to_felt("MLP")
+    initial_supply = to_uint(999)
 
     pool_contract = await starknet.deploy(
         source=POOL_CONTRACT,
-        constructor_calldata=[proxy_address],
+        constructor_calldata=[
+            router_address,
+            name,
+            symbol,
+            *initial_supply,
+            user,
+        ],
     )
 
     return pool_contract, pool_contract.contract_address
-
-
-@pytest.fixture(scope="module")
-async def lp_token_factory(starknet_factory, proxy_factory, account_factory):
-    starknet = starknet_factory
-    _, proxy_address = proxy_factory
-    _, user = account_factory
-
-    lp_name = int("TEST_LP".encode().hex(), 16)
-    lp_symbol = int("TLP".encode().hex(), 16)
-
-    lp_token_contract = await starknet.deploy(
-        source=LP_TOKEN_CONTRACT,
-        # extra 0 to handle the fact that ERC needs Uint256 as input
-        constructor_calldata=[lp_name, lp_symbol, proxy_address, user],
-    )
-
-    return lp_token_contract, lp_token_contract.contract_address
 
 
 @pytest.fixture(scope="module")
@@ -120,9 +108,9 @@ async def tusdc_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("testUSDC"),
             str_to_felt("TUSDC"),
-            999,
-            0,
+            *to_uint(999),
             pool,
+            user,
         ],
     )
 
@@ -140,9 +128,9 @@ async def fc_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("FantieCoin"),
             str_to_felt("FC"),
-            999,
-            0,
+            *to_uint(999),
             pool,
+            user,
         ],
     )
 
@@ -160,14 +148,13 @@ async def teeth_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("testETH"),
             str_to_felt("TEETH"),
-            999,
-            0,
+            *to_uint(999),
             pool,
+            user,
         ],
     )
 
     return teeth, teeth.contract_address
-"""
 
 
 @pytest.fixture(scope="module")

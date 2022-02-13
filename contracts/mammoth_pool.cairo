@@ -11,14 +11,14 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 
-#openzeppeling
-from contracts.Ownable_base import (
+#openzeppelin
+from contracts.lib.openzeppelin.contracts.Ownable_base import (
     Ownable_initializer,
     Ownable_only_owner,
     Ownable_get_owner,
     Ownable_transfer_ownership
 )
-from contracts.token.ERC20_base import (
+from contracts.lib.openzeppelin.contracts.token.ERC20_base import (
     ERC20_name,
     ERC20_symbol,
     ERC20_totalSupply,
@@ -35,19 +35,19 @@ from contracts.token.ERC20_base import (
     ERC20_mint,
     ERC20_burn
 )
-from contracts.Initializable import ( initialize, initialized )
+from contracts.lib.openzeppelin.contracts.Initializable import ( initialize, initialized )
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 #mammoth
-from Pool_base import ( Pool_deposit, Pool_withdraw )
-from Pool_registry_base import (
+from contracts.lib.Pool_base import ( Pool_deposit, Pool_withdraw )
+from contracts.lib.Pool_registry_base import (
     Register_initialize_pool,
     Register_get_pool_info,
     Register_get_token_weight,
     Register_only_approved_erc20,
     ApprovedERC20
     )
-from balancer_math import (
+from contracts.lib.balancer_math import (
     get_out_given_in,
     get_pool_minted_given_single_in,
     get_single_out_given_pool_in,
@@ -140,6 +140,7 @@ func swap{
     assert withdraw_success = TRUE
 
     return (TRUE)
+end
 
 @external
 func initialize_pool{
