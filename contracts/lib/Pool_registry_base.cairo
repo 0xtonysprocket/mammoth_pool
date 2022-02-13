@@ -12,11 +12,6 @@ from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 func approved_erc20s(erc20_address: felt) -> (bool: felt):
 end
 
-#store the address of the token contract
-@storage_var
-func lp_token_address() -> (contract_address: felt):
-end
-
 #pool weight of a given erc20 (1/w)
 @storage_var
 func token_weight(erc20_address: felt) -> (weight: Ratio):
@@ -50,9 +45,8 @@ func Register_initialize_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(lp_address: felt, s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+    }(s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
 
-    lp_token_address.write(lp_address)
     swap_fee.write(s_fee)
     exit_fee.write(e_fee)
     _approve_ercs(erc_list_len, erc_list)
@@ -86,15 +80,14 @@ func Register_get_pool_info{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (s_fee: Ratio, e_fee: Ratio, tot_weight: Ratio, lp_address: felt):
+    }() -> (s_fee: Ratio, e_fee: Ratio, tot_weight: Ratio):
     alloc_locals
 
     local s: Ratio = swap_fee.read()
     local e: Ratio = exit_fee.read()
     local t_w: Ratio = total_weight.read()
-    local lp_address: felt = lp_token_address.read()
 
-    return (s, e, t_w, lp_address)
+    return (s, e, t_w)
 end
 
 func Register_get_token_weight{

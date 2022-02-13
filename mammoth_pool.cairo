@@ -17,8 +17,24 @@ from contracts.lib.openzeppelin.contracts.Ownable_base import (
     Ownable_get_owner,
     Ownable_transfer_ownership
 )
-from contracts.lib.openzeppelin.contracts.Initializable import ( initialize, initialized )
+from contracts.lib.openzeppelin.contracts.token.ERC20_base import (
+    ERC20_name,
+    ERC20_symbol,
+    ERC20_totalSupply,
+    ERC20_decimals,
+    ERC20_balanceOf,
+    ERC20_allowance,
 
+    ERC20_initializer,
+    ERC20_approve,
+    ERC20_increaseAllowance,
+    ERC20_decreaseAllowance,
+    ERC20_transfer,
+    ERC20_transferFrom,
+    ERC20_mint,
+    ERC20_burn
+)
+from contracts.lib.openzeppelin.contracts.Initializable import ( initialize, initialized )
 from contracts.lib.Pool_base import ( Pool_deposit, Pool_withdraw )
 from contracts.lib.Pool_registry_base import (
     Register_initialize_pool,
@@ -32,12 +48,25 @@ from contracts.lib.balancer_math import (
     get_single_out_given_pool_in,
     )
 
+@contract_interface
+namespace IERC20:
+    func balanceOf(account: felt) -> (balance: Uint256):
+    end
+end
+
 @constructor
 func constructor{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(router: felt):
+    }(
+        router: felt
+        name: felt,
+        symbol: felt,
+        initial_supply: Uint256,
+        recipient: felt
+        ):
+    ERC20_initializer(name, symbol, initial_supply, recipient)
     Ownable_initializer(router)
     return ()
 end
@@ -53,11 +82,15 @@ func deposit{
         range_check_ptr
     }(amount_to_deposit: Uint256, address: felt, erc20_address: felt) -> (pool_amount_to_mint: Uint256):
     alloc_locals
+    Ownable_only_owner()
     Register_only_approved_erc20(erc20_address)
 
     let (local pool_amount_to_mint: Uint256) = view_pool_minted_given_single_in(amount, erc20_address)
     let (local success: felt) = Pool_deposit(amount_to_deposit, address, erc20_address)
     assert success = TRUE
+
+    let (local mint_success: felt) = mint(address, pool_amount_to_mint)
+    assert mint_success = TRUE
 
     return (pool_amount_to_mint)
 end
@@ -69,11 +102,15 @@ func withdraw{
         range_check_ptr
     }(pool_amount_in: Uint256, address: felt, erc20_address: felt) -> (amount_out: Uint256):
     alloc_locals
+    Ownable_only_owner()
     Register_only_approved_erc20(erc20_address)
 
     let (local amount_out: Uint256) = view_single_out_given_pool_in(pool_amount_in, erc20_address)
     let (local success: felt) = Pool_withdraw(amount_out, address, erc20_address)
     assert success = TRUE
+
+    let (local burn_success: felt) = burn(address, pool_amount_in)
+    assert burn_success = TRUE
 
     return (TRUE)
 end
@@ -83,10 +120,10 @@ func initialize_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(lp_address: felt, s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+    }(s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
     alloc_locals
 
-    let (local success: felt) = Register_initialize_pool(lp_address, s_fee, e_fee, erc_list_len, erc_list)
+    let (local success: felt) = Register_initialize_pool(s_fee, e_fee, erc_list_len, erc_list)
     assert success = TRUE
 
     initialize()
@@ -103,7 +140,18 @@ func view_single_out_given_pool_in{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(pool_amount_in: felt, erc20_address: felt) -> (amount_to_withdraw: felt):
+    }(pool_amount_in: felt, erc20_address: felt) -> (amount_to_withdraw: Uint256):
+    alloc_locals
+
+    let (local this_contract: felt) = get_contract_address()
+
+    let (local swap_fee: Ratio, local exit_fee: Ratio, total_weight: Ratio) = Register_get_pool_info()
+    let (local a_weight: Ratio) = Register_get_token_weight(erc20_address)
+    let (local supply: Uint256) = totalSupply()
+    let (local a_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
+    let (local amount_to_withdraw: Uint256) = get_single_out_given_pool_in(pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
+
+    return ()
 end
 
 @view
@@ -111,7 +159,16 @@ func view_pool_minted_given_single_in{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount_to_deposit: felt, erc20_address: felt) -> (amount_to_withdraw: felt):
+    }(amount_to_deposit: felt, erc20_address: felt) -> (amount_to_mint: Uint256):
+    alloc_locals
+
+    let (local swap_fee: Ratio, _, total_weight: Ratio) = Register_get_pool_info()
+    let (local a_weight: Ratio) = Register_get_token_weight(erc20_address)
+    let (local supply: Uint256) = totalSupply()
+    let (local a_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
+    let (local amount_to_mint: Uint256) = get_pool_minted_given_single_in(amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
+
+    return (amount_to_mint)
 end
 
 @view
@@ -119,5 +176,163 @@ func view_out_given_in{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount_in: felt, erc20_address_in: felt, erc20_address_out: felt) -> (amount_out: felt):
+    }(amount_in: felt, erc20_address_in: felt, erc20_address_out: felt) -> (amount_out: Uint256):
+    alloc_locals
+
+    let (local swap_fee: Ratio, _, _) = Register_get_pool_info()
+    let (local a_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address_in, account=this_contract)
+    let (local a_weight: Ratio) = Register_get_token_weight(erc20_address_in)
+    let (local b_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address_out, account=this_contract)
+    let (local b_weight: Ratio) = Register_get_token_weight(erc20_address_out)
+    let (local amount_out: Uint256) = get_out_given_in(amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
+
+    return (amount_out)
+end
+
+#########
+# ERC20_mintable_burnable
+#########
+
+#
+# Getters
+#
+
+@view
+func name{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (name: felt):
+    let (name) = ERC20_name()
+    return (name)
+end
+
+@view
+func symbol{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (symbol: felt):
+    let (symbol) = ERC20_symbol()
+    return (symbol)
+end
+
+@view
+func totalSupply{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (totalSupply: Uint256):
+    let (totalSupply: Uint256) = ERC20_totalSupply()
+    return (totalSupply)
+end
+
+@view
+func decimals{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }() -> (decimals: felt):
+    let (decimals) = ERC20_decimals()
+    return (decimals)
+end
+
+@view
+func balanceOf{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(account: felt) -> (balance: Uint256):
+    let (balance: Uint256) = ERC20_balanceOf(account)
+    return (balance)
+end
+
+@view
+func allowance{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(owner: felt, spender: felt) -> (remaining: Uint256):
+    let (remaining: Uint256) = ERC20_allowance(owner, spender)
+    return (remaining)
+end
+
+#
+# Externals
+#
+
+@external
+func transfer{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(recipient: felt, amount: Uint256) -> (success: felt):
+    ERC20_transfer(recipient, amount)
+    return (TRUE)
+end
+
+@external
+func transferFrom{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(
+        sender: felt, 
+        recipient: felt, 
+        amount: Uint256
+    ) -> (success: felt):
+    ERC20_transferFrom(sender, recipient, amount)
+    return (TRUE)
+end
+
+@external
+func approve{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(spender: felt, amount: Uint256) -> (success: felt):
+    ERC20_approve(spender, amount)
+    return (TRUE)
+end
+
+@external
+func increaseAllowance{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(spender: felt, added_value: Uint256) -> (success: felt):
+    ERC20_increaseAllowance(spender, added_value)
+    return (TRUE)
+end
+
+@external
+func decreaseAllowance{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(spender: felt, subtracted_value: Uint256) -> (success: felt):
+    ERC20_decreaseAllowance(spender, subtracted_value)
+    return (TRUE)
+end
+
+@external
+func mint{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(to: felt, amount: Uint256) -> (success: felt):
+    Ownable_only_owner()
+    ERC20_mint(to, amount)
+    return (TRUE)
+end
+
+@external
+func burn{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(from: felt, amount: Uint256) -> (success: felt):
+    Ownable_only_owner()
+    ERC20_burn(from, amount)
+    return ()
 end
