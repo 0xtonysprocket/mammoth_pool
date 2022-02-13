@@ -79,7 +79,7 @@ func Router_call_mint{
     lp_address: felt,
     recipient: felt, 
     amount: Uint256):
-    _only_approved_pool(pool_address)
+    Router_only_approved_pool(pool_address)
     IERC20.mint(contract_address=lp_address, recipient=recipient, amount=amount)
     return ()
 end
@@ -89,7 +89,7 @@ func Router_call_burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     lp_address: felt,
     recipient: felt, 
     amount: Uint256):
-    _only_approved_pool(pool_address)
+    Router_only_approved_pool(pool_address)
     IERC20.burn(contract_address=lp_address, user=recipient, amount=amount)
     return ()
 end
@@ -99,7 +99,7 @@ func Router_call_deposit{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
-    _only_approved_pool(pool_address)
+    Router_only_approved_pool(pool_address)
     IERC20.deposit(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     return ()
 end
@@ -109,7 +109,7 @@ func Router_call_withdraw{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(amount: felt, address: felt, pool_address: felt, erc20_address: felt):
-    _only_approved_pool(pool_address)
+    Router_only_approved_pool(pool_address)
     IERC20.withdraw(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     return ()
 end
@@ -124,7 +124,7 @@ func Router_create_pool{
     return (TRUE)
 end
 
-func _only_approved_pool{
+func Router_only_approved_pool{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr

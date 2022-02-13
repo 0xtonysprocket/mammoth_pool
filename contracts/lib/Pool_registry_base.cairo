@@ -65,6 +65,9 @@ func _approve_ercs{
         range_check_ptr
     }(arr_len: felt, arr: ApprovedERC20*) -> (bool: felt):
     alloc_locals
+
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
     
     if arr_len == 0:
         return (TRUE)
@@ -79,17 +82,19 @@ func _approve_ercs{
     return (TRUE)
 end
 
-func Register_get_pool_fees{
+func Register_get_pool_info{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (s_fee: Ratio, e_fee: Ratio):
+    }() -> (s_fee: Ratio, e_fee: Ratio, tot_weight: Ratio, lp_address: felt):
     alloc_locals
 
     local s: Ratio = swap_fee.read()
     local e: Ratio = exit_fee.read()
+    local t_w: Ratio = total_weight.read()
+    local lp_address: felt = lp_token_address.read()
 
-    return (s, e)
+    return (s, e, t_w, lp_address)
 end
 
 func Register_get_token_weight{
@@ -102,23 +107,13 @@ func Register_get_token_weight{
     return (tok_w)
 end
 
-func Register_get_total_weight{
+func Register_only_approved_erc20{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }() -> (total_weight: Ratio):
-    alloc_locals
-    local t_w: Ratio = total_weight.read()
-    return (t_w)
-end
-
-func Register_lp_address{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }() -> (lp_address: Ratio):
-    alloc_locals
-    local lp_address: felt = lp_token_address.read()
-    return (lp_address)
+    }(erc20_address: felt):
+    let (approval: felt) =  approved_erc20s.read(erc20_address)
+    assert approval = TRUE
+    return ()
 end
 

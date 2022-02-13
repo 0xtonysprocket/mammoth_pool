@@ -40,9 +40,6 @@ end
 
 @contract_interface
 namespace IPoolContract:
-    func proxy_approve(amount: Uint256, token_contract_address: felt, spender_address: felt):
-    end
-
     func proxy_deposit(amount: Uint256, address: felt, erc20_address: felt):
     end
 
