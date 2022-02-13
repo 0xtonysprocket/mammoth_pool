@@ -148,7 +148,7 @@ func view_single_out_given_pool_in{
     let (local swap_fee: Ratio, local exit_fee: Ratio, total_weight: Ratio) = Register_get_pool_info()
     let (local a_weight: Ratio) = Register_get_token_weight(erc20_address)
     let (local supply: Uint256) = totalSupply()
-    let (local a_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
+    let (local a_balance: Uint256) = get_ERC20_balance(erc20_address)
     let (local amount_to_withdraw: Uint256) = get_single_out_given_pool_in(pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
 
     return ()
@@ -165,7 +165,7 @@ func view_pool_minted_given_single_in{
     let (local swap_fee: Ratio, _, total_weight: Ratio) = Register_get_pool_info()
     let (local a_weight: Ratio) = Register_get_token_weight(erc20_address)
     let (local supply: Uint256) = totalSupply()
-    let (local a_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
+    let (local a_balance: Uint256) = get_ERC20_balance(erc20_address)
     let (local amount_to_mint: Uint256) = get_pool_minted_given_single_in(amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
 
     return (amount_to_mint)
@@ -180,13 +180,25 @@ func view_out_given_in{
     alloc_locals
 
     let (local swap_fee: Ratio, _, _) = Register_get_pool_info()
-    let (local a_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address_in, account=this_contract)
+    let (local a_balance: Uint256) = get_ERC20_balance(erc20_address_in)
     let (local a_weight: Ratio) = Register_get_token_weight(erc20_address_in)
-    let (local b_balance: Uint256) = IERC20.balanceOf(contract_address=erc20_address_out, account=this_contract)
+    let (local b_balance: Uint256) = get_ERC20_balance(erc20_address_out)
     let (local b_weight: Ratio) = Register_get_token_weight(erc20_address_out)
     let (local amount_out: Uint256) = get_out_given_in(amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
 
     return (amount_out)
+end
+
+@view
+func get_ERC20_balance{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(erc20_address: felt) -> (res: Uint256):
+    alloc_locals
+    let (local this_contract) = get_contract_address()
+    let (res) = IERC20.balanceOf(contract_address=erc20_address, account=this_contract)
+    return (res)
 end
 
 #########
