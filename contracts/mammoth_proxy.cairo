@@ -13,7 +13,9 @@ from contracts.lib.ratios.contracts.ratio import Ratio, ratio_add
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 from contracts.lib.openzeppelin.contracts.Ownable_base import (
     Ownable_initializer,
-    Ownable_only_owner
+    Ownable_only_owner,
+    Ownable_get_owner,
+    Ownable_transfer_ownership
 )
 
 # proxy contract for depositing to Mammoth pool, receiving LP tokens, 
@@ -23,6 +25,7 @@ from contracts.lib.openzeppelin.contracts.Ownable_base import (
 #INTERFACES
 ##########
 
+########GONNA CHANGE
 @contract_interface
 namespace ITokenContract:
     func proxy_mint(recipient: felt, amount: felt):
@@ -37,16 +40,16 @@ end
 
 @contract_interface
 namespace IPoolContract:
-    func proxy_approve(amount: felt, token_contract_address: felt, spender_address: felt):
+    func proxy_approve(amount: Uint256, token_contract_address: felt, spender_address: felt):
     end
 
-    func proxy_deposit(amount: felt, address: felt, erc20_address: felt):
+    func proxy_deposit(amount: Uint256, address: felt, erc20_address: felt):
     end
 
-    func proxy_withdraw(amount: felt, address: felt, erc20_address: felt):
+    func proxy_withdraw(amount: Uint256, address: felt, erc20_address: felt):
     end
 
-    func get_ERC20_balance(erc20_address: felt) -> (res: felt):
+    func get_ERC20_balance(erc20_address: felt) -> (res: Uint256):
     end
 end
 
