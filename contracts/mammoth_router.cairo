@@ -19,7 +19,8 @@ from Router_base import (
     Router_call_withdraw,
     Router_call_swap,
     Router_create_pool,
-    Router_only_approved_pool
+    Router_only_approved_pool,
+    Router_pool_approved
 )
 from Pool_registry_base import ApprovedERC20
 
@@ -118,4 +119,19 @@ func transfer_ownership{
     }(new_owner: felt) -> (new_owner: felt):
     Ownable_transfer_ownership(new_owner)
     return (new_owner=new_owner)
+end
+
+########
+#VIEW
+########
+
+@view
+func is_pool_approved{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt) -> (bool: felt):
+    alloc_locals
+    let (local success: felt) = Router_pool_approved(pool_address)
+    return (success)
 end

@@ -97,3 +97,13 @@ func Router_only_approved_pool{
 
     return ()
 end
+
+func Router_pool_approved{
+        syscall_ptr : felt*, 
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(pool_address: felt) -> (bool: felt):
+    alloc_locals
+    let (local bool: felt) = approved_pool_address.read(pool_address)
+    return (bool)
+end
