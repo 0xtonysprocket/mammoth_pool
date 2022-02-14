@@ -24,21 +24,21 @@ def pool():
     return os.path.join(
         os.path.dirname(__file__),
         "../current_state_info/current_deployment_info.json",
-    )["POOL"]
+    )
 
 
 def router():
     return os.path.join(
         os.path.dirname(__file__),
         "../current_state_info/current_deployment_info.json",
-    )["ROUTER"]
+    )
 
 
 def ercs():
     return os.path.join(
         os.path.dirname(__file__),
         "../current_state_info/fake_ercs.json",
-    )["ROUTER"]
+    )
 
 
 def signer():
@@ -99,6 +99,8 @@ def create_compile_command(name_of_contract, name_of_compiled):
 
 def run_command(cmd):
     output = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    print(output)
+    print(output.stderr)
     if output.stdout:
         output = str(output.stdout).replace(":", "\n").split("\n")
 
@@ -112,3 +114,12 @@ def run_command(cmd):
 def write_result_to_storage(result, file_name):
     with open(f"current_state_info/{file_name}.json", "w") as file:
         file.write(str(result))
+
+
+def get_transaction(tx):
+    cmd_list = [
+        f"starknet get_transaction",
+        f"--hash",
+        f"{tx}",
+    ]
+    return " ".join(cmd_list)

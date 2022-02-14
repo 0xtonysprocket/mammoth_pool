@@ -60,8 +60,8 @@ for erc in list_of_erc:
     a, t = run_command(cmd)
 
     data = {
-        "name": felt_to_str(erc[0]),
-        "symbol": felt_to_str(erc[1]),
+        "name": erc[0],
+        "symbol": erc[1],
         "address": a,
         "transaction": t,
     }

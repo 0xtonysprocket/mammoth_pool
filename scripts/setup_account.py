@@ -6,7 +6,7 @@ from script_utils import (
     signer,
 )
 
-account_path = "contracts.lib.openzeppelin.Account"
+account_path = "lib/openzeppelin/contracts/Account"
 account = "Account"
 signer = signer()
 
