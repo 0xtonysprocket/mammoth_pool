@@ -5,10 +5,10 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_contract_address
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_eq
 
 # local
-from contracts.lib.ratios.contracts.ratio import Ratio
+from contracts.lib.ratios.contracts.ratio import Ratio, ratio_add
 
 #OZ
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
@@ -55,10 +55,20 @@ func Register_initialize_pool{
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
     }(s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+    alloc_locals
+
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
 
     swap_fee.write(s_fee)
     exit_fee.write(e_fee)
-    _approve_ercs(erc_list_len, erc_list)
+    let (local t_weight: Ratio) = _approve_ercs(erc_list_len, erc_list)
+
+    #check weights are normalized
+    let (local eq: felt) = uint256_eq(t_weight.n, t_weight.d)
+    assert eq = 1
+
+    total_weight.write(Ratio(Uint256(1, 0), Uint256(1, 0)))
     return (TRUE)
 end
 
@@ -66,14 +76,14 @@ func _approve_ercs{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(arr_len: felt, arr: ApprovedERC20*) -> (bool: felt):
+    }(arr_len: felt, arr: ApprovedERC20*) -> (weight_sum: Ratio):
     alloc_locals
 
     # needed for dereferencing struct
     let (__fp__, _) = get_fp_and_pc()
 
     if arr_len == 0:
-        return (TRUE)
+        return (Ratio(Uint256(0,0),Uint256(1,0)))
     end
 
     let current_struct: ApprovedERC20* = [&arr]
@@ -81,9 +91,10 @@ func _approve_ercs{
     approved_erc20s.write(current_struct.erc_address, TRUE)
     token_weight.write(current_struct.erc_address, weight)
 
-    _approve_ercs(arr_len - 1, arr + ApprovedERC20.SIZE)
+    let (local rest_of_sum: Ratio) = _approve_ercs(arr_len - 1, arr + ApprovedERC20.SIZE)
+    let (local weight_sum: Ratio) = ratio_add(weight, rest_of_sum)
 
-    return (TRUE)
+    return (weight_sum)
 end
 
 func Register_get_pool_info{

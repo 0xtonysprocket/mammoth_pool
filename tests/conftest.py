@@ -5,6 +5,8 @@ import pytest
 from starkware.starknet.testing.starknet import Starknet
 from ..contracts.lib.openzeppelin.tests.utils import str_to_felt, Signer, to_uint
 
+DECIMALS = 10 ** 4
+
 
 # contract and library paths
 POOL_CONTRACT = os.path.join(
@@ -81,7 +83,7 @@ async def pool_factory(starknet_factory, account_factory, router_factory):
 
     name = str_to_felt("MAMMOTH_LP")
     symbol = str_to_felt("MLP")
-    initial_supply = to_uint(999)
+    initial_supply = to_uint(10 * DECIMALS)
 
     pool_contract = await starknet.deploy(
         source=POOL_CONTRACT,
@@ -108,7 +110,7 @@ async def tusdc_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("testUSDC"),
             str_to_felt("TUSDC"),
-            *to_uint(999),
+            *to_uint(9 * DECIMALS),
             pool,
             user,
         ],
@@ -128,7 +130,7 @@ async def fc_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("FantieCoin"),
             str_to_felt("FC"),
-            *to_uint(999),
+            *to_uint(9 * DECIMALS),
             pool,
             user,
         ],
@@ -148,7 +150,7 @@ async def teeth_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("testETH"),
             str_to_felt("TEETH"),
-            *to_uint(999),
+            *to_uint(9 * DECIMALS),
             pool,
             user,
         ],

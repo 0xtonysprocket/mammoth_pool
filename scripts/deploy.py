@@ -34,21 +34,21 @@ pool_address, ptx = run_command(pool_deploy)
 erc_one = [
     str_to_felt("FantieCoin"),
     str_to_felt("FC"),
-    *to_uint(1000),
+    *to_uint(500000),
     pool_address,
     owner,
 ]
 erc_two = [
     str_to_felt("testUSDC"),
     str_to_felt("TUSDC"),
-    *to_uint(1000),
+    *to_uint(500000),
     pool_address,
     owner,
 ]
 erc_three = [
     str_to_felt("testETH"),
     str_to_felt("TEETH"),
-    *to_uint(1000),
+    *to_uint(500000),
     pool_address,
     owner,
 ]

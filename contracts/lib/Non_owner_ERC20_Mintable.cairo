@@ -173,7 +173,7 @@ func mint{
         range_check_ptr
     }(to: felt, amount: Uint256):
     #Ownable_only_owner()
-    let le: felt = uint256_le(amount, Uint256(1000, 0))
+    let le: felt = uint256_le(amount, Uint256(100000, 0))
     assert le = 1
     ERC20_mint(to, amount)
     return ()

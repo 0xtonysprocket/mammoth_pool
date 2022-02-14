@@ -264,7 +264,7 @@
                 "type": "Uint256"
             },
             {
-                "name": "address",
+                "name": "user_address",
                 "type": "felt"
             },
             {
@@ -288,7 +288,7 @@
                 "type": "Uint256"
             },
             {
-                "name": "address",
+                "name": "user_address",
                 "type": "felt"
             },
             {
@@ -457,6 +457,48 @@
             {
                 "name": "approved",
                 "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_token_weight",
+        "outputs": [
+            {
+                "name": "approved",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_pool_into",
+        "outputs": [
+            {
+                "name": "swap_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "exit_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "total_weight",
+                "type": "Ratio"
             }
         ],
         "stateMutability": "view",
@@ -644,46 +686,6 @@
             }
         ],
         "name": "decreaseAllowance",
-        "outputs": [
-            {
-                "name": "success",
-                "type": "felt"
-            }
-        ],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "amount",
-                "type": "Uint256"
-            }
-        ],
-        "name": "mint",
-        "outputs": [
-            {
-                "name": "success",
-                "type": "felt"
-            }
-        ],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "account",
-                "type": "felt"
-            },
-            {
-                "name": "amount",
-                "type": "Uint256"
-            }
-        ],
-        "name": "burn",
         "outputs": [
             {
                 "name": "success",

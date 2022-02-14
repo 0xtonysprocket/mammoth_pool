@@ -63,10 +63,10 @@ func mammoth_deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+    }(amount: Uint256, user_address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
     alloc_locals
     Router_only_approved_pool(pool_address)
-    let (local success: felt) = Router_call_deposit(amount, address, pool_address, erc20_address)
+    let (local success: felt) = Router_call_deposit(amount, user_address, pool_address, erc20_address)
     assert success = TRUE
     return (TRUE)
 end
@@ -76,10 +76,10 @@ func mammoth_withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+    }(amount: Uint256, user_address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
     alloc_locals
     Router_only_approved_pool(pool_address)
-    let (local success: felt) = Router_call_withdraw(amount, address, pool_address, erc20_address)
+    let (local success: felt) = Router_call_withdraw(amount, user_address, pool_address, erc20_address)
     assert success = TRUE
     return (TRUE)
 end
@@ -89,10 +89,10 @@ func mammoth_swap{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: Uint256, address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
+    }(amount: Uint256, user_address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
     alloc_locals
     Router_only_approved_pool(pool_address)
-    let (local success: felt) = Router_call_swap(amount, address, pool_address, erc20_address_in, erc20_address_out)
+    let (local success: felt) = Router_call_swap(amount, user_address, pool_address, erc20_address_in, erc20_address_out)
     assert success = TRUE
     return (TRUE)
 end
