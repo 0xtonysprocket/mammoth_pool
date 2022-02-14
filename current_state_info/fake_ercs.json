@@ -1,26 +1,20 @@
 [
   {
-    "name": "8387236824532337731",
-    "symbol": "362208773187",
-    "initial": "999",
-    "recipient": "0x00c35b418d76f22da0fd9f3e33de0957db97b14a87a29a15f79dcb86dde8b9b8",
-    "address": "0x04f37a2175ba5c5633193b7497b39624cecdfc118658cb828b7a0d55528991c2",
-    "tx": "0x16c6e655dfcc52d8d5b32ad8c9022add534b8c30ba61f15f2895dc203166117"
+    "name": "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00FantieCoin",
+    "symbol": "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00FC",
+    "address": "0x008d57862713f408c18c11d3040c7b24b5458ef702524f0ae8a9168f57701155",
+    "transaction": "0x17080bee4308d8c7b486c4c3b065b9dc34a80f64fc8371fb08dfedb51b06e"
   },
   {
-    "name": "332362947078350105962862",
-    "symbol": "17987",
-    "initial": "999",
-    "recipient": "0x00c35b418d76f22da0fd9f3e33de0957db97b14a87a29a15f79dcb86dde8b9b8",
-    "address": "0x03f2329c0579e13c4b0bcb6c80e83b1d92f38cff97f122760fdb3081fa0a19fd",
-    "tx": "0x3b0afcd29d10bf5af51aa326f5335af378530d69bde9762b27abe0a33eab585"
+    "name": "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00testUSDC",
+    "symbol": "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00TUSDC",
+    "address": "0x066d8fa676b2b6310dbfb60298bbb5258d7062dee1676837bbcec69a1f6e9af7",
+    "transaction": "0x19876276f134fcfbd9da9796a9257eaf101e2b65bf7057f9c86f32d752544e1"
   },
   {
-    "name": "32762643844781128",
-    "symbol": "361939424328",
-    "initial": "999",
-    "recipient": "0x00c35b418d76f22da0fd9f3e33de0957db97b14a87a29a15f79dcb86dde8b9b8",
-    "address": "0x00f3ba4bdb346a1341ae2b913087f2654193a1dd09a576f9690f14c029b6b3e8",
-    "tx": "0xd28fe9a59f8bb3676c44650da9350294bb766d0f0d5081029d372111d71857"
+    "name": "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00testETH",
+    "symbol": "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00TEETH",
+    "address": "0x027c2405c762a04e283fa2e73fca7015fda5d8346435506c3b1370afdbf1ad36",
+    "transaction": "0x6218d7381f6de633abfc8100a99a925b98242d0dcbcf2a7f7a3260930933c44"
   }
 ]

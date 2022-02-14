@@ -33,6 +33,10 @@
             {
                 "name": "recipient",
                 "type": "felt"
+            },
+            {
+                "name": "owner",
+                "type": "felt"
             }
         ],
         "name": "constructor",
@@ -232,7 +236,7 @@
     {
         "inputs": [
             {
-                "name": "recipient",
+                "name": "to",
                 "type": "felt"
             },
             {

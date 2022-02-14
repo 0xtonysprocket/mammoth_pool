@@ -2,35 +2,113 @@
     {
         "members": [
             {
-                "name": "n",
+                "name": "low",
                 "offset": 0,
                 "type": "felt"
             },
             {
-                "name": "d",
+                "name": "high",
                 "offset": 1,
                 "type": "felt"
             }
         ],
-        "name": "Ratio",
+        "name": "Uint256",
         "size": 2,
         "type": "struct"
     },
     {
+        "members": [
+            {
+                "name": "n",
+                "offset": 0,
+                "type": "Uint256"
+            },
+            {
+                "name": "d",
+                "offset": 2,
+                "type": "Uint256"
+            }
+        ],
+        "name": "Ratio",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "erc_address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "low_num",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "high_num",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "low_den",
+                "offset": 3,
+                "type": "felt"
+            },
+            {
+                "name": "high_den",
+                "offset": 4,
+                "type": "felt"
+            }
+        ],
+        "name": "ApprovedERC20",
+        "size": 5,
+        "type": "struct"
+    },
+    {
+        "inputs": [],
+        "name": "initialized",
+        "outputs": [
+            {
+                "name": "res",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "initialize",
+        "outputs": [],
+        "type": "function"
+    },
+    {
         "inputs": [
             {
-                "name": "x",
+                "name": "a_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_weight",
                 "type": "Ratio"
             },
             {
-                "name": "y",
+                "name": "b_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "b_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "fee",
                 "type": "Ratio"
             }
         ],
-        "name": "ratio_mul",
+        "name": "get_spot_price",
         "outputs": [
             {
-                "name": "z",
+                "name": "spot_price",
                 "type": "Ratio"
             }
         ],
@@ -40,18 +118,34 @@
     {
         "inputs": [
             {
-                "name": "x",
+                "name": "amount_of_a_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "supply",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_weight",
                 "type": "Ratio"
             },
             {
-                "name": "y",
+                "name": "total_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "swap_fee",
                 "type": "Ratio"
             }
         ],
-        "name": "ratio_div",
+        "name": "get_pool_minted_given_single_in",
         "outputs": [
             {
-                "name": "z",
+                "name": "pool_tokens_out",
                 "type": "Ratio"
             }
         ],
@@ -61,18 +155,38 @@
     {
         "inputs": [
             {
-                "name": "x",
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "supply",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_weight",
                 "type": "Ratio"
             },
             {
-                "name": "m",
-                "type": "felt"
+                "name": "total_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "exit_fee",
+                "type": "Ratio"
             }
         ],
-        "name": "ratio_pow",
+        "name": "get_single_out_given_pool_in",
         "outputs": [
             {
-                "name": "z",
+                "name": "amount_token_out",
                 "type": "Ratio"
             }
         ],
@@ -82,64 +196,34 @@
     {
         "inputs": [
             {
-                "name": "base",
-                "type": "felt"
+                "name": "amount_of_a_in",
+                "type": "Uint256"
             },
             {
-                "name": "exponent",
-                "type": "felt"
-            }
-        ],
-        "name": "pow",
-        "outputs": [
-            {
-                "name": "result",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "x",
-                "type": "felt"
+                "name": "a_balance",
+                "type": "Uint256"
             },
             {
-                "name": "y",
-                "type": "felt"
-            }
-        ],
-        "name": "diff",
-        "outputs": [
-            {
-                "name": "result",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "x",
+                "name": "a_weight",
                 "type": "Ratio"
             },
             {
-                "name": "m",
-                "type": "felt"
+                "name": "b_balance",
+                "type": "Uint256"
             },
             {
-                "name": "error",
+                "name": "b_weight",
+                "type": "Ratio"
+            },
+            {
+                "name": "swap_fee",
                 "type": "Ratio"
             }
         ],
-        "name": "ratio_nth_root_binary",
+        "name": "get_out_given_in",
         "outputs": [
             {
-                "name": "z",
+                "name": "amount_of_b_out",
                 "type": "Ratio"
             }
         ],
@@ -149,95 +233,23 @@
     {
         "inputs": [
             {
-                "name": "first_ratio",
-                "type": "Ratio"
-            },
-            {
-                "name": "second_ratio",
-                "type": "Ratio"
-            }
-        ],
-        "name": "ratio_add",
-        "outputs": [
-            {
-                "name": "sum",
-                "type": "Ratio"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "base_ratio",
-                "type": "Ratio"
-            },
-            {
-                "name": "other_ratio",
-                "type": "Ratio"
-            }
-        ],
-        "name": "ratio_diff",
-        "outputs": [
-            {
-                "name": "diff",
-                "type": "Ratio"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "first_ratio",
-                "type": "Ratio"
-            },
-            {
-                "name": "second_ratio",
-                "type": "Ratio"
-            }
-        ],
-        "name": "ratio_less_than_or_eq",
-        "outputs": [
-            {
-                "name": "bool",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "x",
-                "type": "Ratio"
-            },
-            {
-                "name": "m",
+                "name": "router",
                 "type": "felt"
             },
             {
-                "name": "precision",
+                "name": "name",
                 "type": "felt"
-            }
-        ],
-        "name": "nth_root_by_digit",
-        "outputs": [
+            },
             {
-                "name": "z",
-                "type": "Ratio"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
+                "name": "symbol",
+                "type": "felt"
+            },
             {
-                "name": "proxy",
+                "name": "initial_supply",
+                "type": "Uint256"
+            },
+            {
+                "name": "recipient",
                 "type": "felt"
             }
         ],
@@ -248,8 +260,8 @@
     {
         "inputs": [
             {
-                "name": "amount",
-                "type": "felt"
+                "name": "amount_to_deposit",
+                "type": "Uint256"
             },
             {
                 "name": "address",
@@ -260,15 +272,20 @@
                 "type": "felt"
             }
         ],
-        "name": "proxy_deposit",
-        "outputs": [],
+        "name": "deposit",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "amount",
-                "type": "felt"
+                "name": "pool_amount_in",
+                "type": "Uint256"
             },
             {
                 "name": "address",
@@ -279,27 +296,136 @@
                 "type": "felt"
             }
         ],
-        "name": "proxy_withdraw",
-        "outputs": [],
+        "name": "withdraw",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "amount",
+                "name": "amount_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "address",
                 "type": "felt"
             },
             {
-                "name": "token_contract_address",
+                "name": "erc20_address_in",
                 "type": "felt"
             },
             {
-                "name": "spender_address",
+                "name": "erc20_address_out",
                 "type": "felt"
             }
         ],
-        "name": "proxy_approve",
-        "outputs": [],
+        "name": "swap",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "s_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "e_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "erc_list_len",
+                "type": "felt"
+            },
+            {
+                "name": "erc_list",
+                "type": "ApprovedERC20*"
+            }
+        ],
+        "name": "initialize_pool",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "view_single_out_given_pool_in",
+        "outputs": [
+            {
+                "name": "amount_to_withdraw",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_to_deposit",
+                "type": "Uint256"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "view_pool_minted_given_single_in",
+        "outputs": [
+            {
+                "name": "amount_to_mint",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "erc20_address_in",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_out",
+                "type": "felt"
+            }
+        ],
+        "name": "view_out_given_in",
+        "outputs": [
+            {
+                "name": "amount_out",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -313,10 +439,257 @@
         "outputs": [
             {
                 "name": "res",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "is_ERC20_approved",
+        "outputs": [
+            {
+                "name": "approved",
                 "type": "felt"
             }
         ],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "name": "symbol",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "name": "totalSupply",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "name": "decimals",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "spender",
+                "type": "felt"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "name": "remaining",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "recipient",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "sender",
+                "type": "felt"
+            },
+            {
+                "name": "recipient",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "spender",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "spender",
+                "type": "felt"
+            },
+            {
+                "name": "added_value",
+                "type": "Uint256"
+            }
+        ],
+        "name": "increaseAllowance",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "spender",
+                "type": "felt"
+            },
+            {
+                "name": "subtracted_value",
+                "type": "Uint256"
+            }
+        ],
+        "name": "decreaseAllowance",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "mint",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "account",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "burn",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
         "type": "function"
     }
 ]

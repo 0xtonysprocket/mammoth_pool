@@ -1,0 +1,243 @@
+[
+    {
+        "members": [
+            {
+                "name": "n",
+                "offset": 0,
+                "type": "Uint256"
+            },
+            {
+                "name": "d",
+                "offset": 2,
+                "type": "Uint256"
+            }
+        ],
+        "name": "Ratio",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "low",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "high",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Uint256",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "erc_address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "low_num",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "high_num",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "low_den",
+                "offset": 3,
+                "type": "felt"
+            },
+            {
+                "name": "high_den",
+                "offset": 4,
+                "type": "felt"
+            }
+        ],
+        "name": "ApprovedERC20",
+        "size": 5,
+        "type": "struct"
+    },
+    {
+        "inputs": [
+            {
+                "name": "owner_address",
+                "type": "felt"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "s_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "e_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "erc_list_len",
+                "type": "felt"
+            },
+            {
+                "name": "erc_list",
+                "type": "ApprovedERC20*"
+            }
+        ],
+        "name": "create_pool",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "Uint256"
+            },
+            {
+                "name": "address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "mammoth_deposit",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "Uint256"
+            },
+            {
+                "name": "address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "mammoth_withdraw",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "Uint256"
+            },
+            {
+                "name": "address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_in",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_out",
+                "type": "felt"
+            }
+        ],
+        "name": "mammoth_swap",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_owner",
+        "outputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "new_owner",
+                "type": "felt"
+            }
+        ],
+        "name": "transfer_ownership",
+        "outputs": [
+            {
+                "name": "new_owner",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            }
+        ],
+        "name": "is_pool_approved",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
