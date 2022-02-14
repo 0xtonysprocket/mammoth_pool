@@ -5,19 +5,15 @@ Starknet pool to provide non-custodial liquidity to order book market makers
 
 * Users can deposit and withdraw any ERC-20 token into the contract any time they want
 * Whitelisted market makers can use the liquidity to call the fill_order function on the zigzag contract
-* Users get paid a variable yield that can be updated by the owner of the contract
 * Users get credited their yield when they withdraw from the contract
+* The pool earns fees off swaps and some LP tokens may have additional staking rewards.
 
 # TODO:
 
 * Test external MM calling fill_order with liquidity from pool
 * Make "fill_order" method in proxy contract generalized for any potential exchange contract
 * Create market maker vault mechanism
-* Test balancer pools with multiple pools
 * test out approved market maker trading
-* Convert everything to Uint256
-
-NOTE: testing currently incomplete
 
 # CONTRACTS:
 
