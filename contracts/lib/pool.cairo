@@ -31,7 +31,7 @@ func deposit{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: Uint256, address: felt, erc20_address: felt):
+    }(amount: Uint256, address: felt, erc20_address: felt) -> (success: felt):
     Ownable_only_owner()
 
     Pool_deposit(amount, address, erc20_address)
@@ -43,7 +43,7 @@ func withdraw{
         syscall_ptr : felt*, 
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(amount: Uint256, address: felt, erc20_address: felt):
+    }(amount: Uint256, address: felt, erc20_address: felt) -> (success: felt):
     Ownable_only_owner()
 
     Pool_withdraw(amount, address, erc20_address)
