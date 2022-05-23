@@ -68,6 +68,199 @@
     {
         "inputs": [
             {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "y",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_mul",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "y",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_div",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "m",
+                "type": "Uint256"
+            }
+        ],
+        "name": "ratio_pow",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base",
+                "type": "felt"
+            },
+            {
+                "name": "exponent",
+                "type": "felt"
+            }
+        ],
+        "name": "pow",
+        "outputs": [
+            {
+                "name": "result",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "felt"
+            },
+            {
+                "name": "y",
+                "type": "felt"
+            }
+        ],
+        "name": "diff",
+        "outputs": [
+            {
+                "name": "result",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "first_ratio",
+                "type": "Ratio"
+            },
+            {
+                "name": "second_ratio",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_add",
+        "outputs": [
+            {
+                "name": "sum",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base_ratio",
+                "type": "Ratio"
+            },
+            {
+                "name": "other_ratio",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_diff",
+        "outputs": [
+            {
+                "name": "diff",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "first_ratio",
+                "type": "Ratio"
+            },
+            {
+                "name": "second_ratio",
+                "type": "Ratio"
+            }
+        ],
+        "name": "ratio_less_than_or_eq",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "x",
+                "type": "Ratio"
+            },
+            {
+                "name": "m",
+                "type": "Uint256"
+            },
+            {
+                "name": "precision",
+                "type": "felt"
+            }
+        ],
+        "name": "nth_root_by_digit",
+        "outputs": [
+            {
+                "name": "z",
+                "type": "Ratio"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "owner_address",
                 "type": "felt"
             }
@@ -75,6 +268,94 @@
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
+    },
+    {
+        "data": [
+            {
+                "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "exit_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "tokens_len",
+                "type": "felt"
+            },
+            {
+                "name": "tokens",
+                "type": "ApprovedERC20*"
+            }
+        ],
+        "keys": [],
+        "name": "pool_created",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "token",
+                "type": "felt"
+            },
+            {
+                "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "amount_deposited",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "deposit_called",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "token",
+                "type": "felt"
+            },
+            {
+                "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "amount_withdrawn",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "withdraw_called",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "token_in",
+                "type": "felt"
+            },
+            {
+                "name": "token_out",
+                "type": "felt"
+            },
+            {
+                "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "amount_swapped_in",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "swap_called",
+        "type": "event"
     },
     {
         "inputs": [

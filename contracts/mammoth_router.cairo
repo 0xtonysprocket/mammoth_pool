@@ -28,7 +28,8 @@ end
 
 @event
 func pool_created(
-        pool : felt, swap_fee : felt, exit_fee : felt, tokens_len : felt, tokens : ApprovedERC20*):
+        pool : felt, swap_fee : Ratio, exit_fee : Ratio, tokens_len : felt,
+        tokens : ApprovedERC20*):
 end
 
 @event

@@ -148,10 +148,8 @@ func view_single_out_given_pool_in{
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
-    with_attr error_message("ERROR IN GET_SINGLE_OUT_GIVEN_POOL_IN BALANCER MATH"):
-        let (local ratio_out : Ratio) = get_single_out_given_pool_in(
-            pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
-    end
+    let (local ratio_out : Ratio) = get_single_out_given_pool_in(
+        pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
 
     let (local amount_to_withdraw : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
@@ -169,10 +167,8 @@ func view_pool_minted_given_single_in{
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
-    with_attr error_message("ERROR IN GET_POOL_MINTED_GIVEN_SINGLE_IN BALANCER MATH"):
-        let (local ratio_out : Ratio) = get_pool_minted_given_single_in(
-            amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
-    end
+    let (local ratio_out : Ratio) = get_pool_minted_given_single_in(
+        amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
 
     let (local amount_to_mint : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
@@ -191,10 +187,8 @@ func view_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
     let (local b_balance : Uint256) = get_ERC20_balance(erc20_address_out)
     let (local b_weight : Ratio) = Register_get_token_weight(erc20_address_out)
 
-    with_attr error_message("ERROR IN GET_OUT_GIVEN_IN BALANCER MATH"):
-        let (local ratio_out : Ratio) = get_out_given_in(
-            amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
-    end
+    let (local ratio_out : Ratio) = get_out_given_in(
+        amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
 
     let (local amount_out : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
