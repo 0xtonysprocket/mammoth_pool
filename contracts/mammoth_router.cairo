@@ -28,8 +28,8 @@ end
 
 @event
 func pool_created(
-        pool : felt, swap_fee : Ratio, exit_fee : Ratio, tokens_len : felt,
-        tokens : ApprovedERC20*):
+        pool : felt, swap_fee : Ratio, exit_fee : Ratio, tokens_len : felt, tokens : ApprovedERC20*,
+        initial_lp_minted : Uint256):
 end
 
 @event
@@ -50,13 +50,13 @@ end
 
 @external
 func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        pool_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
-        erc_list : ApprovedERC20*) -> (bool : felt):
+        caller_address : felt, pool_address : felt, s_fee : Ratio, e_fee : Ratio,
+        erc_list_len : felt, erc_list : ApprovedERC20*) -> (bool : felt):
     alloc_locals
     Ownable_only_owner()
 
-    let (local success : felt) = Router_create_pool(
-        pool_address, s_fee, e_fee, erc_list_len, erc_list)
+    let (local success : felt, local lp_amount : Uint256) = Router_create_pool(
+        caller_address, pool_address, s_fee, e_fee, erc_list_len, erc_list)
 
     with_attr error_message("POOL CREATION FAILED : ROUTER LEVEL"):
         assert success = TRUE
@@ -67,7 +67,8 @@ func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
         swap_fee=s_fee,
         exit_fee=e_fee,
         tokens_len=erc_list_len,
-        tokens=erc_list)
+        tokens=erc_list,
+        initial_lp_minted=lp_amount)
 
     return (TRUE)
 end

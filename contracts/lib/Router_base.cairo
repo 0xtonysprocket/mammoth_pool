@@ -1,7 +1,7 @@
 # implements the following:
 #
 # ON POOL
-# call_deposit  
+# call_deposit
 # call_withdraw
 
 %lang starknet
@@ -16,94 +16,97 @@ from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @contract_interface
 namespace IPoolContract:
-    func deposit(amount: Uint256, address: felt, erc20_address: felt) -> (success: felt):
+    func deposit(amount : Uint256, address : felt, erc20_address : felt) -> (success : felt):
     end
 
-    func withdraw(amount: Uint256, address: felt, erc20_address: felt) -> (success: felt):
+    func withdraw(amount : Uint256, address : felt, erc20_address : felt) -> (success : felt):
     end
 
-    func swap(amount: Uint256, address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
+    func swap(
+            amount : Uint256, address : felt, erc20_address_in : felt,
+            erc20_address_out : felt) -> (success : felt):
     end
 
-    func get_ERC20_balance(erc20_address: felt) -> (res: Uint256):
+    func get_ERC20_balance(erc20_address : felt) -> (res : Uint256):
     end
 end
 
 @contract_interface
 namespace IPoolRegister:
-    func initialize_pool(s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+    func initialize_pool(
+            s_fee : Ratio, e_fee : Ratio, erc_list_len : felt, erc_list : ApprovedERC20*) -> (
+            bool : felt):
     end
 end
 
-#store the address of the pool contract
+# store the address of the pool contract
 @storage_var
-func approved_pool_address(pool_address: felt) -> (bool: felt):
+func approved_pool_address(pool_address : felt) -> (bool : felt):
 end
 
-func Router_call_deposit{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+func Router_call_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        amount : Uint256, address : felt, pool_address : felt, erc20_address : felt) -> (
+        success : felt):
     alloc_locals
-    let (local success: felt) = IPoolContract.deposit(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
+    let (local success : felt) = IPoolContract.deposit(
+        contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     assert success = TRUE
     return (TRUE)
 end
 
-func Router_call_withdraw{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(amount: Uint256, address: felt, pool_address: felt, erc20_address: felt) -> (success: felt):
+func Router_call_withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        amount : Uint256, address : felt, pool_address : felt, erc20_address : felt) -> (
+        success : felt):
     alloc_locals
-    let (local success: felt) = IPoolContract.withdraw(contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
+    let (local success : felt) = IPoolContract.withdraw(
+        contract_address=pool_address, amount=amount, address=address, erc20_address=erc20_address)
     assert success = TRUE
     return (TRUE)
 end
 
-func Router_call_swap{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(amount: Uint256, address: felt, pool_address: felt, erc20_address_in: felt, erc20_address_out: felt) -> (success: felt):
+func Router_call_swap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        amount : Uint256, address : felt, pool_address : felt, erc20_address_in : felt,
+        erc20_address_out : felt) -> (success : felt):
     alloc_locals
-    let (local success: felt) = IPoolContract.swap(contract_address=pool_address, amount=amount, address=address, erc20_address_in=erc20_address_in, erc20_address_out=erc20_address_out)
+    let (local success : felt) = IPoolContract.swap(
+        contract_address=pool_address,
+        amount=amount,
+        address=address,
+        erc20_address_in=erc20_address_in,
+        erc20_address_out=erc20_address_out)
     assert success = TRUE
     return (TRUE)
 end
 
-func Router_create_pool{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(pool_address: felt, s_fee: Ratio, e_fee: Ratio, erc_list_len: felt, erc_list: ApprovedERC20*) -> (bool: felt):
+func Router_create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        caller_address : felt, pool_address : felt, s_fee : Ratio, e_fee : Ratio,
+        erc_list_len : felt, erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
     alloc_locals
     approved_pool_address.write(pool_address, TRUE)
-    let (local success: felt) = IPoolRegister.initialize_pool(contract_address=pool_address, s_fee=s_fee, e_fee=e_fee, erc_list_len=erc_list_len, erc_list=erc_list)
+    let (local success : felt, local lp_amount : Uint256) = IPoolRegister.initialize_pool(
+        contract_address=pool_address,
+        caller_address=caller_address,
+        s_fee=s_fee,
+        e_fee=e_fee,
+        erc_list_len=erc_list_len,
+        erc_list=erc_list)
     assert success = TRUE
-    return (TRUE)
+    return (TRUE, lp_amount)
 end
 
-func Router_only_approved_pool{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(pool_address: felt):
+func Router_only_approved_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_address : felt):
     alloc_locals
 
-    let (local approved: felt) = approved_pool_address.read(pool_address)
+    let (local approved : felt) = approved_pool_address.read(pool_address)
     assert approved = TRUE
 
     return ()
 end
 
-func Router_pool_approved{
-        syscall_ptr : felt*, 
-        pedersen_ptr : HashBuiltin*,
-        range_check_ptr
-    }(pool_address: felt) -> (bool: felt):
+func Router_pool_approved{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_address : felt) -> (bool : felt):
     alloc_locals
-    let (local bool: felt) = approved_pool_address.read(pool_address)
+    let (local bool : felt) = approved_pool_address.read(pool_address)
     return (bool)
 end
