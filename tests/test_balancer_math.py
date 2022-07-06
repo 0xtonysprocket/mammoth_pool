@@ -119,3 +119,36 @@ async def test_get_proportional_deposits_given_pool_out(balancer_factory):
     assert list_of_deposits.result[0][2][0] == 3
     assert from_uint(list_of_deposits.result[0][2][1]) - \
         (((10000 * DECIMALS)/(578347*DECIMALS)) * (7777*DECIMALS)) < 5/(10**5)
+
+
+@pytest.mark.asyncio
+async def test_get_proportional_withdraw_given_pool_in(balancer_factory):
+    balancer_contract, _ = balancer_factory
+
+    pool_total_supply = to_uint(578347 * DECIMALS)
+    amount_in = to_uint(10000 * DECIMALS)
+    exit_fee = (to_uint(1), to_uint(1000))
+    token_list_input = [
+        (1,  # token 1
+         to_uint(200 * DECIMALS)),  # Uint balance of token 1
+        (2,  # token 2
+         to_uint(1111 * DECIMALS)),  # balance
+        (3,  # token 3
+         to_uint(7777 * DECIMALS)),  # balance
+    ]
+
+    list_of_deposits = await balancer_contract.get_proportional_withdraw_given_pool_in(pool_total_supply, amount_in, exit_fee, token_list_input).call()
+    assert list_of_deposits.result[0][0][0] == 1
+    assert from_uint(list_of_deposits.result[0][0][1]) - \
+        ((((10000 * DECIMALS) - (10000 * DECIMALS/1000)) /
+         (578347*DECIMALS)) * (200*DECIMALS)) < 5/(10**5)
+
+    assert list_of_deposits.result[0][1][0] == 2
+    assert from_uint(list_of_deposits.result[0][1][1]) - \
+        ((((10000 * DECIMALS) - (10000 * DECIMALS/1000)) /
+         (578347*DECIMALS)) * (578347*DECIMALS)) * (1111*DECIMALS) < 5/(10**5)
+
+    assert list_of_deposits.result[0][2][0] == 3
+    assert from_uint(list_of_deposits.result[0][2][1]) - \
+        ((((10000 * DECIMALS) - (10000 * DECIMALS/1000)) /
+          (578347*DECIMALS)) * (7777*DECIMALS)) < 5/(10**5)
