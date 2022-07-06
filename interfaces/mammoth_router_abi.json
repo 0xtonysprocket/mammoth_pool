@@ -326,7 +326,22 @@
             }
         ],
         "keys": [],
-        "name": "deposit_called",
+        "name": "deposit_single_called",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "lp_out",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "deposit_proportional_called",
         "type": "event"
     },
     {
@@ -426,7 +441,35 @@
                 "type": "felt"
             }
         ],
-        "name": "mammoth_deposit",
+        "name": "mammoth_deposit_single_asset",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_out",
+                "type": "Uint256"
+            },
+            {
+                "name": "user_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "mammoth_proportional_deposit",
         "outputs": [
             {
                 "name": "success",

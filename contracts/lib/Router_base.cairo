@@ -16,7 +16,12 @@ from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @contract_interface
 namespace IPoolContract:
-    func deposit(amount : Uint256, address : felt, erc20_address : felt) -> (success : felt):
+    func deposit_single_asset(amount : Uint256, user_address : felt, erc20_address : felt) -> (
+            success : felt):
+    end
+
+    func deposit_proportional_assets(pool_amount_out : Uint256, user_address : felt) -> (
+            success : felt):
     end
 
     func withdraw(amount : Uint256, address : felt, erc20_address : felt) -> (success : felt):
@@ -45,27 +50,41 @@ func approved_pool_address(pool_address : felt) -> (bool : felt):
 end
 
 namespace Router:
-    func call_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            amount : Uint256, address : felt, pool_address : felt, erc20_address : felt) -> (
+    func call_deposit_single_asset{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            amount : Uint256, user_address : felt, pool_address : felt, erc20_address : felt) -> (
             success : felt):
         alloc_locals
-        let (local success : felt) = IPoolContract.deposit(
+        let (local success : felt) = IPoolContract.deposit_single_asset(
             contract_address=pool_address,
             amount=amount,
-            address=address,
+            user_address=user_address,
             erc20_address=erc20_address)
         assert success = TRUE
         return (TRUE)
     end
 
+    func call_deposit_proportional_assets{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            pool_amount_out : Uint256, user_address : felt, pool_address : felt) -> (
+            success : felt):
+        alloc_locals
+        let (local success : felt) = IPoolContract.deposit_proportional_assets(
+            contract_address=pool_address,
+            pool_amount_out=pool_amount_out,
+            user_address=user_address)
+        assert success = TRUE
+        return (TRUE)
+    end
+
     func call_withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            amount : Uint256, address : felt, pool_address : felt, erc20_address : felt) -> (
+            amount : Uint256, user_address : felt, pool_address : felt, erc20_address : felt) -> (
             success : felt):
         alloc_locals
         let (local success : felt) = IPoolContract.withdraw(
             contract_address=pool_address,
             amount=amount,
-            address=address,
+            address=user_address,
             erc20_address=erc20_address)
         assert success = TRUE
         return (TRUE)

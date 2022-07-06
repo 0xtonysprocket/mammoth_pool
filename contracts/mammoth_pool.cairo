@@ -9,6 +9,8 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 
 # openzeppelin
@@ -24,8 +26,7 @@ from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 # mammoth
 from contracts.lib.Pool_base import Pool
 from contracts.lib.Pool_registry_base import Register, ApprovedERC20
-from contracts.lib.balancer_math import (
-    get_out_given_in, get_pool_minted_given_single_in, get_single_out_given_pool_in)
+from contracts.lib.balancer_math import Balancer_Math, TokenAndAmount
 from contracts.lib.ratios.contracts.ratio import Ratio
 
 @contract_interface
@@ -47,7 +48,7 @@ end
 ##########
 
 @external
-func deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func deposit_single_asset{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         amount_to_deposit : Uint256, user_address : felt, erc20_address : felt) -> (success : felt):
     alloc_locals
     Ownable_only_owner()
@@ -67,6 +68,49 @@ func deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     end
 
     return (TRUE)
+end
+
+@external
+func deposit_proportional_assets{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_amount_out : Uint256, user_address : felt) -> (success : felt):
+    alloc_locals
+
+    let (local list_of_tokens_and_deposit_balances_len : felt,
+        local list_of_tokens_and_deposit_balances : TokenAndAmount*) = view_proportional_deposits_given_pool_out(
+        pool_amount_out)
+
+    # deposit using recursion
+    let (local success : felt) = _recursive_deposit(
+        list_of_tokens_and_deposit_balances_len, list_of_tokens_and_deposit_balances, user_address)
+
+    return (success)
+end
+
+# proportional deposit recursion helper
+func _recursive_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        list_len : felt, list : TokenAndAmount*, user_address) -> (success : felt):
+    alloc_locals
+
+    if list_len == 0:
+        return (TRUE)
+    end
+
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
+
+    let current_struct : TokenAndAmount* = [&list]
+
+    let (local success : felt) = Pool.deposit(
+        current_struct.amount, user_address, current_struct.erc_address)
+
+    with_attr error_message("DEPOSIT FAILED : POOL LEVEL"):
+        assert success = TRUE
+    end
+
+    let (local complete_success : felt) = _recursive_deposit(
+        list_len - 1, list + TokenAndAmount.SIZE, user_address)
+
+    return (complete_success)
 end
 
 @external
@@ -152,7 +196,7 @@ func view_single_out_given_pool_in{
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
-    let (local ratio_out : Ratio) = get_single_out_given_pool_in(
+    let (local ratio_out : Ratio) = Balancer_Math.get_single_out_given_pool_in(
         pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
 
     let (local amount_to_withdraw : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
@@ -171,7 +215,7 @@ func view_pool_minted_given_single_in{
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
-    let (local ratio_out : Ratio) = get_pool_minted_given_single_in(
+    let (local ratio_out : Ratio) = Balancer_Math.get_pool_minted_given_single_in(
         amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
 
     let (local amount_to_mint : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
@@ -191,12 +235,63 @@ func view_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
     let (local b_balance : Uint256) = get_ERC20_balance(erc20_address_out)
     let (local b_weight : Ratio) = Register.get_token_weight(erc20_address_out)
 
-    let (local ratio_out : Ratio) = get_out_given_in(
+    let (local ratio_out : Ratio) = Balancer_Math.get_out_given_in(
         amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
 
     let (local amount_out : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_out)
+end
+
+@view
+func view_proportional_deposits_given_pool_out{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_amount_out : Uint256) -> (list_len : felt, list : TokenAndAmount*):
+    alloc_locals
+
+    let (local total_pool_supply : Uint256) = totalSupply()
+    local pool_supply_ratio : Ratio = Ratio(pool_amount_out, total_pool_supply)
+
+    # build list of tokens and current balances
+    let (local num_tokens_in_pool) = Register.get_num_tokens()
+    let (local token_arr : TokenAndAmount*) = alloc()
+
+    let (local token_list_len : felt,
+        local token_list : TokenAndAmount*) = _recursive_build_list_of_tokens_and_balances(
+        num_tokens_in_pool, 0, token_arr)
+
+    let (local list_len : felt,
+        list : TokenAndAmount*) = Balancer_Math.get_proportional_deposits_given_pool_out(
+        pool_supply_ratio, token_list_len, token_list)
+
+    return (list_len, list)
+end
+
+# recursion helper
+func _recursive_build_list_of_tokens_and_balances{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        num_tokens_remaining : felt, output_arr_len : felt, output_arr : TokenAndAmount*) -> (
+        output_list_len : felt, output_list : TokenAndAmount*):
+    alloc_locals
+
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
+
+    if num_tokens_remaining == 0:
+        return (output_arr_len, output_arr)
+    end
+
+    let (local erc : felt) = Register.get_approved_erc_from_index(output_arr_len)
+    let (local balance : Uint256) = get_ERC20_balance(erc)
+
+    # assert used for assignment
+    assert output_arr[output_arr_len] = TokenAndAmount(erc, balance)
+
+    let (local output_list_len : felt,
+        local output_list : TokenAndAmount*) = _recursive_build_list_of_tokens_and_balances(
+        num_tokens_remaining - 1, output_arr_len + 1, output_arr)
+
+    return (output_list_len, output_list)
 end
 
 @view

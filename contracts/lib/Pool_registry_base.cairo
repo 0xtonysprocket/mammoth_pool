@@ -104,7 +104,7 @@ namespace Register:
 
         approved_erc20s.write(current_struct.erc_address, TRUE)
         token_weight.write(current_struct.erc_address, weight)
-        indexed_approved_ercs.write(arr_len, current_struct.erc_address)
+        indexed_approved_ercs.write(arr_len - 1, current_struct.erc_address)
 
         local amount : Uint256 = Uint256(
             current_struct.initial_liquidity_low, current_struct.initial_liquidity_high)
@@ -160,5 +160,22 @@ namespace Register:
             erc20_address : felt) -> (approval : felt):
         let (approval : felt) = approved_erc20s.read(erc20_address)
         return (approval)
+    end
+
+    func get_num_tokens{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+            num : felt):
+        alloc_locals
+
+        let (local num : felt) = num_tokens.read()
+        return (num)
+    end
+
+    func get_approved_erc_from_index{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(index : felt) -> (
+            erc : felt):
+        alloc_locals
+
+        let (local e : felt) = indexed_approved_ercs.read(index)
+        return (e)
     end
 end

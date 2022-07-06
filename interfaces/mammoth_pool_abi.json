@@ -41,6 +41,23 @@
                 "type": "felt"
             },
             {
+                "name": "amount",
+                "offset": 1,
+                "type": "Uint256"
+            }
+        ],
+        "name": "TokenAndAmount",
+        "size": 3,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "erc_address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
                 "name": "low_num",
                 "offset": 1,
                 "type": "felt"
@@ -436,6 +453,35 @@
     {
         "inputs": [
             {
+                "name": "pool_supply_ratio",
+                "type": "Ratio"
+            },
+            {
+                "name": "token_list_len",
+                "type": "felt"
+            },
+            {
+                "name": "token_list",
+                "type": "TokenAndAmount*"
+            }
+        ],
+        "name": "get_proportional_deposits_given_pool_out",
+        "outputs": [
+            {
+                "name": "output_arr_len",
+                "type": "felt"
+            },
+            {
+                "name": "output_arr",
+                "type": "TokenAndAmount*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "router",
                 "type": "felt"
             },
@@ -446,10 +492,6 @@
             {
                 "name": "symbol",
                 "type": "felt"
-            },
-            {
-                "name": "initial_supply",
-                "type": "Uint256"
             },
             {
                 "name": "recipient",
@@ -475,7 +517,27 @@
                 "type": "felt"
             }
         ],
-        "name": "deposit",
+        "name": "deposit_single_asset",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_out",
+                "type": "Uint256"
+            },
+            {
+                "name": "user_address",
+                "type": "felt"
+            }
+        ],
+        "name": "deposit_proportional_assets",
         "outputs": [
             {
                 "name": "success",
@@ -634,6 +696,27 @@
             {
                 "name": "amount_out",
                 "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_out",
+                "type": "Uint256"
+            }
+        ],
+        "name": "view_proportional_deposits_given_pool_out",
+        "outputs": [
+            {
+                "name": "list_len",
+                "type": "felt"
+            },
+            {
+                "name": "list",
+                "type": "TokenAndAmount*"
             }
         ],
         "stateMutability": "view",

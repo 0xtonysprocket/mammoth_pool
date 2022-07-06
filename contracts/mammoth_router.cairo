@@ -31,7 +31,11 @@ func pool_created(
 end
 
 @event
-func deposit_called(token : felt, pool : felt, amount_deposited : Uint256):
+func deposit_single_called(token : felt, pool : felt, amount_deposited : Uint256):
+end
+
+@event
+func deposit_proportional_called(pool : felt, lp_out : Uint256):
 end
 
 @event
@@ -76,16 +80,36 @@ end
 ############
 
 @external
-func mammoth_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func mammoth_deposit_single_asset{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         amount : Uint256, user_address : felt, pool_address : felt, erc20_address : felt) -> (
         success : felt):
     alloc_locals
 
-    deposit_called.emit(token=erc20_address, pool=pool_address, amount_deposited=amount)
+    deposit_single_called.emit(token=erc20_address, pool=pool_address, amount_deposited=amount)
 
     Router.only_approved_pool(pool_address)
-    let (local success : felt) = Router.call_deposit(
+    let (local success : felt) = Router.call_deposit_single_asset(
         amount, user_address, pool_address, erc20_address)
+
+    with_attr error_message("DEPOSIT FAILED : ROUTER LEVEL"):
+        assert success = TRUE
+    end
+    return (TRUE)
+end
+
+@external
+func mammoth_proportional_deposit{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_amount_out : Uint256, user_address : felt, pool_address : felt,
+        erc20_address : felt) -> (success : felt):
+    alloc_locals
+
+    deposit_proportional_called.emit(pool=pool_address, lp_out=pool_amount_out)
+
+    Router.only_approved_pool(pool_address)
+    let (local success : felt) = Router.call_deposit_proportional_assets(
+        pool_amount_out, user_address, pool_address)
 
     with_attr error_message("DEPOSIT FAILED : ROUTER LEVEL"):
         assert success = TRUE
