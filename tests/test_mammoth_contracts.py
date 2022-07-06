@@ -7,75 +7,6 @@ from .conftest import DECIMALS
 
 
 @pytest.mark.asyncio
-async def test_create_pool(
-    signer_factory,
-    account_factory,
-    router_factory,
-    pool_factory,
-    tusdc_factory,
-    fc_factory,
-    teeth_factory,
-):
-    signer = signer_factory
-    user_account, _ = account_factory
-    router_contract, router_address = router_factory
-    pool_contract, pool_address = pool_factory
-    _, tusdc_address = tusdc_factory
-    _, fc_address = fc_factory
-    _, teeth_address = teeth_factory
-
-    swap_fee = [to_uint(2), to_uint(1000)]  # .02%
-    exit_fee = [to_uint(2), to_uint(1000)]  # .02%
-    # weight of 1/3 represented as 1, 0, 3, 0
-    erc_array_input = (
-        tusdc_address,
-        1,
-        0,
-        3,
-        0,
-        fc_address,
-        1,
-        0,
-        3,
-        0,
-        teeth_address,
-        1,
-        0,
-        3,
-        0,
-    )
-
-    await signer.send_transaction(
-        account=user_account,
-        to=router_address,
-        selector_name="create_pool",
-        calldata=[
-            pool_address,
-            *swap_fee[0],
-            *swap_fee[1],
-            *exit_fee[0],
-            *exit_fee[1],
-            3,
-            *erc_array_input,
-        ],
-    )
-
-    stored_token = await router_contract.is_pool_approved(pool_address).call()
-    assert stored_token.result == (1,)
-
-    erc_approval = await pool_contract.is_ERC20_approved(tusdc_address).call()
-    assert erc_approval.result == (1,)
-
-    erc_approval = await pool_contract.is_ERC20_approved(fc_address).call()
-    assert erc_approval.result == (1,)
-
-    erc_approval = await pool_contract.is_ERC20_approved(teeth_address).call()
-    assert erc_approval.result == (1,)
-
-    # ADD MORE TESTS TO MAKE SURE POOL INITIALIZED PROPERLY
-
-
-@pytest.mark.asyncio
 async def test_approve_pool_for_transfer(
     signer_factory,
     account_factory,
@@ -100,12 +31,100 @@ async def test_approve_pool_for_transfer(
             to=erc_address,
             selector_name="approve",
             # extra 0 because of Uint256
-            calldata=[pool_address, 100 * DECIMALS, 0],
+            calldata=[pool_address, 800000 * DECIMALS, 0],
         )
 
         # check that correct amount is allowed
         pool_allowance = await erc_contract.allowance(user, pool_address).call()
-        assert pool_allowance.result == ((100 * DECIMALS, 0),)
+        assert pool_allowance.result == ((800000 * DECIMALS, 0),)
+
+
+@pytest.mark.asyncio
+async def test_create_pool(
+    signer_factory,
+    account_factory,
+    router_factory,
+    pool_factory,
+    tusdc_factory,
+    fc_factory,
+    teeth_factory,
+):
+    signer = signer_factory
+    user_account, user_address = account_factory
+    router_contract, router_address = router_factory
+    pool_contract, pool_address = pool_factory
+    tusdc_contract, tusdc_address = tusdc_factory
+    fc_contract, fc_address = fc_factory
+    teeth_contract, teeth_address = teeth_factory
+
+    swap_fee = [to_uint(2), to_uint(1000)]  # .02%
+    exit_fee = [to_uint(2), to_uint(1000)]  # .02%
+    # weight of 1/3 represented as 1, 0, 3, 0
+    erc_array_input = (
+        tusdc_address,
+        1,  # weight
+        0,
+        3,
+        0,
+        (3000 * DECIMALS),  # initial liquidity amount
+        0,
+        fc_address,
+        1,  # weight
+        0,
+        3,
+        0,
+        (1 * DECIMALS),  # initial liquidity amount
+        0,
+        teeth_address,
+        1,  # weight
+        0,
+        3,
+        0,
+        (2 * DECIMALS),  # initial liquidity amount
+        0
+    )
+
+    await signer.send_transaction(
+        account=user_account,
+        to=router_address,
+        selector_name="create_pool",
+        calldata=[
+            user_address,
+            pool_address,
+            *swap_fee[0],
+            *swap_fee[1],
+            *exit_fee[0],
+            *exit_fee[1],
+            3,
+            *erc_array_input,
+        ],
+    )
+
+    stored_token = await router_contract.is_pool_approved(pool_address).call()
+    assert stored_token.result == (1,)
+
+    erc_approval = await pool_contract.is_ERC20_approved(tusdc_address).call()
+    assert erc_approval.result == (1,)
+
+    erc_approval = await pool_contract.is_ERC20_approved(fc_address).call()
+    assert erc_approval.result == (1,)
+
+    erc_approval = await pool_contract.is_ERC20_approved(teeth_address).call()
+    assert erc_approval.result == (1,)
+
+    user_lp_balance = await pool_contract.balanceOf(user_address).call()
+    assert user_lp_balance.result == ((3000 * DECIMALS, 0),)
+
+    pool_tusdc_balance = await tusdc_contract.balanceOf(pool_address).call()
+    assert pool_tusdc_balance.result == ((3000 * DECIMALS, 0),)
+
+    pool_fc_balance = await fc_contract.balanceOf(pool_address).call()
+    assert pool_fc_balance.result == ((1 * DECIMALS, 0),)
+
+    pool_teeth_balance = await teeth_contract.balanceOf(pool_address).call()
+    assert pool_teeth_balance.result == ((2 * DECIMALS, 0),)
+
+    # ADD MORE TESTS TO MAKE SURE POOL INITIALIZED PROPERLY
 
 
 @pytest.mark.asyncio
@@ -288,7 +307,8 @@ async def test_mammoth_withdraw(
     # check lp tokens were minted that represent same amount as initial deposit
     new_user_lp_balance = await pool_contract.balanceOf(user).call()
     assert (
-        from_uint(initial_user_lp.result[0]) - from_uint(new_user_lp_balance.result[0])
+        from_uint(initial_user_lp.result[0]) -
+        from_uint(new_user_lp_balance.result[0])
         == 5 * DECIMALS
     )
 

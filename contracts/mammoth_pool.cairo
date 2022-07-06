@@ -36,8 +36,8 @@ end
 
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        router : felt, name : felt, symbol : felt, initial_supply : Uint256, recipient : felt):
-    ERC20_initializer(name, symbol, initial_supply, recipient)
+        router : felt, name : felt, symbol : felt, recipient : felt):
+    ERC20_initializer(name, symbol, Uint256(0, 0), recipient)
     Ownable_initializer(router)
     return ()
 end
