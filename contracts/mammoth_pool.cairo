@@ -1,9 +1,7 @@
 # Mammoth pool contract allowing following functionality:
 # 1. Deposit tokens
 # 2. Withdraw tokens
-# 3. whitelisted MM access to atomic swaps with liquidity
-# 4. controls on trades that can be executed
-# 5. view token balance
+# 3. swap
 
 %lang starknet
 
@@ -106,6 +104,7 @@ func _recursive_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 
     let current_struct : TokenAndAmount* = [&list]
 
+    Register.only_approved_erc20(current_struct.erc_address)
     let (local success : felt) = Pool.deposit(
         current_struct.amount, user_address, current_struct.erc_address)
 
@@ -120,7 +119,7 @@ func _recursive_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 end
 
 @external
-func withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func withdraw_single_asset{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         pool_amount_in : Uint256, user_address : felt, erc20_address : felt) -> (success : felt):
     alloc_locals
     Ownable_only_owner()
@@ -138,6 +137,55 @@ func withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     end
 
     return (TRUE)
+end
+
+@external
+func withdraw_proportional_assets{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_amount_in : Uint256, user_address : felt) -> (success : felt):
+    alloc_locals
+    Ownable_only_owner()
+
+    let (local list_len : felt, list : TokenAndAmount*) = view_proportional_withdraw_given_pool_in(
+        pool_amount_in)
+
+    # withdraw using recursion
+    let (local success : felt) = _recursive_withdraw(list_len, list, user_address)
+
+    let (local burn_success : felt) = burn(user_address, pool_amount_in)
+    with_attr error_message("POOL LP BURN FAILURE"):
+        assert burn_success = TRUE
+    end
+
+    return (TRUE)
+end
+
+# proportional withdraw recursion helper
+func _recursive_withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        list_len : felt, list : TokenAndAmount*, user_address) -> (success : felt):
+    alloc_locals
+
+    if list_len == 0:
+        return (TRUE)
+    end
+
+    # needed for dereferencing struct
+    let (__fp__, _) = get_fp_and_pc()
+
+    let current_struct : TokenAndAmount* = [&list]
+
+    Register.only_approved_erc20(current_struct.erc_address)
+    let (local success : felt) = Pool.withdraw(
+        current_struct.amount, user_address, current_struct.erc_address)
+
+    with_attr error_message("WITHDRAW FAILED : POOL LEVEL"):
+        assert success = TRUE
+    end
+
+    let (local complete_success : felt) = _recursive_withdraw(
+        list_len - 1, list + TokenAndAmount.SIZE, user_address)
+
+    return (complete_success)
 end
 
 @external
@@ -269,6 +317,30 @@ func view_proportional_deposits_given_pool_out{
     let (local list_len : felt,
         list : TokenAndAmount*) = Balancer_Math.get_proportional_deposits_given_pool_out(
         pool_supply_ratio, token_list_len, token_list)
+
+    return (list_len, list)
+end
+
+@view
+func view_proportional_withdraw_given_pool_in{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_amount_in : Uint256) -> (list_len : felt, list : TokenAndAmount*):
+    alloc_locals
+
+    let (local total_pool_supply : Uint256) = totalSupply()
+    let (local exit_fee : Ratio) = Register.get_exit_fee()
+
+    # build list of tokens and current balances
+    let (local num_tokens_in_pool) = Register.get_num_tokens()
+    let (local token_arr : TokenAndAmount*) = alloc()
+
+    let (local token_list_len : felt,
+        local token_list : TokenAndAmount*) = _recursive_build_list_of_tokens_and_balances(
+        num_tokens_in_pool, 0, token_arr)
+
+    let (local list_len : felt,
+        list : TokenAndAmount*) = Balancer_Math.get_proportional_withdraw_given_pool_in(
+        total_pool_supply, pool_amount_in, exit_fee, token_list_len, token_list)
 
     return (list_len, list)
 end

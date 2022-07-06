@@ -39,7 +39,11 @@ func deposit_proportional_called(pool : felt, lp_out : Uint256):
 end
 
 @event
-func withdraw_called(token : felt, pool : felt, amount_withdrawn : Uint256):
+func withdraw_single_called(token : felt, pool : felt, amount_withdrawn : Uint256):
+end
+
+@event
+func withdraw_proportional_called(pool : felt, lp_in : Uint256):
 end
 
 @event
@@ -117,16 +121,36 @@ func mammoth_proportional_deposit{
 end
 
 @external
-func mammoth_withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func mammoth_withdraw_single_asset{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         amount : Uint256, user_address : felt, pool_address : felt, erc20_address : felt) -> (
         success : felt):
     alloc_locals
 
-    withdraw_called.emit(token=erc20_address, pool=pool_address, amount_withdrawn=amount)
+    withdraw_single_called.emit(token=erc20_address, pool=pool_address, amount_withdrawn=amount)
 
     Router.only_approved_pool(pool_address)
-    let (local success : felt) = Router.call_withdraw(
+    let (local success : felt) = Router.call_withdraw_single_asset(
         amount, user_address, pool_address, erc20_address)
+
+    with_attr error_message("WITHDRAW FAILED : ROUTER LEVEL"):
+        assert success = TRUE
+    end
+    return (TRUE)
+end
+
+@external
+func mammoth_withdraw_proportional_assets{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_amount_in : Uint256, user_address : felt, pool_address : felt,
+        erc20_address : felt) -> (success : felt):
+    alloc_locals
+
+    withdraw_proportional_called.emit(pool=pool_address, lp_in=pool_amount_in)
+
+    Router.only_approved_pool(pool_address)
+    let (local success : felt) = Router.call_withdraw_proportional_assets(
+        pool_amount_in, user_address, pool_address)
 
     with_attr error_message("WITHDRAW FAILED : ROUTER LEVEL"):
         assert success = TRUE

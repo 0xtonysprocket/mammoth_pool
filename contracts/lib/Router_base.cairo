@@ -24,7 +24,12 @@ namespace IPoolContract:
             success : felt):
     end
 
-    func withdraw(amount : Uint256, address : felt, erc20_address : felt) -> (success : felt):
+    func withdraw_single_asset(amount : Uint256, address : felt, erc20_address : felt) -> (
+            success : felt):
+    end
+
+    func withdraw_proportional_assets(pool_amount_in : Uint256, user_address : felt) -> (
+            success : felt):
     end
 
     func swap(
@@ -77,15 +82,28 @@ namespace Router:
         return (TRUE)
     end
 
-    func call_withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    func call_withdraw_single_asset{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
             amount : Uint256, user_address : felt, pool_address : felt, erc20_address : felt) -> (
             success : felt):
         alloc_locals
-        let (local success : felt) = IPoolContract.withdraw(
+        let (local success : felt) = IPoolContract.withdraw_single_asset(
             contract_address=pool_address,
             amount=amount,
             address=user_address,
             erc20_address=erc20_address)
+        assert success = TRUE
+        return (TRUE)
+    end
+
+    func call_withdraw_proportional_assets{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            pool_amount_in : Uint256, user_address : felt, pool_address : felt) -> (success : felt):
+        alloc_locals
+        let (local success : felt) = IPoolContract.withdraw_proportional_assets(
+            contract_address=pool_address,
+            pool_amount_in=pool_amount_in,
+            user_address=user_address)
         assert success = TRUE
         return (TRUE)
     end

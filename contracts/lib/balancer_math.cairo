@@ -252,6 +252,29 @@ namespace Balancer_Math:
     end
 
     @view
+    func get_proportional_withdraw_given_pool_in{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            pool_total_supply : Uint256, pool_amount_in : Uint256, exit_fee : Ratio,
+            token_list_len : felt, token_list : TokenAndAmount*) -> (
+            output_arr_len : felt, output_arr : TokenAndAmount*):
+        alloc_locals
+
+        local ratio_in : Ratio = Ratio(pool_amount_in, Uint256(1, 0))
+        let (local fee_adj : Ratio) = ratio_mul(ratio_in, exit_fee)
+        let (local adj_in : Ratio) = ratio_diff(ratio_in, fee_adj)
+        local ratio_total_supply : Ratio = Ratio(pool_total_supply, Uint256(1, 0))
+        let (local adj_pool_supply_ratio : Ratio) = ratio_div(adj_in, ratio_total_supply)
+
+        let (local output_arr : TokenAndAmount*) = alloc()
+
+        let (local return_arr_len : felt,
+            local return_arr : TokenAndAmount*) = _recursive_get_balance_needed(
+            adj_pool_supply_ratio, token_list_len, token_list, 0, output_arr, 0)
+
+        return (return_arr_len, return_arr)
+    end
+
+    @view
     func get_proportional_deposits_given_pool_out{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
             pool_supply_ratio : Ratio, token_list_len : felt, token_list : TokenAndAmount*) -> (
@@ -261,13 +284,13 @@ namespace Balancer_Math:
         let (local output_arr : TokenAndAmount*) = alloc()
 
         let (local return_arr_len : felt,
-            local return_arr : TokenAndAmount*) = _recursive_get_balance_in_needed(
+            local return_arr : TokenAndAmount*) = _recursive_get_balance_needed(
             pool_supply_ratio, token_list_len, token_list, 0, output_arr, 0)
 
         return (return_arr_len, return_arr)
     end
 
-    func _recursive_get_balance_in_needed{
+    func _recursive_get_balance_needed{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
             pool_supply_ratio : Ratio, input_arr_len : felt, input_arr : TokenAndAmount*,
             output_arr_len : felt, output_arr : TokenAndAmount*, counter : felt) -> (
@@ -289,7 +312,7 @@ namespace Balancer_Math:
         assert output_arr[counter] = TokenAndAmount(current_struct.erc_address, amount_in)
 
         let (local _output_arr_len : felt,
-            _output_arr : TokenAndAmount*) = _recursive_get_balance_in_needed(
+            _output_arr : TokenAndAmount*) = _recursive_get_balance_needed(
             pool_supply_ratio,
             input_arr_len - 1,
             input_arr + TokenAndAmount.SIZE,
@@ -308,9 +331,9 @@ namespace Balancer_Math:
         local ratio_current_balance : Ratio = Ratio(current_balance, Uint256(1, 0))
         let (local curr_times_supply_ratio : Ratio) = ratio_mul(
             ratio_current_balance, pool_supply_ratio)
-        let (local amount_in_required : Uint256, _) = uint256_unsigned_div_rem(
+        let (local amount_required : Uint256, _) = uint256_unsigned_div_rem(
             curr_times_supply_ratio.n, curr_times_supply_ratio.d)
 
-        return (amount_in_required)
+        return (amount_required)
     end
 end

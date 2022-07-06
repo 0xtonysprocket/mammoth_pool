@@ -170,6 +170,14 @@ namespace Register:
         return (num)
     end
 
+    func get_exit_fee{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+            fee : Ratio):
+        alloc_locals
+
+        let (local fee : Ratio) = exit_fee.read()
+        return (fee)
+    end
+
     func get_approved_erc_from_index{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(index : felt) -> (
             erc : felt):

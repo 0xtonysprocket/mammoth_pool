@@ -360,7 +360,22 @@
             }
         ],
         "keys": [],
-        "name": "withdraw_called",
+        "name": "withdraw_single_called",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "lp_in",
+                "type": "Uint256"
+            }
+        ],
+        "keys": [],
+        "name": "withdraw_proportional_called",
         "type": "event"
     },
     {
@@ -463,10 +478,6 @@
             {
                 "name": "pool_address",
                 "type": "felt"
-            },
-            {
-                "name": "erc20_address",
-                "type": "felt"
             }
         ],
         "name": "mammoth_proportional_deposit",
@@ -497,7 +508,35 @@
                 "type": "felt"
             }
         ],
-        "name": "mammoth_withdraw",
+        "name": "mammoth_withdraw_single_asset",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "user_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "mammoth_withdraw_proportional_assets",
         "outputs": [
             {
                 "name": "success",

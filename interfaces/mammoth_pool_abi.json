@@ -453,6 +453,43 @@
     {
         "inputs": [
             {
+                "name": "pool_total_supply",
+                "type": "Uint256"
+            },
+            {
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "exit_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "token_list_len",
+                "type": "felt"
+            },
+            {
+                "name": "token_list",
+                "type": "TokenAndAmount*"
+            }
+        ],
+        "name": "get_proportional_withdraw_given_pool_in",
+        "outputs": [
+            {
+                "name": "output_arr_len",
+                "type": "felt"
+            },
+            {
+                "name": "output_arr",
+                "type": "TokenAndAmount*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "pool_supply_ratio",
                 "type": "Ratio"
             },
@@ -561,7 +598,27 @@
                 "type": "felt"
             }
         ],
-        "name": "withdraw",
+        "name": "withdraw_single_asset",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            },
+            {
+                "name": "user_address",
+                "type": "felt"
+            }
+        ],
+        "name": "withdraw_proportional_assets",
         "outputs": [
             {
                 "name": "success",
@@ -709,6 +766,27 @@
             }
         ],
         "name": "view_proportional_deposits_given_pool_out",
+        "outputs": [
+            {
+                "name": "list_len",
+                "type": "felt"
+            },
+            {
+                "name": "list",
+                "type": "TokenAndAmount*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            }
+        ],
+        "name": "view_proportional_withdraw_given_pool_in",
         "outputs": [
             {
                 "name": "list_len",
