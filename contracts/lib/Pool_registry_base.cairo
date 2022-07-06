@@ -39,6 +39,15 @@ end
 func exit_fee() -> (fee : Ratio):
 end
 
+# number of tokens
+@storage_var
+func num_tokens() -> (num_tokens : felt):
+end
+
+@storage_var
+func indexed_approved_ercs(index : felt) -> (erc_address : felt):
+end
+
 ########
 # Structs
 ########
@@ -64,6 +73,7 @@ namespace Register:
 
         swap_fee.write(s_fee)
         exit_fee.write(e_fee)
+        num_tokens.write(erc_list_len)
 
         local _lp_amount : Uint256 = Uint256(0, 0)
         let (local t_weight : Ratio, local lp_amount : Uint256) = _approve_ercs(
@@ -94,6 +104,7 @@ namespace Register:
 
         approved_erc20s.write(current_struct.erc_address, TRUE)
         token_weight.write(current_struct.erc_address, weight)
+        indexed_approved_ercs.write(arr_len, current_struct.erc_address)
 
         local amount : Uint256 = Uint256(
             current_struct.initial_liquidity_low, current_struct.initial_liquidity_high)
