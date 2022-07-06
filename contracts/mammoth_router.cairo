@@ -140,10 +140,9 @@ func mammoth_withdraw_single_asset{
 end
 
 @external
-func mammoth_withdraw_proportional_assets{
+func mammoth_proportional_withdraw{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        pool_amount_in : Uint256, user_address : felt, pool_address : felt,
-        erc20_address : felt) -> (success : felt):
+        pool_amount_in : Uint256, user_address : felt, pool_address : felt) -> (success : felt):
     alloc_locals
 
     withdraw_proportional_called.emit(pool=pool_address, lp_in=pool_amount_in)
