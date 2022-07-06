@@ -1,7 +1,9 @@
 import pytest
-import math
+from .conftest import DECIMALS
 
 # from OZ utils.py
+
+
 def to_uint(a):
     """Takes in value, returns uint256-ish tuple."""
     return (a & ((1 << 128) - 1), a >> 128)
@@ -46,7 +48,8 @@ async def test_get_pool_minted_given_single_in(balancer_factory):
         amount_of_a_in, a_balance, supply, a_weight, total_weight, swap_fee
     ).call()
     assert (
-        from_uint(pool_minted.result[0][0]) / from_uint(pool_minted.result[0][1])
+        from_uint(pool_minted.result[0][0]) /
+        from_uint(pool_minted.result[0][1])
         - 1354.11112
     ) < 5 / (10 ** 6)
 
@@ -88,3 +91,32 @@ async def test_get_out_given_in(balancer_factory):
     assert from_uint(pool_minted.result[0][0]) / from_uint(
         pool_minted.result[0][1]
     ) - 50.4193149 < 5 / (10 ** 7)
+
+
+@pytest.mark.asyncio
+async def test_get_proportional_deposits_given_pool_out(balancer_factory):
+    balancer_contract, _ = balancer_factory
+
+    pool_supply_ratio = (to_uint(10000 * DECIMALS), to_uint(578347 * DECIMALS))
+    token_list_input = [
+        (1,  # token 1
+         to_uint(200 * DECIMALS)),  # Uint balance of token 1
+        (2,  # token 2
+         to_uint(1111 * DECIMALS)),  # balance
+        (3,  # token 3
+         to_uint(7777 * DECIMALS)),  # balance
+    ]
+
+    list_of_deposits = await balancer_contract.get_proportional_deposits_given_pool_out(pool_supply_ratio, token_list_input).call()
+    print(list_of_deposits)
+    assert list_of_deposits.result[0][0][0] == 1
+    assert from_uint(list_of_deposits.result[0][0][1]) - \
+        (((10000 * DECIMALS)/(578347*DECIMALS)) * (200*DECIMALS)) < 5/(10**5)
+
+    assert list_of_deposits.result[0][1][0] == 2
+    assert from_uint(list_of_deposits.result[0][1][1]) - \
+        (((10000 * DECIMALS)/(578347*DECIMALS)) * (1111*DECIMALS)) < 5/(10**5)
+
+    assert list_of_deposits.result[0][2][0] == 3
+    assert from_uint(list_of_deposits.result[0][2][1]) - \
+        (((10000 * DECIMALS)/(578347*DECIMALS)) * (7777*DECIMALS)) < 5/(10**5)
