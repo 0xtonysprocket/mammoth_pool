@@ -1,6 +1,6 @@
 # mammoth_pool
 
-Starknet pool to provide non-custodial liquidity to order book market makers
+Starknet pool similar to balancer v1 AMM
 
 # Goals:
 
@@ -51,10 +51,5 @@ Starknet pool to provide non-custodial liquidity to order book market makers
 
 ## POOL CREATION INSTRUCTIONS
 
-- Call _create_pool_ with owner account on proxy contract. Input: lp_address, pool_address, swap_fee, exit_fee
-- NOTE: swap_fee and exit_fee should be structs like (1,2) that represents 1/2 or a .5 fee
-- Call _add_approved_erc20_for_pool_ with owner account on proxy for each ERC20. Input: pool_address, ERC20_address, weight
-- NOTE: weight in same form at swap_fee/exit_fee
-
-* Create pool through proxy with pool address
-* Add the ERC20 address to approved pool with 1/3 weight each
+- call create_pool on the router and provide list of ercs to include and initial liquidity amounts
+- it is advisable to provide liquidity ina ratio similar to real prices
