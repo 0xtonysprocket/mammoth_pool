@@ -22,10 +22,8 @@ from contracts.lib.openzeppelin.contracts.Initializable import initialize, initi
 from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 # mammoth
-from contracts.lib.Pool_base import Pool_deposit, Pool_withdraw
-from contracts.lib.Pool_registry_base import (
-    Register_initialize_pool, Register_get_pool_info, Register_get_token_weight,
-    Register_only_approved_erc20, Register_is_erc20_approved, ApprovedERC20)
+from contracts.lib.Pool_base import Pool
+from contracts.lib.Pool_registry_base import Register, ApprovedERC20
 from contracts.lib.balancer_math import (
     get_out_given_in, get_pool_minted_given_single_in, get_single_out_given_pool_in)
 from contracts.lib.ratios.contracts.ratio import Ratio
@@ -53,11 +51,11 @@ func deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         amount_to_deposit : Uint256, user_address : felt, erc20_address : felt) -> (success : felt):
     alloc_locals
     Ownable_only_owner()
-    Register_only_approved_erc20(erc20_address)
+    Register.only_approved_erc20(erc20_address)
 
     let (local pool_amount_to_mint : Uint256) = view_pool_minted_given_single_in(
         amount_to_deposit, erc20_address)
-    let (local success : felt) = Pool_deposit(amount_to_deposit, user_address, erc20_address)
+    let (local success : felt) = Pool.deposit(amount_to_deposit, user_address, erc20_address)
 
     with_attr error_message("DEPOSIT FAILED : POOL LEVEL"):
         assert success = TRUE
@@ -76,10 +74,10 @@ func withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
         pool_amount_in : Uint256, user_address : felt, erc20_address : felt) -> (success : felt):
     alloc_locals
     Ownable_only_owner()
-    Register_only_approved_erc20(erc20_address)
+    Register.only_approved_erc20(erc20_address)
 
     let (local amount_out : Uint256) = view_single_out_given_pool_in(pool_amount_in, erc20_address)
-    let (local success : felt) = Pool_withdraw(amount_out, user_address, erc20_address)
+    let (local success : felt) = Pool.withdraw(amount_out, user_address, erc20_address)
     with_attr error_message("WITHDRAW FAILED : POOL LEVEL"):
         assert success = TRUE
     end
@@ -98,13 +96,13 @@ func swap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         success : felt):
     alloc_locals
     Ownable_only_owner()
-    Register_only_approved_erc20(erc20_address_in)
-    Register_only_approved_erc20(erc20_address_out)
+    Register.only_approved_erc20(erc20_address_in)
+    Register.only_approved_erc20(erc20_address_out)
 
     let (local amount_out : Uint256) = view_out_given_in(
         amount_in, erc20_address_in, erc20_address_out)
-    let (local deposit_success : felt) = Pool_deposit(amount_in, address, erc20_address_in)
-    let (local withdraw_success : felt) = Pool_withdraw(amount_out, address, erc20_address_out)
+    let (local deposit_success : felt) = Pool.deposit(amount_in, address, erc20_address_in)
+    let (local withdraw_success : felt) = Pool.withdraw(amount_out, address, erc20_address_out)
 
     with_attr error_message("DEPOSIT FAILED IN SWAP : POOL LEVEL"):
         assert deposit_success = TRUE
@@ -122,7 +120,7 @@ func initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
         erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
     alloc_locals
 
-    let (local success : felt, local lp_amount : Uint256) = Register_initialize_pool(
+    let (local success : felt, local lp_amount : Uint256) = Register.initialize_pool(
         caller_address, s_fee, e_fee, erc_list_len, erc_list)
     assert success = TRUE
 
@@ -149,8 +147,8 @@ func view_single_out_given_pool_in{
     let (local this_contract : felt) = get_contract_address()
 
     let (local swap_fee : Ratio, local exit_fee : Ratio,
-        total_weight : Ratio) = Register_get_pool_info()
-    let (local a_weight : Ratio) = Register_get_token_weight(erc20_address)
+        total_weight : Ratio) = Register.get_pool_info()
+    let (local a_weight : Ratio) = Register.get_token_weight(erc20_address)
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
@@ -168,8 +166,8 @@ func view_pool_minted_given_single_in{
         amount_to_deposit : Uint256, erc20_address : felt) -> (amount_to_mint : Uint256):
     alloc_locals
 
-    let (local swap_fee : Ratio, _, total_weight : Ratio) = Register_get_pool_info()
-    let (local a_weight : Ratio) = Register_get_token_weight(erc20_address)
+    let (local swap_fee : Ratio, _, total_weight : Ratio) = Register.get_pool_info()
+    let (local a_weight : Ratio) = Register.get_token_weight(erc20_address)
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
@@ -187,11 +185,11 @@ func view_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
         amount_out : Uint256):
     alloc_locals
 
-    let (local swap_fee : Ratio, _, _) = Register_get_pool_info()
+    let (local swap_fee : Ratio, _, _) = Register.get_pool_info()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address_in)
-    let (local a_weight : Ratio) = Register_get_token_weight(erc20_address_in)
+    let (local a_weight : Ratio) = Register.get_token_weight(erc20_address_in)
     let (local b_balance : Uint256) = get_ERC20_balance(erc20_address_out)
-    let (local b_weight : Ratio) = Register_get_token_weight(erc20_address_out)
+    let (local b_weight : Ratio) = Register.get_token_weight(erc20_address_out)
 
     let (local ratio_out : Ratio) = get_out_given_in(
         amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
@@ -214,7 +212,7 @@ end
 func is_ERC20_approved{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         erc20_address : felt) -> (approved : felt):
     alloc_locals
-    let (approved : felt) = Register_is_erc20_approved(erc20_address)
+    let (approved : felt) = Register.is_erc20_approved(erc20_address)
     return (approved)
 end
 
@@ -222,7 +220,7 @@ end
 func get_token_weight{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         erc20_address : felt) -> (approved : Ratio):
     alloc_locals
-    let (weight : Ratio) = Register_get_token_weight(erc20_address)
+    let (weight : Ratio) = Register.get_token_weight(erc20_address)
     return (weight)
 end
 
@@ -230,7 +228,7 @@ end
 func get_pool_into{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         erc20_address : felt) -> (swap_fee : Ratio, exit_fee : Ratio, total_weight : Ratio):
     alloc_locals
-    let (s_fee : Ratio, e_fee : Ratio, t_w : Ratio) = Register_get_pool_info()
+    let (s_fee : Ratio, e_fee : Ratio, t_w : Ratio) = Register.get_pool_info()
     return (s_fee, e_fee, t_w)
 end
 

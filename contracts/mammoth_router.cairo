@@ -10,9 +10,7 @@ from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
 
 # Mammoth
 from contracts.lib.ratios.contracts.ratio import Ratio
-from contracts.lib.Router_base import (
-    Router_call_deposit, Router_call_withdraw, Router_call_swap, Router_create_pool,
-    Router_only_approved_pool, Router_pool_approved)
+from contracts.lib.Router_base import Router
 from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @constructor
@@ -55,7 +53,7 @@ func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     alloc_locals
     Ownable_only_owner()
 
-    let (local success : felt, local lp_amount : Uint256) = Router_create_pool(
+    let (local success : felt, local lp_amount : Uint256) = Router.create_pool(
         caller_address, pool_address, s_fee, e_fee, erc_list_len, erc_list)
 
     with_attr error_message("POOL CREATION FAILED : ROUTER LEVEL"):
@@ -85,8 +83,8 @@ func mammoth_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_che
 
     deposit_called.emit(token=erc20_address, pool=pool_address, amount_deposited=amount)
 
-    Router_only_approved_pool(pool_address)
-    let (local success : felt) = Router_call_deposit(
+    Router.only_approved_pool(pool_address)
+    let (local success : felt) = Router.call_deposit(
         amount, user_address, pool_address, erc20_address)
 
     with_attr error_message("DEPOSIT FAILED : ROUTER LEVEL"):
@@ -103,8 +101,8 @@ func mammoth_withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
 
     withdraw_called.emit(token=erc20_address, pool=pool_address, amount_withdrawn=amount)
 
-    Router_only_approved_pool(pool_address)
-    let (local success : felt) = Router_call_withdraw(
+    Router.only_approved_pool(pool_address)
+    let (local success : felt) = Router.call_withdraw(
         amount, user_address, pool_address, erc20_address)
 
     with_attr error_message("WITHDRAW FAILED : ROUTER LEVEL"):
@@ -125,8 +123,8 @@ func mammoth_swap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
         pool=pool_address,
         amount_swapped_in=amount)
 
-    Router_only_approved_pool(pool_address)
-    let (local success : felt) = Router_call_swap(
+    Router.only_approved_pool(pool_address)
+    let (local success : felt) = Router.call_swap(
         amount, user_address, pool_address, erc20_address_in, erc20_address_out)
 
     with_attr error_message("SWAP FAILED : ROUTER LEVEL"):
@@ -162,6 +160,6 @@ end
 func is_pool_approved{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         pool_address : felt) -> (bool : felt):
     alloc_locals
-    let (local success : felt) = Router_pool_approved(pool_address)
+    let (local success : felt) = Router.pool_approved(pool_address)
     return (success)
 end

@@ -41,21 +41,23 @@ namespace IERC20:
     end
 end
 
-func Pool_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        amount : Uint256, address_from : felt, erc20_address : felt) -> (bool : felt):
-    alloc_locals
-    let (local this_contract) = get_contract_address()
+namespace Pool:
+    func deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            amount : Uint256, address_from : felt, erc20_address : felt) -> (bool : felt):
+        alloc_locals
+        let (local this_contract) = get_contract_address()
 
-    IERC20.transferFrom(
-        contract_address=erc20_address,
-        sender=address_from,
-        recipient=this_contract,
-        amount=amount)
-    return (TRUE)
-end
+        IERC20.transferFrom(
+            contract_address=erc20_address,
+            sender=address_from,
+            recipient=this_contract,
+            amount=amount)
+        return (TRUE)
+    end
 
-func Pool_withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        amount : Uint256, address_to : felt, erc20_address : felt) -> (bool : felt):
-    IERC20.transfer(contract_address=erc20_address, recipient=address_to, amount=amount)
-    return (TRUE)
+    func withdraw{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            amount : Uint256, address_to : felt, erc20_address : felt) -> (bool : felt):
+        IERC20.transfer(contract_address=erc20_address, recipient=address_to, amount=amount)
+        return (TRUE)
+    end
 end
