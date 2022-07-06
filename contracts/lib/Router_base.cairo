@@ -34,8 +34,8 @@ end
 @contract_interface
 namespace IPoolRegister:
     func initialize_pool(
-            s_fee : Ratio, e_fee : Ratio, erc_list_len : felt, erc_list : ApprovedERC20*) -> (
-            bool : felt):
+            caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
+            erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
     end
 end
 

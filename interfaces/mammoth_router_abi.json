@@ -59,10 +59,20 @@
                 "name": "high_den",
                 "offset": 4,
                 "type": "felt"
+            },
+            {
+                "name": "initial_liquidity_low",
+                "offset": 5,
+                "type": "felt"
+            },
+            {
+                "name": "initial_liquidity_high",
+                "offset": 6,
+                "type": "felt"
             }
         ],
         "name": "ApprovedERC20",
-        "size": 5,
+        "size": 7,
         "type": "struct"
     },
     {
@@ -290,6 +300,10 @@
             {
                 "name": "tokens",
                 "type": "ApprovedERC20*"
+            },
+            {
+                "name": "initial_lp_minted",
+                "type": "Uint256"
             }
         ],
         "keys": [],
@@ -359,6 +373,10 @@
     },
     {
         "inputs": [
+            {
+                "name": "caller_address",
+                "type": "felt"
+            },
             {
                 "name": "pool_address",
                 "type": "felt"

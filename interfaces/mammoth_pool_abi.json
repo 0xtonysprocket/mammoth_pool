@@ -59,10 +59,20 @@
                 "name": "high_den",
                 "offset": 4,
                 "type": "felt"
+            },
+            {
+                "name": "initial_liquidity_low",
+                "offset": 5,
+                "type": "felt"
+            },
+            {
+                "name": "initial_liquidity_high",
+                "offset": 6,
+                "type": "felt"
             }
         ],
         "name": "ApprovedERC20",
-        "size": 5,
+        "size": 7,
         "type": "struct"
     },
     {
@@ -529,6 +539,10 @@
     {
         "inputs": [
             {
+                "name": "caller_address",
+                "type": "felt"
+            },
+            {
                 "name": "s_fee",
                 "type": "Ratio"
             },
@@ -550,6 +564,10 @@
             {
                 "name": "bool",
                 "type": "felt"
+            },
+            {
+                "name": "lp_amount",
+                "type": "Uint256"
             }
         ],
         "type": "function"

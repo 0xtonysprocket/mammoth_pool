@@ -64,7 +64,7 @@ func Register_initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     swap_fee.write(s_fee)
     exit_fee.write(e_fee)
 
-    let (local _lp_amount : Uint256) = Uint256(0, 0)
+    local _lp_amount : Uint256 = Uint256(0, 0)
     let (local t_weight : Ratio, local lp_amount : Uint256) = _approve_ercs(
         caller_address, _lp_amount, erc_list_len, erc_list)
 
@@ -77,7 +77,7 @@ func Register_initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
 end
 
 func _approve_ercs{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        caller_address : felt, _lp_amount : felt, arr_len : felt, arr : ApprovedERC20*) -> (
+        caller_address : felt, _lp_amount : Uint256, arr_len : felt, arr : ApprovedERC20*) -> (
         weight_sum : Ratio, lp_amount : Uint256):
     alloc_locals
 
@@ -85,7 +85,7 @@ func _approve_ercs{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     let (__fp__, _) = get_fp_and_pc()
 
     if arr_len == 0:
-        return (Ratio(Uint256(0, 0), Uint256(1, 0)))
+        return (Ratio(Uint256(0, 0), Uint256(1, 0)), _lp_amount)
     end
 
     let current_struct : ApprovedERC20* = [&arr]
@@ -94,22 +94,28 @@ func _approve_ercs{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     approved_erc20s.write(current_struct.erc_address, TRUE)
     token_weight.write(current_struct.erc_address, weight)
 
-    let (local amount : Uint256) = Uint256(
+    local amount : Uint256 = Uint256(
         current_struct.initial_liquidity_low, current_struct.initial_liquidity_high)
 
     let (local success : felt) = Pool_deposit(amount, caller_address, current_struct.erc_address)
 
     let (local le : felt) = uint256_le(_lp_amount, amount)
 
+    # make two separate branches  to avoid variable dereferencing on _lp_amount
     if le == 1:
-        let _lp_amount = amount
+        local _lp_amount : Uint256 = amount
+        let (local rest_of_sum : Ratio, lp_amount : Uint256) = _approve_ercs(
+            caller_address, _lp_amount, arr_len - 1, arr + ApprovedERC20.SIZE)
+        let (local weight_sum : Ratio) = ratio_add(weight, rest_of_sum)
+
+        return (weight_sum, lp_amount)
+    else:
+        let (local rest_of_sum : Ratio, lp_amount : Uint256) = _approve_ercs(
+            caller_address, _lp_amount, arr_len - 1, arr + ApprovedERC20.SIZE)
+        let (local weight_sum : Ratio) = ratio_add(weight, rest_of_sum)
+
+        return (weight_sum, lp_amount)
     end
-
-    let (local rest_of_sum : Ratio, lp_amount : Uint256) = _approve_ercs(
-        caller_address, _lp_amount, arr_len - 1, arr + ApprovedERC20.SIZE)
-    let (local weight_sum : Ratio) = ratio_add(weight, rest_of_sum)
-
-    return (weight_sum, lp_amount)
 end
 
 func Register_get_pool_info{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
