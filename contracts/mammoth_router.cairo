@@ -101,8 +101,7 @@ end
 @external
 func mammoth_proportional_deposit{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        pool_amount_out : Uint256, user_address : felt, pool_address : felt,
-        erc20_address : felt) -> (success : felt):
+        pool_amount_out : Uint256, user_address : felt, pool_address : felt) -> (success : felt):
     alloc_locals
 
     deposit_proportional_called.emit(pool=pool_address, lp_out=pool_amount_out)

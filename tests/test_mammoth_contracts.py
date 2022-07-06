@@ -218,7 +218,7 @@ async def test_view_out_given_in(
 # )
 # @settings(deadline=None)
 @pytest.mark.asyncio
-async def test_mammoth_deposit(
+async def test_mammoth_deposit_single_asset(
     signer_factory,
     account_factory,
     router_factory,
@@ -248,7 +248,7 @@ async def test_mammoth_deposit(
     await signer.send_transaction(
         account=user_account,
         to=router_address,
-        selector_name="mammoth_deposit",
+        selector_name="mammoth_deposit_single_asset",
         calldata=[*to_uint(4 * DECIMALS), user, pool_address, fc_address],
     )
 
@@ -264,6 +264,59 @@ async def test_mammoth_deposit(
     assert from_uint(new_user_lp_balance.result[0]) - from_uint(
         initial_user_lp.result[0]
     ) == from_uint(lp_to_mint.result[0])
+
+
+@pytest.mark.asyncio
+async def test_mammoth_proportional_deposit(
+    signer_factory,
+    account_factory,
+    router_factory,
+    pool_factory,
+    fc_factory,
+    tusdc_factory,
+    teeth_factory
+):
+    signer = signer_factory
+    user_account, user = account_factory
+    pool_contract, pool_address = pool_factory
+    _, router_address = router_factory
+    _, fc_address = fc_factory
+    _, tusdc_address = tusdc_factory
+    _, teeth_address = teeth_factory
+
+    fc_initial_balance = await pool_contract.get_ERC20_balance(fc_address).call()
+    tusdc_initial_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
+    teeth_initial_balance = await pool_contract.get_ERC20_balance(teeth_address).call()
+    total_lp_supply = await pool_contract.totalSupply().call()
+    initial_user_lp = await pool_contract.balanceOf(user).call()
+
+    # deposit initial amount
+    await signer.send_transaction(
+        account=user_account,
+        to=router_address,
+        selector_name="mammoth_proportional_deposit",
+        calldata=[*to_uint(4 * DECIMALS), user, pool_address],
+    )
+
+    # new fc balance
+    fc_new_balance = await pool_contract.get_ERC20_balance(fc_address).call()
+    assert from_uint(fc_new_balance.result[0]) - from_uint(fc_initial_balance.result[0]) - (
+        ((4*DECIMALS)/(from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0])) < 5/(10 ** 5)
+
+    tusdc_new_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
+    assert from_uint(tusdc_new_balance.result[0]) - from_uint(tusdc_initial_balance.result[0]) - (
+        ((4*DECIMALS)/(from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0])) < 5/(10 ** 5)
+
+    # new fc balance
+    teeth_new_balance = await pool_contract.get_ERC20_balance(teeth_address).call()
+    assert from_uint(teeth_new_balance.result[0]) - from_uint(teeth_initial_balance.result[0]) - (
+        ((4*DECIMALS)/(from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0])) < 5/(10 ** 5)
+
+    # new lp balance
+    new_user_lp_balance = await pool_contract.balanceOf(user).call()
+    assert from_uint(new_user_lp_balance.result[0]) - from_uint(
+        initial_user_lp.result[0]
+    ) == 4 * DECIMALS
 
 
 # @given(

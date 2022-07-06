@@ -83,6 +83,12 @@ func deposit_proportional_assets{syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     let (local success : felt) = _recursive_deposit(
         list_of_tokens_and_deposit_balances_len, list_of_tokens_and_deposit_balances, user_address)
 
+    let (local mint_success : felt) = mint(user_address, pool_amount_out)
+
+    with_attr error_message("POOL LP MINT FAILURE"):
+        assert mint_success = TRUE
+    end
+
     return (success)
 end
 

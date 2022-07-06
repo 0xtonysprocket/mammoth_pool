@@ -108,7 +108,6 @@ async def test_get_proportional_deposits_given_pool_out(balancer_factory):
     ]
 
     list_of_deposits = await balancer_contract.get_proportional_deposits_given_pool_out(pool_supply_ratio, token_list_input).call()
-    print(list_of_deposits)
     assert list_of_deposits.result[0][0][0] == 1
     assert from_uint(list_of_deposits.result[0][0][1]) - \
         (((10000 * DECIMALS)/(578347*DECIMALS)) * (200*DECIMALS)) < 5/(10**5)
