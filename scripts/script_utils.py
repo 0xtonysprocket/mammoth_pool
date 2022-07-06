@@ -10,7 +10,10 @@ import json
 import asyncio
 from contracts.lib.openzeppelin.tests.utils import Signer
 
+
 dotenv.load_dotenv()
+
+DECIMALS = 10 ** 18
 
 
 def owner_account():
@@ -42,7 +45,7 @@ def ercs():
 
 
 def signer():
-    return Signer(int(os.getenv("PRIV_KEY")))
+    return Signer(int(os.getenv("PRIV_KEY"), 16))
 
 
 def create_invoke_command(
@@ -58,6 +61,7 @@ def create_invoke_command(
         f"--function",
         f"{function_name}",
         f'--network={os.getenv("STARKNET_NETWORK")}',
+        f'--max_fee={os.getenv("MAX_FEE")} '
         f"--inputs",
     ]
 
@@ -93,6 +97,18 @@ def create_compile_command(name_of_contract, name_of_compiled):
         f"builds/{name_of_compiled}_compiled.json",
         f"--abi",
         f"interfaces/{name_of_compiled}_abi.json",
+    ]
+    return " ".join(cmd_list)
+
+def create_account_compile_command(name_of_contract, name_of_compiled):
+    cmd_list = [
+        f"starknet-compile",
+        f"contracts/{name_of_contract}.cairo",
+        f"--output",
+        f"builds/{name_of_compiled}_compiled.json",
+        f"--abi",
+        f"interfaces/{name_of_compiled}_abi.json",
+        f"--account_contract"
     ]
     return " ".join(cmd_list)
 

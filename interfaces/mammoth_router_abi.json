@@ -530,13 +530,9 @@
             {
                 "name": "pool_address",
                 "type": "felt"
-            },
-            {
-                "name": "erc20_address",
-                "type": "felt"
             }
         ],
-        "name": "mammoth_withdraw_proportional_assets",
+        "name": "mammoth_proportional_withdraw",
         "outputs": [
             {
                 "name": "success",

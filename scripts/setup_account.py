@@ -1,5 +1,5 @@
 from script_utils import (
-    create_compile_command,
+    create_account_compile_command,
     create_deploy_command,
     write_result_to_storage,
     run_command,
@@ -10,7 +10,7 @@ account_path = "lib/openzeppelin/contracts/Account"
 account = "Account"
 signer = signer()
 
-c_cmd = create_compile_command(account_path, account)
+c_cmd = create_account_compile_command(account_path, account)
 x = run_command(c_cmd)
 
 

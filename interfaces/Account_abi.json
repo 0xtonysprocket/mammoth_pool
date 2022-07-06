@@ -112,7 +112,7 @@
                 "type": "felt"
             }
         ],
-        "name": "execute",
+        "name": "__execute__",
         "outputs": [
             {
                 "name": "response_len",

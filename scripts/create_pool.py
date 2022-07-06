@@ -12,6 +12,7 @@ from script_utils import (
     ercs,
     signer,
 )
+from script_utils import DECIMALS
 
 from starknet_py.contract import Contract
 from starknet_py.net.client import Client
@@ -32,9 +33,8 @@ ercs = [x["address"] for x in json.load(open(ercs()))]
 async def create_pool(owner_address, router_address, pool_address, ercs):
     key = signer().private_key
 
-    erc_array = list()
-    for erc in ercs:
-        erc_array.extend([int(erc, 16), 1, 0, 3, 0])
+    erc_array = [int(ercs[0], 16), 1, 0, 3, 0, 5 * DECIMALS, 0, int(ercs[1], 16), 1, 0, 3,
+                 0, 100000 * DECIMALS, 0, int(ercs[2], 16), 1, 0, 3, 0, 20 * DECIMALS, 0]
     erc_array_len = 3
 
     account_contract = await Contract.from_address(owner_address, Client("testnet"))
@@ -65,7 +65,7 @@ async def create_pool(owner_address, router_address, pool_address, ercs):
                   calldata_len] + calldata + [nonce]
 
     cmd = create_invoke_command(
-        owner_address, "Account", "execute", input_list, signature
+        owner_address, "Account", "__execute__", input_list, signature
     )
     a, t = run_command(cmd)
 

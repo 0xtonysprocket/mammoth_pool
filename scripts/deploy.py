@@ -1,17 +1,17 @@
-import sys
-
-sys.path.append("./")
-sys.path.append("../")
-
 import json
+from script_utils import DECIMALS
 from script_utils import (
     create_deploy_command,
     run_command,
     write_result_to_storage,
     owner_account,
 )
-
 from contracts.lib.openzeppelin.tests.utils import str_to_felt, to_uint, felt_to_str
+import sys
+
+sys.path.append("./")
+sys.path.append("../")
+
 
 owner = json.load(open(owner_account()))["address"]
 
@@ -24,7 +24,6 @@ pool_deploy = create_deploy_command(
         router_address,
         str_to_felt("MAMMOTH_LP"),
         str_to_felt("MLP"),
-        *to_uint(1000),
         owner,
     ],
 )
@@ -32,24 +31,24 @@ pool_deploy = create_deploy_command(
 pool_address, ptx = run_command(pool_deploy)
 
 erc_one = [
-    str_to_felt("FantieCoin"),
-    str_to_felt("FC"),
-    *to_uint(500000),
-    pool_address,
+    str_to_felt("tZWBTC"),
+    str_to_felt("tZWBTC"),
+    *to_uint(5000000 * DECIMALS),
+    owner,
     owner,
 ]
 erc_two = [
-    str_to_felt("testUSDC"),
-    str_to_felt("TUSDC"),
-    *to_uint(500000),
-    pool_address,
+    str_to_felt("tUSDC"),
+    str_to_felt("tUSDC"),
+    *to_uint(5000000 * DECIMALS),
+    owner,
     owner,
 ]
 erc_three = [
-    str_to_felt("testETH"),
-    str_to_felt("TEETH"),
-    *to_uint(500000),
-    pool_address,
+    str_to_felt("tETH"),
+    str_to_felt("tETH"),
+    *to_uint(5000000 * DECIMALS),
+    owner,
     owner,
 ]
 list_of_erc = [erc_one, erc_two, erc_three]
