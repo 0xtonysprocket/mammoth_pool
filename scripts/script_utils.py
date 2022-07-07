@@ -8,7 +8,7 @@ import os
 import dotenv
 import json
 import asyncio
-from contracts.lib.openzeppelin.tests.utils import Signer
+from nile.signer import Signer
 
 
 dotenv.load_dotenv()
