@@ -20,6 +20,8 @@ def run(nre):
     router_address, router_abi = nre.deploy(
         contract="mammoth_router", arguments=[owner_account.address], alias="mammoth_router")
 
+    print("ROUTER DEPLOYED")
+
     # deploy pool
     pool_args = [
         router_address,
@@ -29,6 +31,8 @@ def run(nre):
     ]
     pool_address, pool_abi = nre.deploy(
         contract="mammoth_pool", arguments=pool_args, alias="mammoth_pool")
+
+    print("POOL DEPLOYED")
 
     # deploy 3 ERCs
     erc_one_args = [[
@@ -64,6 +68,8 @@ def run(nre):
     for erc in list_of_erc:
         erc_address, erc_abi = nre.deploy(
             contract="Non_owner_ERC20_mintable", arguments=erc[0], alias=erc[1])
+
+        print(f'{erc[1]} DEPLOYED')
 
         data = {
             "name": erc[0],

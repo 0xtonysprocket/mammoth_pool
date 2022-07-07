@@ -148,3 +148,4 @@ goerli.accounts.json
 goerli.deployments.txt
 node.json
 pyvenv.cfg
+fund_account.txt
