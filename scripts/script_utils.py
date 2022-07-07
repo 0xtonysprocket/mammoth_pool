@@ -1,5 +1,5 @@
 DECIMALS = 10 ** 18
-MAX_FEE = 250000
+MAX_FEE = 10000000000000000
 
 
 def write_result_to_storage(result, file_name):

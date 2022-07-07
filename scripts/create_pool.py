@@ -35,7 +35,7 @@ def run(nre):
         swap_fee + exit_fee + erc_list_len + erc_list
 
     tx = user_account.send(to="mammoth_router", method='create_pool',
-                          calldata=create_pool_args, max_fee=MAX_FEE)
+                           calldata=create_pool_args, max_fee=MAX_FEE)
 
     print(tx)
 

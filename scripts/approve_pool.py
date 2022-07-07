@@ -20,7 +20,7 @@ def run(nre):
     pool_address, _ = nre.get_deployment("mammoth_pool")
 
     # approve pool to spend args
-    approve_args = [int(pool_address, 16), 400000*DECIMALS]
+    approve_args = [int(pool_address, 16), 400000*DECIMALS, 0]
 
     # send tx
     tx_one = user_account.send(to=tZWBTC, method='approve', calldata=approve_args, max_fee=MAX_FEE)

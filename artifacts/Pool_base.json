@@ -33,7 +33,7 @@
                         "end_col": 94,
                         "end_line": 270,
                         "input_file": {
-                            "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                            "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                         },
                         "start_col": 65,
                         "start_line": 270
@@ -50,7 +50,7 @@
                         "end_col": 95,
                         "end_line": 270,
                         "input_file": {
-                            "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                            "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                         },
                         "start_col": 5,
                         "start_line": 270
@@ -68,7 +68,7 @@
                                 "end_col": 95,
                                 "end_line": 271,
                                 "input_file": {
-                                    "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                                    "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                                 },
                                 "start_col": 5,
                                 "start_line": 271
@@ -80,21 +80,21 @@
                         "end_col": 60,
                         "end_line": 272,
                         "input_file": {
-                            "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                            "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 46,
                                 "end_line": 268,
                                 "input_file": {
-                                    "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                                    "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 64,
                                         "end_line": 273,
                                         "input_file": {
-                                            "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                                            "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                                         },
                                         "start_col": 5,
                                         "start_line": 273
@@ -121,7 +121,7 @@
                         "end_col": 63,
                         "end_line": 273,
                         "input_file": {
-                            "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                            "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                         },
                         "start_col": 30,
                         "start_line": 273
@@ -138,7 +138,7 @@
                         "end_col": 64,
                         "end_line": 273,
                         "input_file": {
-                            "filename": "/Users/tonysprocket/Cairo/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
+                            "filename": "/Users/tonysprocket/Cairo/mammoth_pool/mammoth/lib/python3.7/site-packages/starkware/starknet/common/syscalls.cairo"
                         },
                         "start_col": 5,
                         "start_line": 273
