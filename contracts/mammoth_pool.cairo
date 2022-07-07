@@ -31,8 +31,8 @@ end
 
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        router : felt, name : felt, symbol : felt, recipient : felt):
-    ERC20.initializer(name, symbol, Uint256(0, 0), recipient)
+        router : felt, name : felt, symbol : felt, decimals : felt):
+    ERC20.initializer(name, symbol, decimals)
     Ownable.initializer(router)
     return ()
 end
@@ -424,7 +424,7 @@ end
 @view
 func totalSupply{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
         totalSupply : Uint256):
-    let (totalSupply : Uint256) = ERC20.totalSupply()
+    let (totalSupply : Uint256) = ERC20.total_supply()
     return (totalSupply)
 end
 

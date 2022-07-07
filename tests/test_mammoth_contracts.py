@@ -2,7 +2,7 @@ import pytest
 import math
 from hypothesis import given, strategies as st, settings
 
-from ..contracts.lib.openzeppelin.tests.utils import to_uint, from_uint
+from .oz_utils import to_uint, from_uint
 from .conftest import DECIMALS
 
 

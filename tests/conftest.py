@@ -3,7 +3,8 @@ import asyncio
 import pytest
 
 from starkware.starknet.testing.starknet import Starknet
-from ..contracts.lib.openzeppelin.tests.utils import str_to_felt, Signer, to_uint
+from .oz_signers import MockSigner
+from .oz_utils import str_to_felt, to_uint
 
 DECIMALS = 10 ** 18
 
@@ -19,12 +20,12 @@ ROUTER_CONTRACT = os.path.join(
 
 ERC20_CONTRACT = os.path.join(
     os.path.dirname(__file__),
-    "../contracts/lib/openzeppelin/contracts/token/ERC20_Mintable.cairo",
+    "../contracts/lib/Non_owner_ERC20_Mintable.cairo",
 )
 
 ACCOUNT_CONTRACT = os.path.join(
     os.path.dirname(
-        __file__), "../contracts/lib/openzeppelin/contracts/Account.cairo"
+        __file__), "../contracts/lib/Account.cairo"
 )
 
 BALANCER_CONTRACT = os.path.join(
@@ -46,7 +47,7 @@ async def starknet_factory():
 
 @pytest.fixture(scope="module")
 async def signer_factory():
-    signer = Signer(12345)
+    signer = MockSigner(12345)
     return signer
 
 
@@ -91,7 +92,7 @@ async def pool_factory(starknet_factory, account_factory, router_factory):
             router_address,
             name,
             symbol,
-            user,
+            18,  # decimals
         ],
     )
 
@@ -109,9 +110,10 @@ async def tusdc_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("testUSDC"),
             str_to_felt("TUSDC"),
+            18,
             *to_uint(900000 * DECIMALS),
             user,
-            user,
+            user
         ],
     )
 
@@ -129,9 +131,10 @@ async def fc_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("FantieCoin"),
             str_to_felt("FC"),
+            18,
             *to_uint(900000 * DECIMALS),
             user,
-            user,
+            user
         ],
     )
 
@@ -149,6 +152,7 @@ async def teeth_factory(starknet_factory, account_factory, pool_factory):
         constructor_calldata=[
             str_to_felt("testETH"),
             str_to_felt("TEETH"),
+            18,
             *to_uint(900000 * DECIMALS),
             user,
             user,

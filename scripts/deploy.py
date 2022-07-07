@@ -24,7 +24,7 @@ pool_deploy = create_deploy_command(
         router_address,
         str_to_felt("MAMMOTH_LP"),
         str_to_felt("MLP"),
-        owner,
+        18,
     ],
 )
 
@@ -33,22 +33,22 @@ pool_address, ptx = run_command(pool_deploy)
 erc_one = [
     str_to_felt("tZWBTC"),
     str_to_felt("tZWBTC"),
+    18,
     *to_uint(5000000 * DECIMALS),
-    owner,
     owner,
 ]
 erc_two = [
     str_to_felt("tUSDC"),
     str_to_felt("tUSDC"),
+    18,
     *to_uint(5000000 * DECIMALS),
-    owner,
     owner,
 ]
 erc_three = [
     str_to_felt("tETH"),
     str_to_felt("tETH"),
+    18,
     *to_uint(5000000 * DECIMALS),
-    owner,
     owner,
 ]
 list_of_erc = [erc_one, erc_two, erc_three]
