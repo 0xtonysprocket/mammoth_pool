@@ -9,7 +9,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
-from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
+from openzeppelin.utils.constants import TRUE, FALSE
 
 from contracts.lib.ratios.contracts.ratio import Ratio
 from contracts.lib.Pool_registry_base import ApprovedERC20

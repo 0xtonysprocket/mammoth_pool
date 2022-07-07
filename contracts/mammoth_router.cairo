@@ -4,9 +4,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
 # OZ
-from contracts.lib.openzeppelin.contracts.Ownable_base import (
-    Ownable_initializer, Ownable_only_owner, Ownable_get_owner, Ownable_transfer_ownership)
-from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
+from openzeppelin.access.ownable import Ownable
+from openzeppelin.utils.constants import TRUE, FALSE
 
 # Mammoth
 from contracts.lib.ratios.contracts.ratio import Ratio
@@ -16,7 +15,7 @@ from contracts.lib.Pool_registry_base import ApprovedERC20
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         owner_address : felt):
-    Ownable_initializer(owner_address)
+    Ownable.initializer(owner_address)
     return ()
 end
 
@@ -59,7 +58,7 @@ func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
         caller_address : felt, pool_address : felt, s_fee : Ratio, e_fee : Ratio,
         erc_list_len : felt, erc_list : ApprovedERC20*) -> (bool : felt):
     alloc_locals
-    Ownable_only_owner()
+    Ownable.assert_only_owner()
 
     let (local success : felt, local lp_amount : Uint256) = Router.create_pool(
         caller_address, pool_address, s_fee, e_fee, erc_list_len, erc_list)
@@ -184,17 +183,17 @@ end
 # OWNABLE
 #########
 
-@external
+@view
 func get_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
         owner : felt):
-    let (owner) = Ownable_get_owner()
+    let (owner) = Ownable.owner()
     return (owner=owner)
 end
 
 @external
 func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         new_owner : felt) -> (new_owner : felt):
-    Ownable_transfer_ownership(new_owner)
+    Ownable.transfer_ownership(new_owner)
     return (new_owner=new_owner)
 end
 

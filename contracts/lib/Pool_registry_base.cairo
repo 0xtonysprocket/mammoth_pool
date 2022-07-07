@@ -12,7 +12,7 @@ from contracts.lib.ratios.contracts.ratio import Ratio, ratio_add
 from contracts.lib.Pool_base import Pool
 
 # OZ
-from contracts.lib.openzeppelin.contracts.utils.constants import TRUE, FALSE
+from openzeppelin.utils.constants import TRUE, FALSE
 
 # approved erc20s
 @storage_var
