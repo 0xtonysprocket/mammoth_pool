@@ -10,12 +10,12 @@ from starkware.starknet.common.syscalls import get_caller_address, get_contract_
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
+from starkware.cairo.common.bool import TRUE, FALSE
 
 # openzeppelin
 from openzeppelin.access.ownable import Ownable
 from openzeppelin.token.erc20.library import ERC20
 from openzeppelin.security.initializable import Initializable
-from openzeppelin.utils.constants import TRUE, FALSE
 
 # mammoth
 from contracts.lib.Pool_base import Pool

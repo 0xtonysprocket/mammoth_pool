@@ -5,7 +5,7 @@ from starkware.starknet.common.syscalls import get_caller_address, get_contract_
 from starkware.cairo.common.uint256 import Uint256
 
 from openzeppelin.access.ownable import Ownable
-from openzeppelin.utils.constants import TRUE, FALSE
+from contracts.lib.bool import TRUE, FALSE
 from contracts.lib.Pool_base import Pool_deposit, Pool_withdraw
 
 @constructor

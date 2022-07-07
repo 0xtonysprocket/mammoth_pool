@@ -6,13 +6,11 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_contract_address
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_le
+from starkware.cairo.common.bool import TRUE, FALSE
 
 # local
 from contracts.lib.ratios.contracts.ratio import Ratio, ratio_add
 from contracts.lib.Pool_base import Pool
-
-# OZ
-from openzeppelin.utils.constants import TRUE, FALSE
 
 # approved erc20s
 @storage_var
