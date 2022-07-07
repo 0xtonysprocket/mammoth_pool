@@ -1,10 +1,1 @@
-{
-  "ROUTER": {
-    "address": "0x01eed5747a24d01cc7798b0dccf869b0e3bda2f5f532c7fe4fde67b14976a0d5",
-    "transaction": "0x36d3d05306623d42ccb36a7f1c693453782569b495d02a1aceb123e2c7568ea"
-  },
-  "POOL": {
-    "address": "0x05e9da8b270ceef7a9a16b250de5fc6bccb82a0f2d845c035af99c689870da38",
-    "transaction": "0x651b78ae33b45d86372c370c52f9c2df6d9eacfe32bd66e34ed25a9e958889d"
-  }
-}
+{'ROUTER': {'address': '0x0031e3d720be5d5a6808106f7c73797d9d6fdb7d5d4c33d61b186f21e38995d7'}, 'POOL': {'address': '0x0131e7f3e6ce717555816acc870bd33aa2cb2ed8f34847c7ceb4c73d1a1b8af2'}}

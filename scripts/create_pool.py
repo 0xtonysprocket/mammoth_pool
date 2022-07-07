@@ -1,77 +1,44 @@
-import asyncio
-import json
-import dotenv
 import os
-from script_utils import (
-    create_invoke_command,
-    run_command,
-    write_result_to_storage,
-    owner_account,
-    router,
-    pool,
-    ercs,
-    signer,
-)
-from script_utils import DECIMALS
+import sys
 
-from starknet_py.contract import Contract
-from starknet_py.net.client import Client
-from starkware.cairo.common.hash_state import compute_hash_on_elements
-from starkware.crypto.signature.signature import (
-    private_to_stark_key,
-    sign,
-)
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
 
-dotenv.load_dotenv()
-
-owner_address = json.load(open(owner_account()))["address"]
-router_address = json.load(open(router()))["ROUTER"]["address"]
-pool_address = json.load(open(pool()))["POOL"]["address"]
-ercs = [x["address"] for x in json.load(open(ercs()))]
+from scripts.script_utils import DECIMALS, MAX_FEE, write_result_to_storage
 
 
-async def create_pool(owner_address, router_address, pool_address, ercs):
-    key = signer().private_key
+def run(nre):
+    # get user account
+    user_account = nre.get_or_deploy_account("BALLER")
 
-    erc_array = [int(ercs[0], 16), 1, 0, 3, 0, 5 * DECIMALS, 0, int(ercs[1], 16), 1, 0, 3,
-                 0, 100000 * DECIMALS, 0, int(ercs[2], 16), 1, 0, 3, 0, 20 * DECIMALS, 0]
-    erc_array_len = 3
+    # get ERC contracts
+    tZWBTC, _ = tZWBTC, _ = nre.get_deployment("tZWBTC")
+    tUSDC, _ = nre.get_deployment("tUSDC")
+    tETH, _ = nre.get_deployment("tETH")
 
-    account_contract = await Contract.from_address(owner_address, Client("testnet"))
-    proxy_contract = await Contract.from_address(router_address, Client("testnet"))
+    # get router and pool adddress
+    router_address, _ = nre.get_deployment("mammoth_router")
+    pool_address, _ = nre.get_deployment("mammoth_pool")
 
-    swap_fee = (1, 0, 1000, 0)
-    exit_fee = (1, 0, 1000, 0)
+    swap_fee = [1, 0, 1000, 0]  # 1/1000
+    exit_fee = [1, 0, 1000, 0]  # 1/1000
 
-    (nonce,) = await account_contract.functions["get_nonce"].call()
-    selector = proxy_contract.functions["create_pool"].get_selector(
-        "create_pool")
-    calldata = [int(pool_address, 16), *swap_fee, *
-                exit_fee, erc_array_len, *erc_array]
-    calldata_len = len(calldata)
+    erc_list_len = [3]  # 3 structs of size 7 elements
+    erc_list = [int(tZWBTC, 16), 1, 0, 3, 0, 5 * DECIMALS, 0, int(tUSDC, 16), 1, 0, 3,
+                0, 100000 * DECIMALS, 0, int(tETH, 16), 1, 0, 3, 0, 20 * DECIMALS, 0]
 
-    message = [
-        account_contract.address,
-        proxy_contract.address,
-        selector,
-        compute_hash_on_elements(calldata),
-        nonce,
-    ]
-    message_hash = compute_hash_on_elements(message)
-    public_key = private_to_stark_key(key)
-    signature = sign(msg_hash=message_hash, priv_key=key)
+    caller_and_pool_address = [int(user_account.address, 16),
+                               int(pool_address, 16)]
 
-    input_list = [proxy_contract.address, selector,
-                  calldata_len] + calldata + [nonce]
+    create_pool_args = caller_and_pool_address + \
+        swap_fee + exit_fee + erc_list_len + erc_list
 
-    cmd = create_invoke_command(
-        owner_address, "Account", "__execute__", input_list, signature
-    )
-    a, t = run_command(cmd)
+    tx = user_account.send(to="mammoth_router", method='create_pool',
+                          calldata=create_pool_args, max_fee=MAX_FEE)
 
+    print(tx)
 
-asyncio.run(create_pool(owner_address, router_address, pool_address, ercs))
-
-pool_info = {"address": pool_address,
-             "ERCS": ercs, "WEIGHTS": [1 / 3, 1 / 3, 1 / 3]}
-write_result_to_storage(pool_info, "current_pools")
+    pool_info = {"address": pool_address,
+                 "ERCS": [tZWBTC, tUSDC, tETH], "WEIGHTS": [1 / 3, 1 / 3, 1 / 3]}
+    write_result_to_storage(pool_info, "current_pools")
