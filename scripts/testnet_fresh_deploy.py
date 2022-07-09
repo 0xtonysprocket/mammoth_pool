@@ -7,7 +7,6 @@ sys.path.append(parent)
 
 from tests.oz_utils import str_to_felt, to_uint, felt_to_str
 from scripts.script_utils import (
-    write_result_to_storage,
     DECIMALS
 )
 
@@ -70,17 +69,3 @@ def run(nre):
             contract="Non_owner_ERC20_mintable", arguments=erc[0], alias=erc[1])
 
         print(f'{erc[1]} DEPLOYED')
-
-        data = {
-            "name": erc[0],
-            "symbol": erc[1],
-            "address": erc_address,
-        }
-        list_of_erc_data.append(data)
-
-    pool_router_dict = {
-        "ROUTER": {"address": router_address},
-        "POOL": {"address": pool_address},
-    }
-    write_result_to_storage(pool_router_dict, "current_deployment_info")
-    write_result_to_storage(list_of_erc_data, "ERCs")

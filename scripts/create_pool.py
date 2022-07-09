@@ -38,7 +38,3 @@ def run(nre):
                            calldata=create_pool_args, max_fee=MAX_FEE)
 
     print(tx)
-
-    pool_info = {"address": pool_address,
-                 "ERCS": [tZWBTC, tUSDC, tETH], "WEIGHTS": [1 / 3, 1 / 3, 1 / 3]}
-    write_result_to_storage(pool_info, "current_pools")
