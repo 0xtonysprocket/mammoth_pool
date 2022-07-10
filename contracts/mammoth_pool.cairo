@@ -29,12 +29,45 @@ namespace IERC20:
     end
 end
 
-@constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+##########
+# INITIALIZE POOL
+##########
+
+# these function replaces the constructor
+
+func setup_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         router : felt, name : felt, symbol : felt, decimals : felt):
+    # set lp token name, symbol, and decimals
     ERC20.initializer(name, symbol, decimals)
+
+    # set factory as owner
     Ownable.initializer(router)
-    return ()
+end
+
+func initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
+        erc_list : ApprovedERC20*):
+    alloc_locals
+
+    # approve the desired tokens
+    # set swap fee
+    # set exit fee
+    # set token weights
+    # make initial deposits
+    let (local success : felt, local lp_amount : Uint256) = Register.initialize_pool(
+        caller_address, s_fee, e_fee, erc_list_len, erc_list)
+    assert success = TRUE
+
+    # mint initial LP tokens
+    let (local mint_success : felt) = mint(caller_address, lp_amount)
+    with_attr error_message("POOL LP MINT FAILURE IN INITIALIZE"):
+        assert mint_success = TRUE
+    end
+
+    # set as initialized
+    Initializable.initialize()
+
+    return (TRUE, lp_amount)
 end
 
 ##########
@@ -206,26 +239,6 @@ func swap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     end
 
     return (TRUE)
-end
-
-@external
-func initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
-        erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
-    alloc_locals
-
-    let (local success : felt, local lp_amount : Uint256) = Register.initialize_pool(
-        caller_address, s_fee, e_fee, erc_list_len, erc_list)
-    assert success = TRUE
-
-    let (local mint_success : felt) = mint(caller_address, lp_amount)
-    with_attr error_message("POOL LP MINT FAILURE IN INITIALIZE"):
-        assert mint_success = TRUE
-    end
-
-    Initializable.initialize()
-
-    return (TRUE, lp_amount)
 end
 
 ##########
