@@ -284,20 +284,21 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "name": "owner_address",
-                "type": "felt"
-            }
-        ],
-        "name": "constructor",
-        "outputs": [],
-        "type": "constructor"
-    },
-    {
         "data": [
             {
                 "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "symbol",
+                "type": "felt"
+            },
+            {
+                "name": "decimals",
                 "type": "felt"
             },
             {
@@ -419,11 +420,34 @@
     {
         "inputs": [
             {
-                "name": "caller_address",
+                "name": "owner_address",
+                "type": "felt"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_type",
                 "type": "felt"
             },
             {
-                "name": "pool_address",
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "symbol",
+                "type": "felt"
+            },
+            {
+                "name": "decimals",
+                "type": "felt"
+            },
+            {
+                "name": "caller_address",
                 "type": "felt"
             },
             {

@@ -1,9 +1,9 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.starknet.common.syscalls import deploy
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.starknet.common.syscalls import get_contract_address
 
 # OZ
 from openzeppelin.access.ownable import Ownable
@@ -70,7 +70,7 @@ func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     let (local pool_address : felt) = Router.deploy_pool(pool_type)
 
     # setup pool [set name, symbol, decimals, and owner]
-    this_contract = get_contract_address()
+    let (local this_contract : felt) = get_contract_address()
     Router.setup_pool(
         router=this_contract,
         name=name,
@@ -206,17 +206,19 @@ end
 #########
 
 func set_proxy_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        proxy_class_hash : felt) -> (bool : success):
+        proxy_class_hash : felt) -> (bool : felt):
     Ownable.assert_only_owner()
     Router.set_proxy_class_hash(proxy_class_hash)
+    return (TRUE)
 end
 
 # pool type should be a short string, default is the only type currently
 # but if we design more pools we can put the class hash here
 func define_pool_type_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        pool_type : felt, pool_class_hash : felt) -> (bool : success):
+        pool_type : felt, pool_class_hash : felt) -> (bool : felt):
     Ownable.assert_only_owner()
     Router.define_pool_type_class_hash(pool_type, pool_class_hash)
+    return (TRUE)
 end
 
 #########

@@ -10,13 +10,14 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_not_zero
+from starkware.starknet.common.syscalls import deploy
 
 from contracts.lib.ratios.contracts.ratio import Ratio
 from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @contract_interface
 namespace IPoolContract:
-    func setup_pool(name : felt, symbol : felt, decimals : felt, router : felt):
+    func setup_pool(router : felt, name : felt, symbol : felt, decimals : felt):
     end
 
     func deposit_single_asset(amount : Uint256, user_address : felt, erc20_address : felt) -> (
@@ -144,23 +145,23 @@ namespace Router:
             pool_type : felt) -> (new_pool_address : felt):
         alloc_locals
 
-        let (local proxy : felt) = proxy_class_hash.read()
+        let (local proxy_hash : felt) = proxy_class_hash.read()
         let (local pool_hash : felt) = pool_class_hash.read(pool_type)
 
         with_attr error_message("PROXY HASH NOT SET"):
-            assert_not_zero(proxy)
+            assert_not_zero(proxy_hash)
         end
 
         with_attr error_message("NOT A VALID POOL TYPE"):
             assert_not_zero(pool_hash)
         end
 
-        contract_salt = salt.read()
+        let (local contract_salt : felt) = salt.read()
         let (local new_pool_address : felt) = deploy(
-            class_hash=proxy_class_hash,
+            class_hash=proxy_hash,
             contract_address_salt=contract_salt,
             constructor_calldata_size=1,
-            constructor_calldata=pool_hash)
+            constructor_calldata=cast(pool_hash, felt*))
 
         salt.write(contract_salt + 1)
 
@@ -175,6 +176,7 @@ namespace Router:
             name=name,
             symbol=symbol,
             decimals=decimals)
+        return ()
     end
 
     func init_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -214,13 +216,15 @@ namespace Router:
     end
 
     func set_proxy_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            proxy_class_hash : felt):
-        proxy_class_hash.write(proxy_class_hash)
+            proxy_hash : felt):
+        proxy_class_hash.write(proxy_hash)
+        return ()
     end
 
     func define_pool_type_class_hash{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_type : felt, pool_class_hash : felt) -> (bool : success):
-        pool_class_hash.write(pool_type, pool_class_hash)
+            pool_type : felt, pool_hash : felt):
+        pool_class_hash.write(pool_type, pool_hash)
+        return ()
     end
 end
