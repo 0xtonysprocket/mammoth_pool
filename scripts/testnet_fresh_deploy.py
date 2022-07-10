@@ -7,7 +7,7 @@ sys.path.append(parent)
 
 from tests.oz_utils import str_to_felt, to_uint, felt_to_str
 from scripts.script_utils import (
-    DECIMALS
+    DECIMALS, MAX_FEE
 )
 
 
@@ -16,20 +16,61 @@ def run(nre):
     owner_account = nre.get_or_deploy_account("BALLER")
 
     # deploy router
-    router_address, router_abi = nre.deploy(
-        contract="mammoth_router", arguments=[owner_account.address], alias="mammoth_router")
+    try:
+        router_address, router_abi = nre.deploy(
+            contract="mammoth_router", arguments=[owner_account.address], alias="mammoth_router")
 
-    print("ROUTER DEPLOYED")
+        print("ROUTER DEPLOYED")
+    except Exception as e:
+        print(e)
+
+    # declare pool proxy
+    try:
+        pool_proxy_class = nre.declare(
+            contract="Pool_Proxy", alias="Pool_Proxy_Class")
+        print("Pool Proxy Class Declared")
+    except Exception as e:
+        print(e)
+        pool_proxy_class = nre.get_declaration("Pool_Proxy_Class")
+
+    # declare pool
+    try:
+        pool_class = nre.declare(contract="mammoth_pool", alias="Pool_Class")
+        print("Pool Class declared")
+    except Exception as e:
+        print(e)
+        pool_class = nre.get_declaration("Pool_Class")
+
+    # set proxy and pool class hash
+    success = owner_account.send(to="mammoth_router", method="set_proxy_class_hash", calldata=[
+        int(pool_proxy_class, 16)], max_fee=MAX_FEE)
+
+    # assert success == 1
+    print(success)
+    print("Proxy Hash Set Successfully")
+
+    success = owner_account.send(to="mammoth_router", method="define_pool_type_class_hash", calldata=[
+        str(str_to_felt("DEFAULTv0")), int(pool_class, 16)], max_fee=MAX_FEE)
+
+    # assert success == 1
+    print(success)
+    print("Pool Hash Set Successfully")
 
     # deploy pool
-    pool_args = [
-        router_address,
-        str(str_to_felt("MAMMOTH_LP")),
-        str(str_to_felt("MLP")),
-        str(18),
-    ]
-    pool_address, pool_abi = nre.deploy(
-        contract="mammoth_pool", arguments=pool_args, alias="mammoth_pool")
+    pool_address = owner_account.send(to="mammoth_router", method="deploy_pool",
+                                      calldata=[str(str_to_felt("DEFAULTv0"))], max_fee=MAX_FEE)
+
+    print(pool_address)
+
+    # deploy pool
+    # pool_args = [
+    #    router_address,
+    #    str(str_to_felt("MAMMOTH_LP")),
+    #    str(str_to_felt("MLP")),
+    #    str(18),
+    # ]
+    # pool_address, pool_abi = nre.deploy(
+    #    contract="mammoth_pool", arguments=pool_args, alias="mammoth_pool")
 
     print("POOL DEPLOYED")
 

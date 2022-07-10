@@ -433,6 +433,22 @@
             {
                 "name": "pool_type",
                 "type": "felt"
+            }
+        ],
+        "name": "deploy_pool",
+        "outputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
             },
             {
                 "name": "name",
@@ -607,6 +623,42 @@
         "outputs": [
             {
                 "name": "success",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "proxy_class_hash",
+                "type": "felt"
+            }
+        ],
+        "name": "set_proxy_class_hash",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_type",
+                "type": "felt"
+            },
+            {
+                "name": "pool_class_hash",
+                "type": "felt"
+            }
+        ],
+        "name": "define_pool_type_class_hash",
+        "outputs": [
+            {
+                "name": "bool",
                 "type": "felt"
             }
         ],

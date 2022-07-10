@@ -59,15 +59,24 @@ end
 ############
 
 @external
-func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        pool_type : felt, name : felt, symbol : felt, decimals : felt, caller_address : felt,
-        s_fee : Ratio, e_fee : Ratio, erc_list_len : felt, erc_list : ApprovedERC20*) -> (
-        bool : felt):
+func deploy_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_type : felt) -> (pool_address : felt):
     alloc_locals
     Ownable.assert_only_owner()
 
     # deploy pool
     let (local pool_address : felt) = Router.deploy_pool(pool_type)
+
+    return (pool_address)
+end
+
+@external
+func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_address : felt, name : felt, symbol : felt, decimals : felt, caller_address : felt,
+        s_fee : Ratio, e_fee : Ratio, erc_list_len : felt, erc_list : ApprovedERC20*) -> (
+        bool : felt):
+    alloc_locals
+    Ownable.assert_only_owner()
 
     # setup pool [set name, symbol, decimals, and owner]
     let (local this_contract : felt) = get_contract_address()
@@ -205,6 +214,7 @@ end
 # SETTERS
 #########
 
+@external
 func set_proxy_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         proxy_class_hash : felt) -> (bool : felt):
     Ownable.assert_only_owner()
@@ -214,6 +224,7 @@ end
 
 # pool type should be a short string, default is the only type currently
 # but if we design more pools we can put the class hash here
+@external
 func define_pool_type_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         pool_type : felt, pool_class_hash : felt) -> (bool : felt):
     Ownable.assert_only_owner()

@@ -10,7 +10,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import assert_not_zero
-from starkware.starknet.common.syscalls import deploy
+from starkware.starknet.common.syscalls import deploy, get_contract_address
+from starkware.cairo.common.alloc import alloc
 
 from contracts.lib.ratios.contracts.ratio import Ratio
 from contracts.lib.Pool_registry_base import ApprovedERC20
@@ -156,12 +157,19 @@ namespace Router:
             assert_not_zero(pool_hash)
         end
 
+        # get address of factory contract to set as admin in pool proxy
+        let (local this_contract : felt) = get_contract_address()
+
+        let (local call_data_arr : felt*) = alloc()
+        assert call_data_arr[0] = pool_hash
+        assert call_data_arr[1] = this_contract
+
         let (local contract_salt : felt) = salt.read()
         let (local new_pool_address : felt) = deploy(
             class_hash=proxy_hash,
             contract_address_salt=contract_salt,
-            constructor_calldata_size=1,
-            constructor_calldata=cast(pool_hash, felt*))
+            constructor_calldata_size=2,
+            constructor_calldata=call_data_arr)
 
         salt.write(contract_salt + 1)
 
