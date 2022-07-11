@@ -44121,9 +44121,9 @@
                 "size": 0,
                 "type": "struct"
             },
-            "__main__.IPoolRegister.INITIALIZE_POOL_SELECTOR": {
+            "__main__.IPoolRegister.INIT_POOL_SELECTOR": {
                 "type": "const",
-                "value": 229055597517050599283192720264211412882735223108637034562417707995809216287
+                "value": 841231201332894204930453782240529769612046016900553687717692612147701101858
             },
             "__main__.IPoolRegister.ImplicitArgs": {
                 "full_name": "__main__.IPoolRegister.ImplicitArgs",

@@ -51,6 +51,48 @@
         "type": "struct"
     },
     {
+        "members": [
+            {
+                "name": "erc_address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "low_num",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "high_num",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "low_den",
+                "offset": 3,
+                "type": "felt"
+            },
+            {
+                "name": "high_den",
+                "offset": 4,
+                "type": "felt"
+            },
+            {
+                "name": "initial_liquidity_low",
+                "offset": 5,
+                "type": "felt"
+            },
+            {
+                "name": "initial_liquidity_high",
+                "offset": 6,
+                "type": "felt"
+            }
+        ],
+        "name": "ApprovedERC20",
+        "size": 7,
+        "type": "struct"
+    },
+    {
         "data": [
             {
                 "name": "previousOwner",
@@ -513,6 +555,65 @@
     {
         "inputs": [
             {
+                "name": "router",
+                "type": "felt"
+            },
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "symbol",
+                "type": "felt"
+            },
+            {
+                "name": "decimals",
+                "type": "felt"
+            }
+        ],
+        "name": "setup_pool",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "caller_address",
+                "type": "felt"
+            },
+            {
+                "name": "s_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "e_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "erc_list_len",
+                "type": "felt"
+            },
+            {
+                "name": "erc_list",
+                "type": "ApprovedERC20*"
+            }
+        ],
+        "name": "init_pool",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            },
+            {
+                "name": "lp_amount",
+                "type": "Uint256"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "amount_to_deposit",
                 "type": "Uint256"
             },
@@ -808,6 +909,13 @@
                 "type": "Ratio"
             }
         ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "require_not_initialized",
+        "outputs": [],
         "stateMutability": "view",
         "type": "function"
     },

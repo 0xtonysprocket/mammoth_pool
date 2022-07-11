@@ -286,6 +286,21 @@
     {
         "data": [
             {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_type",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "pool_deployed",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
                 "name": "pool",
                 "type": "felt"
             },

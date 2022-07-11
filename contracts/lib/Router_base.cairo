@@ -48,7 +48,7 @@ end
 
 @contract_interface
 namespace IPoolRegister:
-    func initialize_pool(
+    func init_pool(
             caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
             erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
     end
@@ -192,7 +192,7 @@ namespace Router:
             erc_list_len : felt, erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
         alloc_locals
         approved_pool_address.write(pool_address, TRUE)
-        let (local success : felt, local lp_amount : Uint256) = IPoolRegister.initialize_pool(
+        let (local success : felt, local lp_amount : Uint256) = IPoolRegister.init_pool(
             contract_address=pool_address,
             caller_address=caller_address,
             s_fee=s_fee,

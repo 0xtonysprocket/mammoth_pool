@@ -18,6 +18,10 @@ from contracts.lib.Pool_registry_base import ApprovedERC20
 ############
 
 @event
+func pool_deployed(pool_address : felt, pool_type : felt):
+end
+
+@event
 func pool_created(
         pool : felt, name : felt, symbol : felt, decimals : felt, swap_fee : Ratio,
         exit_fee : Ratio, tokens_len : felt, tokens : ApprovedERC20*, initial_lp_minted : Uint256):
@@ -67,6 +71,8 @@ func deploy_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     # deploy pool
     let (local pool_address : felt) = Router.deploy_pool(pool_type)
 
+    pool_deployed.emit(pool_address=pool_address, pool_type=pool_type)
+
     return (pool_address)
 end
 
@@ -80,12 +86,7 @@ func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 
     # setup pool [set name, symbol, decimals, and owner]
     let (local this_contract : felt) = get_contract_address()
-    Router.setup_pool(
-        router=this_contract,
-        name=name,
-        symbol=symbol,
-        decimals=decimals,
-        pool_address=pool_address)
+    Router.setup_pool(this_contract, name, symbol, decimals, pool_address)
 
     # init pool [set fees, ERCs, weights, supply initial liquidity]
     let (local success : felt, local lp_amount : Uint256) = Router.init_pool(

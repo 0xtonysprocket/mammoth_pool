@@ -5,7 +5,9 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
-from scripts.script_utils import DECIMALS, MAX_FEE, write_result_to_storage
+from starkware.starknet.public.abi import get_selector_from_name
+from scripts.script_utils import DECIMALS, MAX_FEE
+from tests.oz_utils import str_to_felt
 
 
 def run(nre):
@@ -21,6 +23,13 @@ def run(nre):
     router_address, _ = nre.get_deployment("mammoth_router")
     pool_address, _ = nre.get_deployment("mammoth_pool")
 
+    # setup pool
+    pool_args = [
+        str(str_to_felt("MAMMOTH_LP")),
+        str(str_to_felt("MLP")),
+        str(18),
+    ]
+
     swap_fee = [1, 0, 1000, 0]  # 1/1000
     exit_fee = [1, 0, 1000, 0]  # 1/1000
 
@@ -28,10 +37,10 @@ def run(nre):
     erc_list = [int(tZWBTC, 16), 1, 0, 3, 0, 5 * DECIMALS, 0, int(tUSDC, 16), 1, 0, 3,
                 0, 100000 * DECIMALS, 0, int(tETH, 16), 1, 0, 3, 0, 20 * DECIMALS, 0]
 
-    caller_and_pool_address = [int(user_account.address, 16),
-                               int(pool_address, 16)]
+    caller_address = [int(user_account.address, 16)]
+    pool_address = [int(pool_address, 16)]
 
-    create_pool_args = caller_and_pool_address + \
+    create_pool_args = pool_address + pool_args + caller_address + \
         swap_fee + exit_fee + erc_list_len + erc_list
 
     tx = user_account.send(to="mammoth_router", method='create_pool',

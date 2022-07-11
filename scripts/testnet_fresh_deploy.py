@@ -26,12 +26,12 @@ def run(nre):
 
     # declare pool proxy
     try:
-        pool_proxy_class = nre.declare(
-            contract="Pool_Proxy", alias="Pool_Proxy_Class")
-        print("Pool Proxy Class Declared")
+        proxy_class = nre.declare(
+            contract="Proxy", alias="Proxy_Class")
+        print("Proxy Class Declared")
     except Exception as e:
         print(e)
-        pool_proxy_class = nre.get_declaration("Pool_Proxy_Class")
+        proxy_class = nre.get_declaration("Proxy_Class")
 
     # declare pool
     try:
@@ -43,7 +43,7 @@ def run(nre):
 
     # set proxy and pool class hash
     success = owner_account.send(to="mammoth_router", method="set_proxy_class_hash", calldata=[
-        int(pool_proxy_class, 16)], max_fee=MAX_FEE)
+        int(proxy_class, 16)], max_fee=MAX_FEE)
 
     # assert success == 1
     print(success)
@@ -61,16 +61,6 @@ def run(nre):
                                       calldata=[str(str_to_felt("DEFAULTv0"))], max_fee=MAX_FEE)
 
     print(pool_address)
-
-    # deploy pool
-    # pool_args = [
-    #    router_address,
-    #    str(str_to_felt("MAMMOTH_LP")),
-    #    str(str_to_felt("MLP")),
-    #    str(18),
-    # ]
-    # pool_address, pool_abi = nre.deploy(
-    #    contract="mammoth_pool", arguments=pool_args, alias="mammoth_pool")
 
     print("POOL DEPLOYED")
 
@@ -106,7 +96,9 @@ def run(nre):
 
     list_of_erc_data = list()
     for erc in list_of_erc:
-        erc_address, erc_abi = nre.deploy(
-            contract="Non_owner_ERC20_mintable", arguments=erc[0], alias=erc[1])
-
-        print(f'{erc[1]} DEPLOYED')
+        try:
+            erc_address, erc_abi = nre.deploy(
+                contract="Non_owner_ERC20_mintable", arguments=erc[0], alias=erc[1])
+            print(f'{erc[1]} DEPLOYED')
+        except Exception as e:
+            print(e)

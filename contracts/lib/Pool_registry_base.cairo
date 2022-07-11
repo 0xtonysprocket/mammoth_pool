@@ -61,7 +61,7 @@ struct ApprovedERC20:
 end
 
 namespace Register:
-    func initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    func init_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
             caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
             erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
         alloc_locals
