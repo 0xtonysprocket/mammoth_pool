@@ -58,7 +58,7 @@ def run(nre):
 
     # deploy pool
     pool_address = owner_account.send(to="mammoth_router", method="deploy_pool",
-                                      calldata=[str(str_to_felt("DEFAULTv0"))], max_fee=MAX_FEE)
+                                      calldata=[str(str_to_felt("DEFAULTv0")), owner_account.address], max_fee=MAX_FEE)
 
     print(pool_address)
 

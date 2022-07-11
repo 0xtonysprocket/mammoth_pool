@@ -64,12 +64,12 @@ end
 
 @external
 func deploy_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        pool_type : felt) -> (pool_address : felt):
+        pool_type : felt, proxy_admin : felt) -> (pool_address : felt):
     alloc_locals
     Ownable.assert_only_owner()
 
     # deploy pool
-    let (local pool_address : felt) = Router.deploy_pool(pool_type)
+    let (local pool_address : felt) = Router.deploy_pool(pool_type, proxy_admin)
 
     pool_deployed.emit(pool_address=pool_address, pool_type=pool_type)
 

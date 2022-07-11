@@ -143,7 +143,7 @@ namespace Router:
     end
 
     func deploy_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_type : felt) -> (new_pool_address : felt):
+            pool_type : felt, proxy_admin : felt) -> (new_pool_address : felt):
         alloc_locals
 
         let (local proxy_hash : felt) = proxy_class_hash.read()
@@ -157,12 +157,9 @@ namespace Router:
             assert_not_zero(pool_hash)
         end
 
-        # get address of factory contract to set as admin in pool proxy
-        let (local this_contract : felt) = get_contract_address()
-
         let (local call_data_arr : felt*) = alloc()
         assert call_data_arr[0] = pool_hash
-        assert call_data_arr[1] = this_contract
+        assert call_data_arr[1] = proxy_admin
 
         let (local contract_salt : felt) = salt.read()
         let (local new_pool_address : felt) = deploy(
