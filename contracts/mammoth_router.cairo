@@ -7,6 +7,7 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 # OZ
 from openzeppelin.access.ownable import Ownable
+from openzeppelin.security.initializable import Initializable, Initializable_initialized
 
 # Mammoth
 from contracts.lib.ratios.contracts.ratio import Ratio
@@ -48,13 +49,17 @@ func swap_called(token_in : felt, token_out : felt, pool : felt, amount_swapped_
 end
 
 ############
-# CONSTRUCTOR
+# Initializer
 ############
 
-@constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+@external
+func initialize{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         owner_address : felt):
+    require_not_initialized()
     Ownable.initializer(owner_address)
+
+    # set as initialized
+    Initializable.initialize()
     return ()
 end
 
@@ -261,4 +266,20 @@ func is_pool_approved{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     alloc_locals
     let (local success : felt) = Router.pool_approved(pool_address)
     return (success)
+end
+
+#########
+# REQUIRE FUNCTION
+#########
+
+@view
+func require_not_initialized{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    alloc_locals
+    let (local initialized : felt) = Initializable_initialized.read()
+
+    with_attr error_message("ERROR POOL ALREADY INITIALIZED"):
+        assert initialized = 0
+    end
+
+    return ()
 end

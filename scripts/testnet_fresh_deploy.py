@@ -15,15 +15,6 @@ def run(nre):
     # get account to work with
     owner_account = nre.get_or_deploy_account("BALLER")
 
-    # deploy router
-    try:
-        router_address, router_abi = nre.deploy(
-            contract="mammoth_router", arguments=[owner_account.address], alias="mammoth_router")
-
-        print("ROUTER DEPLOYED")
-    except Exception as e:
-        print(e)
-
     # declare pool proxy
     try:
         proxy_class = nre.declare(
@@ -40,6 +31,33 @@ def run(nre):
     except Exception as e:
         print(e)
         pool_class = nre.get_declaration("Pool_Class")
+
+    # declare router
+    try:
+        router_class = nre.declare(
+            contract="mammoth_router", alias="Router_Class")
+        print("Router Class declared")
+    except Exception as e:
+        print(e)
+        router_class = nre.get_declaration("Router_Class")
+
+    # deploy router
+    try:
+        router_address, router_abi = nre.deploy(
+            contract="Proxy", arguments=[router_class, owner_account.address], alias="mammoth_router")
+
+        print("ROUTER DEPLOYED")
+    except Exception as e:
+        print(e)
+        router_address, _ = nre.get_deployment("mammoth_router")
+
+    # initialize router
+    try:
+        initialize_router = owner_account.send(to="mammoth_router", method="initialize", calldata=[
+                                               int(owner_account.address, 16)], max_fee=MAX_FEE)
+        print("Router Initialized")
+    except Exception as e:
+        print(e)
 
     # set proxy and pool class hash
     success = owner_account.send(to="mammoth_router", method="set_proxy_class_hash", calldata=[
@@ -58,7 +76,7 @@ def run(nre):
 
     # deploy pool
     pool_address = owner_account.send(to="mammoth_router", method="deploy_pool",
-                                      calldata=[str(str_to_felt("DEFAULTv0")), owner_account.address], max_fee=MAX_FEE)
+                                      calldata=[str(str_to_felt("DEFAULTv0")), int(owner_account.address, 16)], max_fee=MAX_FEE)
 
     print(pool_address)
 

@@ -439,14 +439,18 @@
                 "type": "felt"
             }
         ],
-        "name": "constructor",
+        "name": "initialize",
         "outputs": [],
-        "type": "constructor"
+        "type": "function"
     },
     {
         "inputs": [
             {
                 "name": "pool_type",
+                "type": "felt"
+            },
+            {
+                "name": "proxy_admin",
                 "type": "felt"
             }
         ],
@@ -721,6 +725,13 @@
                 "type": "felt"
             }
         ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "require_not_initialized",
+        "outputs": [],
         "stateMutability": "view",
         "type": "function"
     }

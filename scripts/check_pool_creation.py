@@ -20,6 +20,27 @@ def run(nre):
         print("Pool Approved Properly")
     except:
         print("ERROR POOL NOT APPROVED")
+
+    # check ERC approval
+    is_zwbtc_approved = nre.call(
+        contract=pool_address, method="is_ERC20_approved", params=[tZWBTC])
+    is_tusdc_approved = nre.call(
+        contract=pool_address, method="is_ERC20_approved", params=[tUSDC])
+    is_tETH_approved = nre.call(
+        contract=pool_address, method="is_ERC20_approved", params=[tETH])
+
+    try:
+        assert int(is_zwbtc_approved) == 1
+        print("tZWBTC approved properly")
+
+        assert int(is_tusdc_approved) == 1
+        print("tUSDC approved properly")
+
+        assert int(is_tETH_approved) == 1
+        print("tETH approved properly")
+    except:
+        print("ERROR ONE OR MORE ERC NOT APPROVED")
+
     # check balances
     # initial balances should be:
     # tZWBTC 5 * 10**18
@@ -46,23 +67,3 @@ def run(nre):
     except:
         print(
             "ERROR CASE 1: ONE OR MORE BALANCE NOT CORRECT AFTER INITIALIZATION [FIX] \n CASE 2: POOL HAS BEEN USED [IGNORE]")
-
-    # check ERC approval
-    is_zwbtc_approved = nre.call(
-        contract=pool_address, method="is_ERC20_approved", params=[tZWBTC])
-    is_tusdc_approved = nre.call(
-        contract=pool_address, method="is_ERC20_approved", params=[tUSDC])
-    is_tETH_approved = nre.call(
-        contract=pool_address, method="is_ERC20_approved", params=[tETH])
-
-    try:
-        assert int(is_zwbtc_approved) == 1
-        print("tZWBTC approved properly")
-
-        assert int(is_tusdc_approved) == 1
-        print("tUSDC approved properly")
-
-        assert int(is_tETH_approved) == 1
-        print("tETH approved properly")
-    except:
-        print("ERROR ONE OR MORE ERC NOT APPROVED")
