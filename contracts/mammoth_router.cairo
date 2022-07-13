@@ -3,30 +3,29 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.starknet.common.syscalls import get_contract_address
 
 # OZ
 from openzeppelin.access.ownable import Ownable
+from openzeppelin.security.initializable import Initializable, Initializable_initialized
 
 # Mammoth
 from contracts.lib.ratios.contracts.ratio import Ratio
 from contracts.lib.Router_base import Router
 from contracts.lib.Pool_registry_base import ApprovedERC20
 
-@constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        owner_address : felt):
-    Ownable.initializer(owner_address)
-    return ()
-end
-
 ############
 # EVENTS
 ############
 
 @event
+func pool_deployed(pool_address : felt, pool_type : felt):
+end
+
+@event
 func pool_created(
-        pool : felt, swap_fee : Ratio, exit_fee : Ratio, tokens_len : felt, tokens : ApprovedERC20*,
-        initial_lp_minted : Uint256):
+        pool : felt, name : felt, symbol : felt, decimals : felt, swap_fee : Ratio,
+        exit_fee : Ratio, tokens_len : felt, tokens : ApprovedERC20*, initial_lp_minted : Uint256):
 end
 
 @event
@@ -50,17 +49,52 @@ func swap_called(token_in : felt, token_out : felt, pool : felt, amount_swapped_
 end
 
 ############
+# Initializer
+############
+
+@external
+func initialize{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        owner_address : felt):
+    require_not_initialized()
+    Ownable.initializer(owner_address)
+
+    # set as initialized
+    Initializable.initialize()
+    return ()
+end
+
+############
 # CREATE POOL
 ############
 
 @external
-func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        caller_address : felt, pool_address : felt, s_fee : Ratio, e_fee : Ratio,
-        erc_list_len : felt, erc_list : ApprovedERC20*) -> (bool : felt):
+func deploy_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_type : felt, proxy_admin : felt) -> (pool_address : felt):
     alloc_locals
     Ownable.assert_only_owner()
 
-    let (local success : felt, local lp_amount : Uint256) = Router.create_pool(
+    # deploy pool
+    let (local pool_address : felt) = Router.deploy_pool(pool_type, proxy_admin)
+
+    pool_deployed.emit(pool_address=pool_address, pool_type=pool_type)
+
+    return (pool_address)
+end
+
+@external
+func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_address : felt, name : felt, symbol : felt, decimals : felt, caller_address : felt,
+        s_fee : Ratio, e_fee : Ratio, erc_list_len : felt, erc_list : ApprovedERC20*) -> (
+        bool : felt):
+    alloc_locals
+    Ownable.assert_only_owner()
+
+    # setup pool [set name, symbol, decimals, and owner]
+    let (local this_contract : felt) = get_contract_address()
+    Router.setup_pool(this_contract, name, symbol, decimals, pool_address)
+
+    # init pool [set fees, ERCs, weights, supply initial liquidity]
+    let (local success : felt, local lp_amount : Uint256) = Router.init_pool(
         caller_address, pool_address, s_fee, e_fee, erc_list_len, erc_list)
 
     with_attr error_message("POOL CREATION FAILED : ROUTER LEVEL"):
@@ -69,6 +103,9 @@ func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 
     pool_created.emit(
         pool=pool_address,
+        name=name,
+        symbol=symbol,
+        decimals=decimals,
         swap_fee=s_fee,
         exit_fee=e_fee,
         tokens_len=erc_list_len,
@@ -180,6 +217,28 @@ func mammoth_swap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 end
 
 #########
+# SETTERS
+#########
+
+@external
+func set_proxy_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        proxy_class_hash : felt) -> (bool : felt):
+    Ownable.assert_only_owner()
+    Router.set_proxy_class_hash(proxy_class_hash)
+    return (TRUE)
+end
+
+# pool type should be a short string, default is the only type currently
+# but if we design more pools we can put the class hash here
+@external
+func define_pool_type_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_type : felt, pool_class_hash : felt) -> (bool : felt):
+    Ownable.assert_only_owner()
+    Router.define_pool_type_class_hash(pool_type, pool_class_hash)
+    return (TRUE)
+end
+
+#########
 # OWNABLE
 #########
 
@@ -207,4 +266,20 @@ func is_pool_approved{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     alloc_locals
     let (local success : felt) = Router.pool_approved(pool_address)
     return (success)
+end
+
+#########
+# REQUIRE FUNCTION
+#########
+
+@view
+func require_not_initialized{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    alloc_locals
+    let (local initialized : felt) = Initializable_initialized.read()
+
+    with_attr error_message("ERROR POOL ALREADY INITIALIZED"):
+        assert initialized = 0
+    end
+
+    return ()
 end

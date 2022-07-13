@@ -9,12 +9,18 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.math import assert_not_zero
+from starkware.starknet.common.syscalls import deploy, get_contract_address
+from starkware.cairo.common.alloc import alloc
 
 from contracts.lib.ratios.contracts.ratio import Ratio
 from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @contract_interface
 namespace IPoolContract:
+    func setup_pool(router : felt, name : felt, symbol : felt, decimals : felt):
+    end
+
     func deposit_single_asset(amount : Uint256, user_address : felt, erc20_address : felt) -> (
             success : felt):
     end
@@ -42,7 +48,7 @@ end
 
 @contract_interface
 namespace IPoolRegister:
-    func initialize_pool(
+    func init_pool(
             caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
             erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
     end
@@ -51,6 +57,21 @@ end
 # store the address of the pool contract
 @storage_var
 func approved_pool_address(pool_address : felt) -> (bool : felt):
+end
+
+# deployment salt
+@storage_var
+func salt() -> (salt : felt):
+end
+
+# proxy class hash
+@storage_var
+func proxy_class_hash() -> (proxy_class_hash : felt):
+end
+
+# pool class hash (mapping from pool type -> class hash)
+@storage_var
+func pool_class_hash(pool_type : felt) -> (class_hash : felt):
 end
 
 namespace Router:
@@ -121,12 +142,54 @@ namespace Router:
         return (TRUE)
     end
 
-    func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    func deploy_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            pool_type : felt, proxy_admin : felt) -> (new_pool_address : felt):
+        alloc_locals
+
+        let (local proxy_hash : felt) = proxy_class_hash.read()
+        let (local pool_hash : felt) = pool_class_hash.read(pool_type)
+
+        with_attr error_message("PROXY HASH NOT SET"):
+            assert_not_zero(proxy_hash)
+        end
+
+        with_attr error_message("NOT A VALID POOL TYPE"):
+            assert_not_zero(pool_hash)
+        end
+
+        let (local call_data_arr : felt*) = alloc()
+        assert call_data_arr[0] = pool_hash
+        assert call_data_arr[1] = proxy_admin
+
+        let (local contract_salt : felt) = salt.read()
+        let (local new_pool_address : felt) = deploy(
+            class_hash=proxy_hash,
+            contract_address_salt=contract_salt,
+            constructor_calldata_size=2,
+            constructor_calldata=call_data_arr)
+
+        salt.write(contract_salt + 1)
+
+        return (new_pool_address)
+    end
+
+    func setup_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            router : felt, name : felt, symbol : felt, decimals : felt, pool_address : felt):
+        IPoolContract.setup_pool(
+            contract_address=pool_address,
+            router=router,
+            name=name,
+            symbol=symbol,
+            decimals=decimals)
+        return ()
+    end
+
+    func init_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
             caller_address : felt, pool_address : felt, s_fee : Ratio, e_fee : Ratio,
             erc_list_len : felt, erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
         alloc_locals
         approved_pool_address.write(pool_address, TRUE)
-        let (local success : felt, local lp_amount : Uint256) = IPoolRegister.initialize_pool(
+        let (local success : felt, local lp_amount : Uint256) = IPoolRegister.init_pool(
             contract_address=pool_address,
             caller_address=caller_address,
             s_fee=s_fee,
@@ -142,7 +205,10 @@ namespace Router:
         alloc_locals
 
         let (local approved : felt) = approved_pool_address.read(pool_address)
-        assert approved = TRUE
+
+        with_attr error_message("ERROR POOL NOT APPROVED"):
+            assert approved = TRUE
+        end
 
         return ()
     end
@@ -152,5 +218,18 @@ namespace Router:
         alloc_locals
         let (local bool : felt) = approved_pool_address.read(pool_address)
         return (bool)
+    end
+
+    func set_proxy_class_hash{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            proxy_hash : felt):
+        proxy_class_hash.write(proxy_hash)
+        return ()
+    end
+
+    func define_pool_type_class_hash{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            pool_type : felt, pool_hash : felt):
+        pool_class_hash.write(pool_type, pool_hash)
+        return ()
     end
 end

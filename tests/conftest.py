@@ -10,6 +10,10 @@ DECIMALS = 10 ** 18
 
 
 # contract and library paths
+PROXY_CONTRACT = os.path.join(
+    os.path.dirname(__file__), "../contracts/lib/Proxy.cairo"
+)
+
 POOL_CONTRACT = os.path.join(
     os.path.dirname(__file__), "../contracts/mammoth_pool.cairo"
 )
@@ -65,45 +69,59 @@ async def account_factory(starknet_factory, signer_factory):
 
 
 @pytest.fixture(scope="module")
-async def router_factory(starknet_factory, account_factory):
+async def class_hash_factory(starknet_factory, signer_factory):
     starknet = starknet_factory
-    _, user = account_factory
+    signer = signer_factory
 
+    # Declare the proxy contract
+    proxy = await starknet.declare(source=PROXY_CONTRACT)
+    proxy_hash = proxy.class_hash
+
+    pool = await starknet.declare(source=POOL_CONTRACT)
+    pool_hash = pool.class_hash
+    pool_abi = pool.abi
+
+    router = await starknet.declare(source=ROUTER_CONTRACT)
+    router_hash = router.class_hash
+
+    return proxy_hash, pool_hash, router_hash, pool_abi
+
+
+@pytest.fixture(scope="module")
+async def router_factory(starknet_factory, signer_factory, account_factory, class_hash_factory):
+    starknet = starknet_factory
+    signer = signer_factory
+    _, _, router_hash, _ = class_hash_factory
+    user_account, user = account_factory
+
+    # deploy router
     router_contract = await starknet.deploy(
-        source=ROUTER_CONTRACT,
-        constructor_calldata=[user],
+        source=PROXY_CONTRACT,
+        constructor_calldata=[router_hash, user],
+    )
+
+    # initialize router
+    await signer.send_transaction(
+        account=user_account,
+        to=router_contract.contract_address,
+        selector_name="initialize",
+        calldata=[user],
     )
 
     return router_contract, router_contract.contract_address
 
-
-@pytest.fixture(scope="module")
-async def pool_factory(starknet_factory, account_factory, router_factory):
-    starknet = starknet_factory
-    _, user = account_factory
-    _, router_address = router_factory
-
-    name = str_to_felt("MAMMOTH_LP")
-    symbol = str_to_felt("MLP")
-
-    pool_contract = await starknet.deploy(
-        source=POOL_CONTRACT,
-        constructor_calldata=[
-            router_address,
-            name,
-            symbol,
-            18,  # decimals
-        ],
-    )
-
-    return pool_contract, pool_contract.contract_address
+# will be assigned in test deploy pool
 
 
 @pytest.fixture(scope="module")
-async def tusdc_factory(starknet_factory, account_factory, pool_factory):
+async def pool_factory():
+    return {}
+
+
+@pytest.fixture(scope="module")
+async def tusdc_factory(starknet_factory, account_factory):
     starknet = starknet_factory
     _, user = account_factory
-    _, pool = pool_factory
 
     tusdc = await starknet.deploy(
         ERC20_CONTRACT,
@@ -121,10 +139,9 @@ async def tusdc_factory(starknet_factory, account_factory, pool_factory):
 
 
 @pytest.fixture(scope="module")
-async def fc_factory(starknet_factory, account_factory, pool_factory):
+async def fc_factory(starknet_factory, account_factory):
     starknet = starknet_factory
     _, user = account_factory
-    _, pool = pool_factory
 
     fc = await starknet.deploy(
         ERC20_CONTRACT,
@@ -142,10 +159,9 @@ async def fc_factory(starknet_factory, account_factory, pool_factory):
 
 
 @pytest.fixture(scope="module")
-async def teeth_factory(starknet_factory, account_factory, pool_factory):
+async def teeth_factory(starknet_factory, account_factory):
     starknet = starknet_factory
     _, user = account_factory
-    _, pool = pool_factory
 
     teeth = await starknet.deploy(
         ERC20_CONTRACT,

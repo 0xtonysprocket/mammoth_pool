@@ -4581,12 +4581,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -4611,12 +4611,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -4641,12 +4641,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -4671,12 +4671,12 @@
                         "parent_location": [
                             {
                                 "end_col": 28,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 19,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling calldata argument 'recipient'"
                         ],
@@ -4701,12 +4701,12 @@
                         "parent_location": [
                             {
                                 "end_col": 43,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 37,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling calldata argument 'amount'"
                         ],
@@ -4731,12 +4731,12 @@
                         "parent_location": [
                             {
                                 "end_col": 43,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 37,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling calldata argument 'amount'"
                         ],
@@ -4761,7 +4761,7 @@
                         "parent_location": [
                             {
                                 "end_col": 43,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -4775,12 +4775,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 18,
-                                                "end_line": 34,
+                                                "end_line": 35,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 34
+                                                "start_line": 35
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -4790,7 +4790,7 @@
                                     "While expanding the reference '__calldata_ptr' in:"
                                 ],
                                 "start_col": 37,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling calldata argument 'amount'"
                         ],
@@ -4815,7 +4815,7 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -4836,12 +4836,12 @@
                                                 "parent_location": [
                                                     {
                                                         "end_col": 18,
-                                                        "end_line": 34,
+                                                        "end_line": 35,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
                                                         "start_col": 10,
-                                                        "start_line": 34
+                                                        "start_line": 35
                                                     },
                                                     "While handling contract interface function:"
                                                 ],
@@ -4856,7 +4856,7 @@
                                     "While expanding the reference 'syscall_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -4881,7 +4881,7 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -4895,12 +4895,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 18,
-                                                "end_line": 34,
+                                                "end_line": 35,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 34
+                                                "start_line": 35
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -4910,7 +4910,7 @@
                                     "While expanding the reference 'contract_address' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -4935,12 +4935,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -4965,12 +4965,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -4995,7 +4995,7 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5009,12 +5009,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 18,
-                                                "end_line": 34,
+                                                "end_line": 35,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 34
+                                                "start_line": 35
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -5024,7 +5024,7 @@
                                     "While expanding the reference 'calldata_ptr_start' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -5049,12 +5049,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -5079,7 +5079,7 @@
                         "parent_location": [
                             {
                                 "end_col": 66,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5093,7 +5093,7 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 18,
-                                                "end_line": 34,
+                                                "end_line": 35,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
@@ -5107,12 +5107,12 @@
                                                         "parent_location": [
                                                             {
                                                                 "end_col": 18,
-                                                                "end_line": 34,
+                                                                "end_line": 35,
                                                                 "input_file": {
                                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                                 },
                                                                 "start_col": 10,
-                                                                "start_line": 34
+                                                                "start_line": 35
                                                             },
                                                             "While handling return values of"
                                                         ],
@@ -5122,7 +5122,7 @@
                                                     "While expanding the reference '__return_value_actual_size' in:"
                                                 ],
                                                 "start_col": 10,
-                                                "start_line": 34
+                                                "start_line": 35
                                             },
                                             "While handling return values of"
                                         ],
@@ -5132,7 +5132,7 @@
                                     "While expanding the reference '__return_value_ptr' in:"
                                 ],
                                 "start_col": 59,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling return value 'success'"
                         ],
@@ -5157,12 +5157,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling return values of"
                         ],
@@ -5194,7 +5194,7 @@
                                 "parent_location": [
                                     {
                                         "end_col": 18,
-                                        "end_line": 34,
+                                        "end_line": 35,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
@@ -5208,7 +5208,7 @@
                                                 "parent_location": [
                                                     {
                                                         "end_col": 18,
-                                                        "end_line": 34,
+                                                        "end_line": 35,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
@@ -5222,12 +5222,12 @@
                                                                 "parent_location": [
                                                                     {
                                                                         "end_col": 18,
-                                                                        "end_line": 34,
+                                                                        "end_line": 35,
                                                                         "input_file": {
                                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                                         },
                                                                         "start_col": 10,
-                                                                        "start_line": 34
+                                                                        "start_line": 35
                                                                     },
                                                                     "While handling contract interface function:"
                                                                 ],
@@ -5237,7 +5237,7 @@
                                                             "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                                         ],
                                                         "start_col": 10,
-                                                        "start_line": 34
+                                                        "start_line": 35
                                                     },
                                                     "While handling contract interface function:"
                                                 ],
@@ -5247,7 +5247,7 @@
                                             "While expanding the reference 'syscall_ptr' in:"
                                         ],
                                         "start_col": 10,
-                                        "start_line": 34
+                                        "start_line": 35
                                     },
                                     "While handling contract interface function:"
                                 ],
@@ -5277,7 +5277,7 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5291,7 +5291,7 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 18,
-                                                "end_line": 34,
+                                                "end_line": 35,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
@@ -5305,12 +5305,12 @@
                                                         "parent_location": [
                                                             {
                                                                 "end_col": 18,
-                                                                "end_line": 34,
+                                                                "end_line": 35,
                                                                 "input_file": {
                                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                                 },
                                                                 "start_col": 10,
-                                                                "start_line": 34
+                                                                "start_line": 35
                                                             },
                                                             "While handling contract interface function:"
                                                         ],
@@ -5320,7 +5320,7 @@
                                                     "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                                 ],
                                                 "start_col": 10,
-                                                "start_line": 34
+                                                "start_line": 35
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -5330,7 +5330,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -5355,7 +5355,7 @@
                         "parent_location": [
                             {
                                 "end_col": 66,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5369,12 +5369,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 18,
-                                                "end_line": 34,
+                                                "end_line": 35,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 34
+                                                "start_line": 35
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -5384,7 +5384,7 @@
                                     "While expanding the reference '__return_value_arg_success' in:"
                                 ],
                                 "start_col": 59,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling return value 'success'"
                         ],
@@ -5409,12 +5409,12 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -5439,12 +5439,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5469,12 +5469,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5499,12 +5499,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5529,12 +5529,12 @@
                         "parent_location": [
                             {
                                 "end_col": 29,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 23,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling calldata argument 'sender'"
                         ],
@@ -5559,12 +5559,12 @@
                         "parent_location": [
                             {
                                 "end_col": 47,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 38,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling calldata argument 'recipient'"
                         ],
@@ -5589,12 +5589,12 @@
                         "parent_location": [
                             {
                                 "end_col": 62,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 56,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling calldata argument 'amount'"
                         ],
@@ -5619,12 +5619,12 @@
                         "parent_location": [
                             {
                                 "end_col": 62,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 56,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling calldata argument 'amount'"
                         ],
@@ -5649,7 +5649,7 @@
                         "parent_location": [
                             {
                                 "end_col": 62,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5663,12 +5663,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 22,
-                                                "end_line": 37,
+                                                "end_line": 38,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 37
+                                                "start_line": 38
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -5678,7 +5678,7 @@
                                     "While expanding the reference '__calldata_ptr' in:"
                                 ],
                                 "start_col": 56,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling calldata argument 'amount'"
                         ],
@@ -5703,7 +5703,7 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5724,12 +5724,12 @@
                                                 "parent_location": [
                                                     {
                                                         "end_col": 22,
-                                                        "end_line": 37,
+                                                        "end_line": 38,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
                                                         "start_col": 10,
-                                                        "start_line": 37
+                                                        "start_line": 38
                                                     },
                                                     "While handling contract interface function:"
                                                 ],
@@ -5744,7 +5744,7 @@
                                     "While expanding the reference 'syscall_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5769,7 +5769,7 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5783,12 +5783,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 22,
-                                                "end_line": 37,
+                                                "end_line": 38,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 37
+                                                "start_line": 38
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -5798,7 +5798,7 @@
                                     "While expanding the reference 'contract_address' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5823,12 +5823,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5853,12 +5853,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5883,7 +5883,7 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5897,12 +5897,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 22,
-                                                "end_line": 37,
+                                                "end_line": 38,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 37
+                                                "start_line": 38
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -5912,7 +5912,7 @@
                                     "While expanding the reference 'calldata_ptr_start' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5937,12 +5937,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -5967,7 +5967,7 @@
                         "parent_location": [
                             {
                                 "end_col": 85,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -5981,7 +5981,7 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 22,
-                                                "end_line": 37,
+                                                "end_line": 38,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
@@ -5995,12 +5995,12 @@
                                                         "parent_location": [
                                                             {
                                                                 "end_col": 22,
-                                                                "end_line": 37,
+                                                                "end_line": 38,
                                                                 "input_file": {
                                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                                 },
                                                                 "start_col": 10,
-                                                                "start_line": 37
+                                                                "start_line": 38
                                                             },
                                                             "While handling return values of"
                                                         ],
@@ -6010,7 +6010,7 @@
                                                     "While expanding the reference '__return_value_actual_size' in:"
                                                 ],
                                                 "start_col": 10,
-                                                "start_line": 37
+                                                "start_line": 38
                                             },
                                             "While handling return values of"
                                         ],
@@ -6020,7 +6020,7 @@
                                     "While expanding the reference '__return_value_ptr' in:"
                                 ],
                                 "start_col": 78,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling return value 'success'"
                         ],
@@ -6045,12 +6045,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling return values of"
                         ],
@@ -6082,7 +6082,7 @@
                                 "parent_location": [
                                     {
                                         "end_col": 22,
-                                        "end_line": 37,
+                                        "end_line": 38,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
@@ -6096,7 +6096,7 @@
                                                 "parent_location": [
                                                     {
                                                         "end_col": 22,
-                                                        "end_line": 37,
+                                                        "end_line": 38,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
@@ -6110,12 +6110,12 @@
                                                                 "parent_location": [
                                                                     {
                                                                         "end_col": 22,
-                                                                        "end_line": 37,
+                                                                        "end_line": 38,
                                                                         "input_file": {
                                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                                         },
                                                                         "start_col": 10,
-                                                                        "start_line": 37
+                                                                        "start_line": 38
                                                                     },
                                                                     "While handling contract interface function:"
                                                                 ],
@@ -6125,7 +6125,7 @@
                                                             "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                                         ],
                                                         "start_col": 10,
-                                                        "start_line": 37
+                                                        "start_line": 38
                                                     },
                                                     "While handling contract interface function:"
                                                 ],
@@ -6135,7 +6135,7 @@
                                             "While expanding the reference 'syscall_ptr' in:"
                                         ],
                                         "start_col": 10,
-                                        "start_line": 37
+                                        "start_line": 38
                                     },
                                     "While handling contract interface function:"
                                 ],
@@ -6165,7 +6165,7 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -6179,7 +6179,7 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 22,
-                                                "end_line": 37,
+                                                "end_line": 38,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
@@ -6193,12 +6193,12 @@
                                                         "parent_location": [
                                                             {
                                                                 "end_col": 22,
-                                                                "end_line": 37,
+                                                                "end_line": 38,
                                                                 "input_file": {
                                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                                 },
                                                                 "start_col": 10,
-                                                                "start_line": 37
+                                                                "start_line": 38
                                                             },
                                                             "While handling contract interface function:"
                                                         ],
@@ -6208,7 +6208,7 @@
                                                     "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                                 ],
                                                 "start_col": 10,
-                                                "start_line": 37
+                                                "start_line": 38
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -6218,7 +6218,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -6243,7 +6243,7 @@
                         "parent_location": [
                             {
                                 "end_col": 85,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -6257,12 +6257,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 22,
-                                                "end_line": 37,
+                                                "end_line": 38,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 10,
-                                                "start_line": 37
+                                                "start_line": 38
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -6272,7 +6272,7 @@
                                     "While expanding the reference '__return_value_arg_success' in:"
                                 ],
                                 "start_col": 78,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling return value 'success'"
                         ],
@@ -6297,12 +6297,12 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -6320,12 +6320,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 21,
-                        "end_line": 47,
+                        "end_line": 48,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 47
+                        "start_line": 48
                     }
                 },
                 "210": {
@@ -6338,7 +6338,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 37,
-                        "end_line": 45,
+                        "end_line": 46,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -6352,12 +6352,12 @@
                                 "parent_location": [
                                     {
                                         "end_col": 59,
-                                        "end_line": 48,
+                                        "end_line": 49,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "start_col": 37,
-                                        "start_line": 48
+                                        "start_line": 49
                                     },
                                     "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                 ],
@@ -6367,7 +6367,7 @@
                             "While expanding the reference 'syscall_ptr' in:"
                         ],
                         "start_col": 18,
-                        "start_line": 45
+                        "start_line": 46
                     }
                 },
                 "211": {
@@ -6380,12 +6380,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 59,
-                        "end_line": 48,
+                        "end_line": 49,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 37,
-                        "start_line": 48
+                        "start_line": 49
                     }
                 },
                 "213": {
@@ -6398,12 +6398,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 33,
-                        "end_line": 48,
+                        "end_line": 49,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 14,
-                        "start_line": 48
+                        "start_line": 49
                     }
                 },
                 "214": {
@@ -6423,7 +6423,7 @@
                         "parent_location": [
                             {
                                 "end_col": 59,
-                                "end_line": 48,
+                                "end_line": 49,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
@@ -6437,24 +6437,24 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 22,
-                                                "end_line": 37,
+                                                "end_line": 38,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "parent_location": [
                                                     {
                                                         "end_col": 27,
-                                                        "end_line": 54,
+                                                        "end_line": 55,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
                                                         "start_col": 9,
-                                                        "start_line": 50
+                                                        "start_line": 51
                                                     },
                                                     "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                                 ],
                                                 "start_col": 10,
-                                                "start_line": 37
+                                                "start_line": 38
                                             },
                                             "While handling contract interface function:"
                                         ],
@@ -6464,7 +6464,7 @@
                                     "While expanding the reference 'syscall_ptr' in:"
                                 ],
                                 "start_col": 37,
-                                "start_line": 48
+                                "start_line": 49
                             },
                             "While trying to update the implicit return value 'syscall_ptr' in:"
                         ],
@@ -6482,7 +6482,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 83,
-                        "end_line": 45,
+                        "end_line": 46,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -6496,24 +6496,24 @@
                                 "parent_location": [
                                     {
                                         "end_col": 22,
-                                        "end_line": 37,
+                                        "end_line": 38,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "parent_location": [
                                             {
                                                 "end_col": 27,
-                                                "end_line": 54,
+                                                "end_line": 55,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 9,
-                                                "start_line": 50
+                                                "start_line": 51
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
                                         "start_col": 10,
-                                        "start_line": 37
+                                        "start_line": 38
                                     },
                                     "While handling contract interface function:"
                                 ],
@@ -6523,7 +6523,7 @@
                             "While expanding the reference 'range_check_ptr' in:"
                         ],
                         "start_col": 68,
-                        "start_line": 45
+                        "start_line": 46
                     }
                 },
                 "216": {
@@ -6536,24 +6536,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 72,
-                        "end_line": 46,
+                        "end_line": 47,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 43,
-                                "end_line": 51,
+                                "end_line": 52,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 30,
-                                "start_line": 51
+                                "start_line": 52
                             },
                             "While expanding the reference 'erc20_address' in:"
                         ],
                         "start_col": 52,
-                        "start_line": 46
+                        "start_line": 47
                     }
                 },
                 "217": {
@@ -6566,24 +6566,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 50,
-                        "end_line": 46,
+                        "end_line": 47,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 32,
-                                "end_line": 52,
+                                "end_line": 53,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 20,
-                                "start_line": 52
+                                "start_line": 53
                             },
                             "While expanding the reference 'address_from' in:"
                         ],
                         "start_col": 31,
-                        "start_line": 46
+                        "start_line": 47
                     }
                 },
                 "218": {
@@ -6596,24 +6596,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 33,
-                        "end_line": 48,
+                        "end_line": 49,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 36,
-                                "end_line": 53,
+                                "end_line": 54,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 23,
-                                "start_line": 53
+                                "start_line": 54
                             },
                             "While expanding the reference 'this_contract' in:"
                         ],
                         "start_col": 20,
-                        "start_line": 48
+                        "start_line": 49
                     }
                 },
                 "219": {
@@ -6626,24 +6626,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 29,
-                        "end_line": 46,
+                        "end_line": 47,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 26,
-                                "end_line": 54,
+                                "end_line": 55,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 20,
-                                "start_line": 54
+                                "start_line": 55
                             },
                             "While expanding the reference 'amount' in:"
                         ],
                         "start_col": 13,
-                        "start_line": 46
+                        "start_line": 47
                     }
                 },
                 "220": {
@@ -6656,24 +6656,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 29,
-                        "end_line": 46,
+                        "end_line": 47,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 26,
-                                "end_line": 54,
+                                "end_line": 55,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 20,
-                                "start_line": 54
+                                "start_line": 55
                             },
                             "While expanding the reference 'amount' in:"
                         ],
                         "start_col": 13,
-                        "start_line": 46
+                        "start_line": 47
                     }
                 },
                 "221": {
@@ -6686,12 +6686,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 27,
-                        "end_line": 54,
+                        "end_line": 55,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 50
+                        "start_line": 51
                     }
                 },
                 "223": {
@@ -6711,48 +6711,48 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 27,
-                                        "end_line": 54,
+                                        "end_line": 55,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "parent_location": [
                                             {
                                                 "end_col": 37,
-                                                "end_line": 45,
+                                                "end_line": 46,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "parent_location": [
                                                     {
                                                         "end_col": 22,
-                                                        "end_line": 55,
+                                                        "end_line": 56,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
                                                         "start_col": 9,
-                                                        "start_line": 55
+                                                        "start_line": 56
                                                     },
                                                     "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                                 ],
                                                 "start_col": 18,
-                                                "start_line": 45
+                                                "start_line": 46
                                             },
                                             "While expanding the reference 'syscall_ptr' in:"
                                         ],
                                         "start_col": 9,
-                                        "start_line": 50
+                                        "start_line": 51
                                     },
                                     "While trying to update the implicit return value 'syscall_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -6770,36 +6770,36 @@
                     "hints": [],
                     "inst": {
                         "end_col": 66,
-                        "end_line": 45,
+                        "end_line": 46,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 66,
-                                "end_line": 45,
+                                "end_line": 46,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 22,
-                                        "end_line": 55,
+                                        "end_line": 56,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "start_col": 9,
-                                        "start_line": 55
+                                        "start_line": 56
                                     },
                                     "While trying to retrieve the implicit argument 'pedersen_ptr' in:"
                                 ],
                                 "start_col": 39,
-                                "start_line": 45
+                                "start_line": 46
                             },
                             "While expanding the reference 'pedersen_ptr' in:"
                         ],
                         "start_col": 39,
-                        "start_line": 45
+                        "start_line": 46
                     }
                 },
                 "225": {
@@ -6819,48 +6819,48 @@
                         "parent_location": [
                             {
                                 "end_col": 22,
-                                "end_line": 37,
+                                "end_line": 38,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 27,
-                                        "end_line": 54,
+                                        "end_line": 55,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "parent_location": [
                                             {
                                                 "end_col": 83,
-                                                "end_line": 45,
+                                                "end_line": 46,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "parent_location": [
                                                     {
                                                         "end_col": 22,
-                                                        "end_line": 55,
+                                                        "end_line": 56,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
                                                         "start_col": 9,
-                                                        "start_line": 55
+                                                        "start_line": 56
                                                     },
                                                     "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                                 ],
                                                 "start_col": 68,
-                                                "start_line": 45
+                                                "start_line": 46
                                             },
                                             "While expanding the reference 'range_check_ptr' in:"
                                         ],
                                         "start_col": 9,
-                                        "start_line": 50
+                                        "start_line": 51
                                     },
                                     "While trying to update the implicit return value 'range_check_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 37
+                                "start_line": 38
                             },
                             "While handling contract interface function:"
                         ],
@@ -6878,12 +6878,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 21,
-                        "end_line": 55,
+                        "end_line": 56,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 17,
-                        "start_line": 55
+                        "start_line": 56
                     }
                 },
                 "228": {
@@ -6896,12 +6896,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 22,
-                        "end_line": 55,
+                        "end_line": 56,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 55
+                        "start_line": 56
                     }
                 },
                 "229": {
@@ -6914,7 +6914,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 38,
-                        "end_line": 58,
+                        "end_line": 59,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -6928,24 +6928,24 @@
                                 "parent_location": [
                                     {
                                         "end_col": 18,
-                                        "end_line": 34,
+                                        "end_line": 35,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "parent_location": [
                                             {
                                                 "end_col": 93,
-                                                "end_line": 60,
+                                                "end_line": 61,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 9,
-                                                "start_line": 60
+                                                "start_line": 61
                                             },
                                             "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                         ],
                                         "start_col": 10,
-                                        "start_line": 34
+                                        "start_line": 35
                                     },
                                     "While handling contract interface function:"
                                 ],
@@ -6955,7 +6955,7 @@
                             "While expanding the reference 'syscall_ptr' in:"
                         ],
                         "start_col": 19,
-                        "start_line": 58
+                        "start_line": 59
                     }
                 },
                 "230": {
@@ -6968,7 +6968,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 84,
-                        "end_line": 58,
+                        "end_line": 59,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -6982,24 +6982,24 @@
                                 "parent_location": [
                                     {
                                         "end_col": 18,
-                                        "end_line": 34,
+                                        "end_line": 35,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "parent_location": [
                                             {
                                                 "end_col": 93,
-                                                "end_line": 60,
+                                                "end_line": 61,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "start_col": 9,
-                                                "start_line": 60
+                                                "start_line": 61
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
                                         "start_col": 10,
-                                        "start_line": 34
+                                        "start_line": 35
                                     },
                                     "While handling contract interface function:"
                                 ],
@@ -7009,7 +7009,7 @@
                             "While expanding the reference 'range_check_ptr' in:"
                         ],
                         "start_col": 69,
-                        "start_line": 58
+                        "start_line": 59
                     }
                 },
                 "231": {
@@ -7022,24 +7022,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 70,
-                        "end_line": 59,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 55,
-                                "end_line": 60,
+                                "end_line": 61,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 42,
-                                "start_line": 60
+                                "start_line": 61
                             },
                             "While expanding the reference 'erc20_address' in:"
                         ],
                         "start_col": 50,
-                        "start_line": 59
+                        "start_line": 60
                     }
                 },
                 "232": {
@@ -7052,24 +7052,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 48,
-                        "end_line": 59,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 77,
-                                "end_line": 60,
+                                "end_line": 61,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 67,
-                                "start_line": 60
+                                "start_line": 61
                             },
                             "While expanding the reference 'address_to' in:"
                         ],
                         "start_col": 31,
-                        "start_line": 59
+                        "start_line": 60
                     }
                 },
                 "233": {
@@ -7082,24 +7082,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 29,
-                        "end_line": 59,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 92,
-                                "end_line": 60,
+                                "end_line": 61,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 86,
-                                "start_line": 60
+                                "start_line": 61
                             },
                             "While expanding the reference 'amount' in:"
                         ],
                         "start_col": 13,
-                        "start_line": 59
+                        "start_line": 60
                     }
                 },
                 "234": {
@@ -7112,24 +7112,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 29,
-                        "end_line": 59,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 92,
-                                "end_line": 60,
+                                "end_line": 61,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "start_col": 86,
-                                "start_line": 60
+                                "start_line": 61
                             },
                             "While expanding the reference 'amount' in:"
                         ],
                         "start_col": 13,
-                        "start_line": 59
+                        "start_line": 60
                     }
                 },
                 "235": {
@@ -7142,12 +7142,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 93,
-                        "end_line": 60,
+                        "end_line": 61,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 60
+                        "start_line": 61
                     }
                 },
                 "237": {
@@ -7167,48 +7167,48 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 93,
-                                        "end_line": 60,
+                                        "end_line": 61,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "parent_location": [
                                             {
                                                 "end_col": 38,
-                                                "end_line": 58,
+                                                "end_line": 59,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "parent_location": [
                                                     {
                                                         "end_col": 22,
-                                                        "end_line": 61,
+                                                        "end_line": 62,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
                                                         "start_col": 9,
-                                                        "start_line": 61
+                                                        "start_line": 62
                                                     },
                                                     "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                                 ],
                                                 "start_col": 19,
-                                                "start_line": 58
+                                                "start_line": 59
                                             },
                                             "While expanding the reference 'syscall_ptr' in:"
                                         ],
                                         "start_col": 9,
-                                        "start_line": 60
+                                        "start_line": 61
                                     },
                                     "While trying to update the implicit return value 'syscall_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -7226,36 +7226,36 @@
                     "hints": [],
                     "inst": {
                         "end_col": 67,
-                        "end_line": 58,
+                        "end_line": 59,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 67,
-                                "end_line": 58,
+                                "end_line": 59,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 22,
-                                        "end_line": 61,
+                                        "end_line": 62,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "start_col": 9,
-                                        "start_line": 61
+                                        "start_line": 62
                                     },
                                     "While trying to retrieve the implicit argument 'pedersen_ptr' in:"
                                 ],
                                 "start_col": 40,
-                                "start_line": 58
+                                "start_line": 59
                             },
                             "While expanding the reference 'pedersen_ptr' in:"
                         ],
                         "start_col": 40,
-                        "start_line": 58
+                        "start_line": 59
                     }
                 },
                 "239": {
@@ -7275,48 +7275,48 @@
                         "parent_location": [
                             {
                                 "end_col": 18,
-                                "end_line": 34,
+                                "end_line": 35,
                                 "input_file": {
                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 93,
-                                        "end_line": 60,
+                                        "end_line": 61,
                                         "input_file": {
                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                         },
                                         "parent_location": [
                                             {
                                                 "end_col": 84,
-                                                "end_line": 58,
+                                                "end_line": 59,
                                                 "input_file": {
                                                     "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                 },
                                                 "parent_location": [
                                                     {
                                                         "end_col": 22,
-                                                        "end_line": 61,
+                                                        "end_line": 62,
                                                         "input_file": {
                                                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                                                         },
                                                         "start_col": 9,
-                                                        "start_line": 61
+                                                        "start_line": 62
                                                     },
                                                     "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                                 ],
                                                 "start_col": 69,
-                                                "start_line": 58
+                                                "start_line": 59
                                             },
                                             "While expanding the reference 'range_check_ptr' in:"
                                         ],
                                         "start_col": 9,
-                                        "start_line": 60
+                                        "start_line": 61
                                     },
                                     "While trying to update the implicit return value 'range_check_ptr' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 34
+                                "start_line": 35
                             },
                             "While handling contract interface function:"
                         ],
@@ -7334,12 +7334,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 21,
-                        "end_line": 61,
+                        "end_line": 62,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 17,
-                        "start_line": 61
+                        "start_line": 62
                     }
                 },
                 "242": {
@@ -7352,12 +7352,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 22,
-                        "end_line": 61,
+                        "end_line": 62,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 61
+                        "start_line": 62
                     }
                 },
                 "243": {
@@ -8555,7 +8555,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 37,
-                        "end_line": 45,
+                        "end_line": 46,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -8596,7 +8596,7 @@
                             "While trying to update the implicit return value 'syscall_ptr' in:"
                         ],
                         "start_col": 18,
-                        "start_line": 45
+                        "start_line": 46
                     }
                 },
                 "280": {
@@ -8609,7 +8609,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 66,
-                        "end_line": 45,
+                        "end_line": 46,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -8650,7 +8650,7 @@
                             "While trying to update the implicit return value 'pedersen_ptr' in:"
                         ],
                         "start_col": 39,
-                        "start_line": 45
+                        "start_line": 46
                     }
                 },
                 "281": {
@@ -8663,7 +8663,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 83,
-                        "end_line": 45,
+                        "end_line": 46,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -8704,7 +8704,7 @@
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
                         "start_col": 68,
-                        "start_line": 45
+                        "start_line": 46
                     }
                 },
                 "282": {
@@ -10255,7 +10255,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 38,
-                        "end_line": 58,
+                        "end_line": 59,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -10296,7 +10296,7 @@
                             "While trying to update the implicit return value 'syscall_ptr' in:"
                         ],
                         "start_col": 19,
-                        "start_line": 58
+                        "start_line": 59
                     }
                 },
                 "327": {
@@ -10309,7 +10309,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 67,
-                        "end_line": 58,
+                        "end_line": 59,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -10350,7 +10350,7 @@
                             "While trying to update the implicit return value 'pedersen_ptr' in:"
                         ],
                         "start_col": 40,
-                        "start_line": 58
+                        "start_line": 59
                     }
                 },
                 "328": {
@@ -10363,7 +10363,7 @@
                     "hints": [],
                     "inst": {
                         "end_col": 84,
-                        "end_line": 58,
+                        "end_line": 59,
                         "input_file": {
                             "filename": "/Users/tonysprocket/Cairo/mammoth_pool/contracts/lib/Pool_base.cairo"
                         },
@@ -10404,7 +10404,7 @@
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
                         "start_col": 69,
-                        "start_line": 58
+                        "start_line": 59
                     }
                 },
                 "329": {

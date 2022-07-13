@@ -15,7 +15,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 # openzeppelin
 from openzeppelin.access.ownable import Ownable
 from openzeppelin.token.erc20.library import ERC20
-from openzeppelin.security.initializable import Initializable
+from openzeppelin.security.initializable import Initializable, Initializable_initialized
 
 # mammoth
 from contracts.lib.Pool_base import Pool
@@ -29,12 +29,51 @@ namespace IERC20:
     end
 end
 
-@constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+##########
+# INITIALIZE POOL
+##########
+
+# these function replaces the constructor
+
+@external
+func setup_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         router : felt, name : felt, symbol : felt, decimals : felt):
+    require_not_initialized()
+
+    # set lp token name, symbol, and decimals
     ERC20.initializer(name, symbol, decimals)
+
+    # set factory as owner
     Ownable.initializer(router)
     return ()
+end
+
+@external
+func init_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
+        erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
+    alloc_locals
+    require_not_initialized()
+
+    # approve the desired tokens
+    # set swap fee
+    # set exit fee
+    # set token weights
+    # make initial deposits
+    let (local success : felt, local lp_amount : Uint256) = Register.init_pool(
+        caller_address, s_fee, e_fee, erc_list_len, erc_list)
+    assert success = TRUE
+
+    # mint initial LP tokens
+    let (local mint_success : felt) = mint(caller_address, lp_amount)
+    with_attr error_message("POOL LP MINT FAILURE IN INITIALIZE"):
+        assert mint_success = TRUE
+    end
+
+    # set as initialized
+    Initializable.initialize()
+
+    return (TRUE, lp_amount)
 end
 
 ##########
@@ -208,26 +247,6 @@ func swap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     return (TRUE)
 end
 
-@external
-func initialize_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
-        erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
-    alloc_locals
-
-    let (local success : felt, local lp_amount : Uint256) = Register.initialize_pool(
-        caller_address, s_fee, e_fee, erc_list_len, erc_list)
-    assert success = TRUE
-
-    let (local mint_success : felt) = mint(caller_address, lp_amount)
-    with_attr error_message("POOL LP MINT FAILURE IN INITIALIZE"):
-        assert mint_success = TRUE
-    end
-
-    Initializable.initialize()
-
-    return (TRUE, lp_amount)
-end
-
 ##########
 # VIEW MATH
 ##########
@@ -399,6 +418,22 @@ func get_pool_into{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     alloc_locals
     let (s_fee : Ratio, e_fee : Ratio, t_w : Ratio) = Register.get_pool_info()
     return (s_fee, e_fee, t_w)
+end
+
+#########
+# REQUIRE FUNCTION
+#########
+
+@view
+func require_not_initialized{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    alloc_locals
+    let (local initialized : felt) = Initializable_initialized.read()
+
+    with_attr error_message("ERROR POOL ALREADY INITIALIZED"):
+        assert initialized = 0
+    end
+
+    return ()
 end
 
 #########

@@ -571,9 +571,45 @@
                 "type": "felt"
             }
         ],
-        "name": "constructor",
+        "name": "setup_pool",
         "outputs": [],
-        "type": "constructor"
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "caller_address",
+                "type": "felt"
+            },
+            {
+                "name": "s_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "e_fee",
+                "type": "Ratio"
+            },
+            {
+                "name": "erc_list_len",
+                "type": "felt"
+            },
+            {
+                "name": "erc_list",
+                "type": "ApprovedERC20*"
+            }
+        ],
+        "name": "init_pool",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            },
+            {
+                "name": "lp_amount",
+                "type": "Uint256"
+            }
+        ],
+        "type": "function"
     },
     {
         "inputs": [
@@ -687,42 +723,6 @@
             {
                 "name": "success",
                 "type": "felt"
-            }
-        ],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "caller_address",
-                "type": "felt"
-            },
-            {
-                "name": "s_fee",
-                "type": "Ratio"
-            },
-            {
-                "name": "e_fee",
-                "type": "Ratio"
-            },
-            {
-                "name": "erc_list_len",
-                "type": "felt"
-            },
-            {
-                "name": "erc_list",
-                "type": "ApprovedERC20*"
-            }
-        ],
-        "name": "initialize_pool",
-        "outputs": [
-            {
-                "name": "bool",
-                "type": "felt"
-            },
-            {
-                "name": "lp_amount",
-                "type": "Uint256"
             }
         ],
         "type": "function"
@@ -909,6 +909,13 @@
                 "type": "Ratio"
             }
         ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "require_not_initialized",
+        "outputs": [],
         "stateMutability": "view",
         "type": "function"
     },

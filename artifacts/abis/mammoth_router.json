@@ -284,20 +284,36 @@
         "type": "function"
     },
     {
-        "inputs": [
+        "data": [
             {
-                "name": "owner_address",
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "pool_type",
                 "type": "felt"
             }
         ],
-        "name": "constructor",
-        "outputs": [],
-        "type": "constructor"
+        "keys": [],
+        "name": "pool_deployed",
+        "type": "event"
     },
     {
         "data": [
             {
                 "name": "pool",
+                "type": "felt"
+            },
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "symbol",
+                "type": "felt"
+            },
+            {
+                "name": "decimals",
                 "type": "felt"
             },
             {
@@ -419,11 +435,54 @@
     {
         "inputs": [
             {
-                "name": "caller_address",
+                "name": "owner_address",
+                "type": "felt"
+            }
+        ],
+        "name": "initialize",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_type",
                 "type": "felt"
             },
             {
+                "name": "proxy_admin",
+                "type": "felt"
+            }
+        ],
+        "name": "deploy_pool",
+        "outputs": [
+            {
                 "name": "pool_address",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_address",
+                "type": "felt"
+            },
+            {
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "symbol",
+                "type": "felt"
+            },
+            {
+                "name": "decimals",
+                "type": "felt"
+            },
+            {
+                "name": "caller_address",
                 "type": "felt"
             },
             {
@@ -589,6 +648,42 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "name": "proxy_class_hash",
+                "type": "felt"
+            }
+        ],
+        "name": "set_proxy_class_hash",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_type",
+                "type": "felt"
+            },
+            {
+                "name": "pool_class_hash",
+                "type": "felt"
+            }
+        ],
+        "name": "define_pool_type_class_hash",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "get_owner",
         "outputs": [
@@ -630,6 +725,13 @@
                 "type": "felt"
             }
         ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "require_not_initialized",
+        "outputs": [],
         "stateMutability": "view",
         "type": "function"
     }
