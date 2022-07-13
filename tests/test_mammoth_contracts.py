@@ -1,9 +1,50 @@
 import pytest
 import math
 from hypothesis import given, strategies as st, settings
+from starkware.starknet.testing.contract import StarknetContract
 
-from .oz_utils import to_uint, from_uint
+from .oz_utils import to_uint, from_uint, str_to_felt
 from .conftest import DECIMALS
+\
+
+@pytest.mark.asyncio
+async def test_deploy_pool(signer_factory, starknet_factory, account_factory, router_factory, pool_factory, class_hash_factory):
+    signer = signer_factory
+    starknet = starknet_factory
+    user_account, user = account_factory
+    router, router_address = router_factory
+    proxy_hash, pool_hash, _, pool_abi = class_hash_factory
+
+    # set proxy_hash
+    proxy_hash_return = await signer.send_transaction(
+        account=user_account,
+        to=router_address,
+        selector_name="set_proxy_class_hash",
+        calldata=[proxy_hash],
+    )
+
+    assert proxy_hash_return.result[0] == [1]
+
+    # set pool_hash
+    pool_hash_return = await signer.send_transaction(
+        account=user_account,
+        to=router_address,
+        selector_name="define_pool_type_class_hash",
+        calldata=[str_to_felt("DEFAULTv0"), pool_hash],
+    )
+
+    assert pool_hash_return.result[0] == [1]
+
+    deploy_pool_return = await signer.send_transaction(
+        account=user_account,
+        to=router_address,
+        selector_name="deploy_pool",
+        calldata=[str_to_felt("DEFAULTv0"), user],
+    )
+
+    pool_address = deploy_pool_return.result
+    pool_factory['pool_address'] = pool_address.response[0]
+    pool_factory['pool_contract'] = StarknetContract(starknet.state, pool_abi, pool_address.response[0], deploy_pool_return)
 
 
 @pytest.mark.asyncio
@@ -17,7 +58,7 @@ async def test_approve_pool_for_transfer(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    _, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
     tusdc, tusdc_address = tusdc_factory
     fc, fc_address = fc_factory
     teeth, teeth_address = teeth_factory
@@ -52,10 +93,13 @@ async def test_create_pool(
     signer = signer_factory
     user_account, user_address = account_factory
     router_contract, router_address = router_factory
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     tusdc_contract, tusdc_address = tusdc_factory
     fc_contract, fc_address = fc_factory
     teeth_contract, teeth_address = teeth_factory
+
+    print(dir(pool_factory['pool_contract']))
 
     swap_fee = [to_uint(2), to_uint(1000)]  # .02%
     exit_fee = [to_uint(2), to_uint(1000)]  # .02%
@@ -89,8 +133,11 @@ async def test_create_pool(
         to=router_address,
         selector_name="create_pool",
         calldata=[
-            user_address,
             pool_address,
+            str_to_felt("MAMMOTH_LP"),  # name
+            str_to_felt("MLP"),  # symbol
+            18,  # decimals
+            user_address,
             *swap_fee[0],
             *swap_fee[1],
             *exit_fee[0],
@@ -100,8 +147,8 @@ async def test_create_pool(
         ],
     )
 
-    stored_token = await router_contract.is_pool_approved(pool_address).call()
-    assert stored_token.result == (1,)
+    #stored_token = await router_contract.is_pool_approved(pool_address).call()
+    #assert stored_token.result == (1,)
 
     erc_approval = await pool_contract.is_ERC20_approved(tusdc_address).call()
     assert erc_approval.result == (1,)
@@ -131,7 +178,7 @@ async def test_create_pool(
 async def test_view_single_out_given_pool_in(
     pool_factory, tusdc_factory, balancer_factory
 ):
-    pool_contract, _ = pool_factory
+    pool_contract = pool_factory['pool_contract']
     _, tusdc_address = tusdc_factory
     balancer, _ = balancer_factory
 
@@ -160,7 +207,8 @@ async def test_view_single_out_given_pool_in(
 async def test_view_pool_minted_given_single_in(
     pool_factory, tusdc_factory, balancer_factory
 ):
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     _, tusdc_address = tusdc_factory
     balancer, _ = balancer_factory
 
@@ -188,7 +236,8 @@ async def test_view_pool_minted_given_single_in(
 async def test_view_out_given_in(
     pool_factory, tusdc_factory, fc_factory, balancer_factory
 ):
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     _, tusdc_address = tusdc_factory
     _, fc_address = fc_factory
     balancer, _ = balancer_factory
@@ -227,7 +276,8 @@ async def test_mammoth_deposit_single_asset(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     _, router_address = router_factory
     _, fc_address = fc_factory
 
@@ -278,7 +328,8 @@ async def test_mammoth_proportional_deposit(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     _, router_address = router_factory
     _, fc_address = fc_factory
     _, tusdc_address = tusdc_factory
@@ -301,16 +352,16 @@ async def test_mammoth_proportional_deposit(
     # new fc balance
     fc_new_balance = await pool_contract.get_ERC20_balance(fc_address).call()
     assert from_uint(fc_new_balance.result[0]) - from_uint(fc_initial_balance.result[0]) - (
-        ((4*DECIMALS)/(from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0])) < 5/(10 ** 5)
+        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0])) < 5 / (10 ** 5)
 
     tusdc_new_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
     assert from_uint(tusdc_new_balance.result[0]) - from_uint(tusdc_initial_balance.result[0]) - (
-        ((4*DECIMALS)/(from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0])) < 5/(10 ** 5)
+        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0])) < 5 / (10 ** 5)
 
     # new fc balance
     teeth_new_balance = await pool_contract.get_ERC20_balance(teeth_address).call()
     assert from_uint(teeth_new_balance.result[0]) - from_uint(teeth_initial_balance.result[0]) - (
-        ((4*DECIMALS)/(from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0])) < 5/(10 ** 5)
+        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0])) < 5 / (10 ** 5)
 
     # new lp balance
     new_user_lp_balance = await pool_contract.balanceOf(user).call()
@@ -333,7 +384,8 @@ async def test_mammoth_withdraw_single_asset(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     _, router_address = router_factory
     _, tusdc_address = tusdc_factory
 
@@ -378,7 +430,8 @@ async def test_mammoth_proportional_withdraw(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     _, router_address = router_factory
     _, fc_address = fc_factory
     _, tusdc_address = tusdc_factory
@@ -401,16 +454,16 @@ async def test_mammoth_proportional_withdraw(
     # new fc balance
     fc_new_balance = await pool_contract.get_ERC20_balance(fc_address).call()
     assert from_uint(fc_new_balance.result[0]) - from_uint(fc_initial_balance.result[0]) - (
-        (((4*DECIMALS) * (2*4*DECIMALS/1000))/(from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0])) < 5/(10 ** 5)
+        (((4 * DECIMALS) * (2 * 4 * DECIMALS / 1000)) / (from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0])) < 5 / (10 ** 5)
 
     tusdc_new_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
     assert from_uint(tusdc_new_balance.result[0]) - from_uint(tusdc_initial_balance.result[0]) - (
-        (((4*DECIMALS) * (2*4*DECIMALS/1000))/(from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0])) < 5/(10 ** 5)
+        (((4 * DECIMALS) * (2 * 4 * DECIMALS / 1000)) / (from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0])) < 5 / (10 ** 5)
 
     # new fc balance
     teeth_new_balance = await pool_contract.get_ERC20_balance(teeth_address).call()
     assert from_uint(teeth_new_balance.result[0]) - from_uint(teeth_initial_balance.result[0]) - (
-        (((4*DECIMALS) * (2*4*DECIMALS/1000))/(from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0])) < 5/(10 ** 5)
+        (((4 * DECIMALS) * (2 * 4 * DECIMALS / 1000)) / (from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0])) < 5 / (10 ** 5)
 
     # new lp balance
     new_user_lp_balance = await pool_contract.balanceOf(user).call()
@@ -434,7 +487,8 @@ async def test_mammoth_swap(
 ):
     signer = signer_factory
     user_account, user = account_factory
-    pool_contract, pool_address = pool_factory
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
     _, router_address = router_factory
     _, tusdc_address = tusdc_factory
     _, fc_address = fc_factory
