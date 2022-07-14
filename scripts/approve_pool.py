@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -26,8 +27,13 @@ def run(nre):
     # send tx
     tx_one = user_account.send(
         to=tZWBTC, method='approve', calldata=approve_args, max_fee=MAX_FEE)
+
+    time.sleep(200)
+
     tx_two = user_account.send(
         to=tUSDC, method='approve', calldata=approve_args, max_fee=MAX_FEE)
+
+    time.sleep(200)
     tx_three = user_account.send(
         to=tETH, method='approve', calldata=approve_args, max_fee=MAX_FEE)
 

@@ -3,7 +3,7 @@ def run(nre):
     user_account = nre.get_or_deploy_account("BALLER")
 
     # get ERC contracts
-    tZWBTC, _ = tZWBTC, _ = nre.get_deployment("tZWBTC")
+    tZWBTC, _ = nre.get_deployment("tZWBTC")
     tUSDC, _ = nre.get_deployment("tUSDC")
     tETH, _ = nre.get_deployment("tETH")
 

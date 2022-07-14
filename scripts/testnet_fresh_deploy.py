@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -51,28 +52,40 @@ def run(nre):
         print(e)
         router_address, _ = nre.get_deployment("mammoth_router")
 
+    # wait for transaction to get accepted
+     time.sleep(180)
+
     # initialize router
     try:
-        initialize_router = owner_account.send(to="mammoth_router", method="initialize", calldata=[
-                                               int(owner_account.address, 16)], max_fee=MAX_FEE)
+         initialize_router = owner_account.send(to="mammoth_router", method="initialize", calldata=[
+                                               int(owner_account.address, 16)], max_fee = MAX_FEE)
         print("Router Initialized")
     except Exception as e:
         print(e)
 
+    # wait for transaction to get accepted
+     time.sleep(180)
+
     # set proxy and pool class hash
-    success = owner_account.send(to="mammoth_router", method="set_proxy_class_hash", calldata=[
+     success = owner_account.send(to="mammoth_router", method="set_proxy_class_hash", calldata=[
         int(proxy_class, 16)], max_fee=MAX_FEE)
 
-    # assert success == 1
-    print(success)
-    print("Proxy Hash Set Successfully")
+     assert success == 1
+     print(success)
+     print("Proxy Hash Set Successfully")
 
     success = owner_account.send(to="mammoth_router", method="define_pool_type_class_hash", calldata=[
         str(str_to_felt("DEFAULTv0")), int(pool_class, 16)], max_fee=MAX_FEE)
 
+    # wait for transaction to get accepted
+     time.sleep(180)
+
     # assert success == 1
     print(success)
     print("Pool Hash Set Successfully")
+
+    # wait for transactions to get accepted
+    time.sleep(180)
 
     # deploy pool
     pool_address = owner_account.send(to="mammoth_router", method="deploy_pool",

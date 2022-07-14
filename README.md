@@ -2,6 +2,8 @@
 
 Starknet pool similar to balancer v1 AMM
 
+This repo uses cairo-nile ~https://github.com/OpenZeppelin/nile~
+
 # Goals:
 
 - Users can deposit and withdraw any ERC-20 token into the contract any time they want
@@ -36,18 +38,38 @@ Starknet pool similar to balancer v1 AMM
 - is_erc20_approved - given pool and ERC20 address returns 1 if ERC20 is approved for said pool else 0
 - IMPLEMENTS ERC20_Mintable_Burnable
 
-## INFO
-
-- Find the current owner account in _current_account.json_
-- Find the current contract addresses in _current_deployment_info.json_
+## TESTS
+```
+pytest tests
+```
 
 ## DEPLOYMENT INSTRUCTIONS
+start local devnet for default deployment
+--network goerli for testnet deployment
+--network mainnet for mainnet
 
-- Set STARKNET_NETWORK and PRIV_KEY variables in .env
-- run _python scripts/setup_account.py_ or set current_account.json manually
-- run _python scripts/compile.py_ from root
-- run _python scripts/deploy.py_ from root
-- run _python scripts/create_pool.py_ from root
+- Set a private key variable in .env, for example PRIV_KEY=1
+```
+- nile setup PRIV_KEY
+```
+```
+- fund your account with ETH (or testnet/devnet ETH)
+```
+```
+- nile compile
+```
+```
+- nile run scripts/testnet_fresh_deploy.py
+```
+```
+- nile run scripts/approve_pool.py
+```
+```
+- nile run scripts/create_pool.py
+```
+```
+- nile run scripts/check_pool_creation.py
+```
 
 ## POOL CREATION INSTRUCTIONS
 
