@@ -10,6 +10,8 @@ from starkware.cairo.common.uint256 import (
     Uint256, uint256_add, uint256_sub, uint256_mul, uint256_le, uint256_lt,
     uint256_unsigned_div_rem)
 
+from contracts.lib.fixed_point.src.fixed_point import FixedPoint
+
 from contracts.lib.ratios.contracts.ratio import (
     Ratio, ratio_mul, ratio_div, ratio_add, ratio_diff, nth_root_by_digit, pow, ratio_pow,
     ratio_less_than_or_eq)
