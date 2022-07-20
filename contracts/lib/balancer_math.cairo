@@ -167,37 +167,25 @@ namespace Balancer_Math:
     # **********************************************************************************************/
     @view
     func get_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            amount_of_a_in : Uint256, a_balance : Uint256, a_weight : Ratio, b_balance : Uint256,
-            b_weight : Ratio, swap_fee : Ratio) -> (amount_of_b_out : Ratio):
+            amount_of_a_in : Uint256, a_balance : Uint256, a_weight : Uint256, b_balance : Uint256,
+            b_weight : Uint256, swap_fee : Uint256) -> (amount_of_b_out : Uint256):
         alloc_locals
 
         # needed for dereferencing ratios
         let (__fp__, _) = get_fp_and_pc()
 
-        local token_balance_in : Ratio = Ratio(a_balance, Uint256(1, 0))
-        local token_amount_in : Ratio = Ratio(amount_of_a_in, Uint256(1, 0))
-        local token_balance_out : Ratio = Ratio(b_balance, Uint256(1, 0))
+        let (local weight_ratio : Uint256) = FixedPoint.div(a_weight, b_weight)
+        let (local one_minus_swap_fee : Uint256) = FixedPoint.sub(ONE, swap_fee)
+        let (local adjusted_in : Uint256) = FixedPoint.mul(amount_of_a_in, one_minus_swap_fee)
 
-        let x : Uint256 = uint256_sub(swap_fee.d, swap_fee.n)
-        local one_minus_swap_fee : Ratio = Ratio(x, swap_fee.d)
-        let times_tai : Ratio = ratio_mul(one_minus_swap_fee, token_amount_in)
-        let plus_balance_in : Ratio = ratio_add(token_balance_in, times_tai)
-        let balance_in_divided_by : Ratio = ratio_div(token_balance_in, plus_balance_in)
+        let (local new_balance_in : Uint256) = FixedPoint.add(a_balance, adjusted_in)
+        let (local balance_in_ratio : Uint256) = FixedPoint.div(a_balance, new_balance_in)
+        let (local impact_on_balance_out : Uint256) = FixedPoint.bounded_pow(
+            balance_in_ratio, weight_ratio)
+        let (local out_balance_multiplier : Uint256) = FixedPoint.sub(ONE, impact_on_balance_out)
+        let (local token_amount_out : Uint256) = FixedPoint.mul(b_balance, out_balance_multiplier)
 
-        let exponent : Ratio = ratio_div(a_weight, b_weight)
-
-        let raised_to_exponent : Ratio = ratio_pow(balance_in_divided_by, exponent.n)
-
-        with_attr error_message(
-                "ERROR WHEN TAKING THE NTH ROOT : LIKELY FRACTION REDUCTION PROBLEM; TRY SLIGHTLY ADJUSTING NUMBERS"):
-            let take_root_of_exponent : Ratio = nth_root_by_digit(raised_to_exponent, exponent.d, 9)
-        end
-
-        let y : Uint256 = uint256_sub(take_root_of_exponent.d, take_root_of_exponent.n)
-        local one_minus_all : Ratio = Ratio(y, take_root_of_exponent.d)
-        let amount_of_b_out : Ratio = ratio_mul(token_balance_out, one_minus_all)
-
-        return (amount_of_b_out)
+        return (token_amount_out)
     end
 
     @view
