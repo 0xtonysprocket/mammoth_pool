@@ -171,9 +171,6 @@ namespace Balancer_Math:
             b_weight : Uint256, swap_fee : Uint256) -> (amount_of_b_out : Uint256):
         alloc_locals
 
-        # needed for dereferencing ratios
-        let (__fp__, _) = get_fp_and_pc()
-
         let (local weight_ratio : Uint256) = FixedPoint.div(a_weight, b_weight)
         let (local one_minus_swap_fee : Uint256) = FixedPoint.sub(ONE, swap_fee)
         let (local adjusted_in : Uint256) = FixedPoint.mul(amount_of_a_in, one_minus_swap_fee)
@@ -196,11 +193,9 @@ namespace Balancer_Math:
             output_arr_len : felt, output_arr : TokenAndAmount*):
         alloc_locals
 
-        local ratio_in : Ratio = Ratio(pool_amount_in, Uint256(1, 0))
-        let (local fee_adj : Ratio) = ratio_mul(ratio_in, exit_fee)
-        let (local adj_in : Ratio) = ratio_diff(ratio_in, fee_adj)
-        local ratio_total_supply : Ratio = Ratio(pool_total_supply, Uint256(1, 0))
-        let (local adj_pool_supply_ratio : Ratio) = ratio_div(adj_in, ratio_total_supply)
+        let (local fee_adj : Uint256) = Fixed_Point.mul(pool_amount_in, exit_fee)
+        let (local adj_in : Ratio) = FixedPoint.sub(pool_amount_in, fee_adj)
+        let (local adj_pool_supply_ratio : Uint256) = FixedPoint.div(adj_in, pool_total_supply)
 
         let (local output_arr : TokenAndAmount*) = alloc()
 
@@ -229,7 +224,7 @@ namespace Balancer_Math:
 
     func _recursive_get_balance_needed{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_supply_ratio : Ratio, input_arr_len : felt, input_arr : TokenAndAmount*,
+            pool_supply_ratio : Uint256, input_arr_len : felt, input_arr : TokenAndAmount*,
             output_arr_len : felt, output_arr : TokenAndAmount*, counter : felt) -> (
             list_len : felt, list : TokenAndAmount*):
         alloc_locals
@@ -262,14 +257,10 @@ namespace Balancer_Math:
 
     func _get_balance_needed_from_pool_supply{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_supply_ratio : Ratio, current_balance : Uint256) -> (balance_needed : Uint256):
+            pool_supply_ratio : Uint256, current_balance : Uint256) -> (balance_needed : Uint256):
         alloc_locals
 
-        local ratio_current_balance : Ratio = Ratio(current_balance, Uint256(1, 0))
-        let (local curr_times_supply_ratio : Ratio) = ratio_mul(
-            ratio_current_balance, pool_supply_ratio)
-        let (local amount_required : Uint256, _) = uint256_unsigned_div_rem(
-            curr_times_supply_ratio.n, curr_times_supply_ratio.d)
+        let (local amount_required : Uint256) = Fixed_Point.mul(current_balance, pool_supply_ratio)
 
         return (amount_required)
     end
