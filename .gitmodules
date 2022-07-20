@@ -1,3 +1,6 @@
 [submodule "contracts/lib/ratios"]
 	path = contracts/lib/ratios
 	url = https://github.com/andrepn/ratios_cairo.git
+[submodule "contracts/lib/fixed_point"]
+	path = contracts/lib/fixed_point
+	url = https://github.com/0xtonysprocket/fixed_point.git
