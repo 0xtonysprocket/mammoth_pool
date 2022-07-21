@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
+from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
 
 # openzeppelin
@@ -21,7 +21,6 @@ from openzeppelin.security.initializable import Initializable, Initializable_ini
 from contracts.lib.Pool_base import Pool
 from contracts.lib.Pool_registry_base import Register, ApprovedERC20
 from contracts.lib.balancer_math import Balancer_Math, TokenAndAmount
-from contracts.lib.ratios.contracts.ratio import Ratio
 
 @contract_interface
 namespace IERC20:
@@ -38,8 +37,6 @@ end
 @external
 func setup_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         router : felt, name : felt, symbol : felt, decimals : felt):
-    require_not_initialized()
-
     # set lp token name, symbol, and decimals
     ERC20.initializer(name, symbol, decimals)
 
@@ -50,10 +47,9 @@ end
 
 @external
 func init_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
+        caller_address : felt, s_fee : Uint256, e_fee : Uint256, erc_list_len : felt,
         erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
     alloc_locals
-    require_not_initialized()
 
     # approve the desired tokens
     # set swap fee
@@ -259,16 +255,14 @@ func view_single_out_given_pool_in{
 
     let (local this_contract : felt) = get_contract_address()
 
-    let (local swap_fee : Ratio, local exit_fee : Ratio,
-        total_weight : Ratio) = Register.get_pool_info()
-    let (local a_weight : Ratio) = Register.get_token_weight(erc20_address)
+    let (local swap_fee : Uint256, local exit_fee : Uint256,
+        total_weight : Uint256) = Register.get_pool_info()
+    let (local a_weight : Uint256) = Register.get_token_weight(erc20_address)
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
-    let (local ratio_out : Ratio) = Balancer_Math.get_single_out_given_pool_in(
+    let (local amount_to_withdraw : Uint256) = Balancer_Math.get_single_out_given_pool_in(
         pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee)
-
-    let (local amount_to_withdraw : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_to_withdraw)
 end
@@ -279,15 +273,13 @@ func view_pool_minted_given_single_in{
         amount_to_deposit : Uint256, erc20_address : felt) -> (amount_to_mint : Uint256):
     alloc_locals
 
-    let (local swap_fee : Ratio, _, total_weight : Ratio) = Register.get_pool_info()
-    let (local a_weight : Ratio) = Register.get_token_weight(erc20_address)
+    let (local swap_fee : Uint256, _, total_weight : Uint256) = Register.get_pool_info()
+    let (local a_weight : Uint256) = Register.get_token_weight(erc20_address)
     let (local supply : Uint256) = totalSupply()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
 
-    let (local ratio_out : Ratio) = Balancer_Math.get_pool_minted_given_single_in(
+    let (local amount_to_mint : Uint256) = Balancer_Math.get_pool_minted_given_single_in(
         amount_to_deposit, a_balance, supply, a_weight, total_weight, swap_fee)
-
-    let (local amount_to_mint : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_to_mint)
 end
@@ -298,16 +290,14 @@ func view_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
         amount_out : Uint256):
     alloc_locals
 
-    let (local swap_fee : Ratio, _, _) = Register.get_pool_info()
+    let (local swap_fee : Uint256, _, _) = Register.get_pool_info()
     let (local a_balance : Uint256) = get_ERC20_balance(erc20_address_in)
-    let (local a_weight : Ratio) = Register.get_token_weight(erc20_address_in)
+    let (local a_weight : Uint256) = Register.get_token_weight(erc20_address_in)
     let (local b_balance : Uint256) = get_ERC20_balance(erc20_address_out)
-    let (local b_weight : Ratio) = Register.get_token_weight(erc20_address_out)
+    let (local b_weight : Uint256) = Register.get_token_weight(erc20_address_out)
 
-    let (local ratio_out : Ratio) = Balancer_Math.get_out_given_in(
+    let (local amount_out : Uint256) = Balancer_Math.get_out_given_in(
         amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
-
-    let (local amount_out : Uint256, _) = uint256_unsigned_div_rem(ratio_out.n, ratio_out.d)
 
     return (amount_out)
 end
@@ -319,7 +309,6 @@ func view_proportional_deposits_given_pool_out{
     alloc_locals
 
     let (local total_pool_supply : Uint256) = totalSupply()
-    local pool_supply_ratio : Ratio = Ratio(pool_amount_out, total_pool_supply)
 
     # build list of tokens and current balances
     let (local num_tokens_in_pool) = Register.get_num_tokens()
@@ -331,7 +320,7 @@ func view_proportional_deposits_given_pool_out{
 
     let (local list_len : felt,
         list : TokenAndAmount*) = Balancer_Math.get_proportional_deposits_given_pool_out(
-        pool_supply_ratio, token_list_len, token_list)
+        total_pool_supply, pool_amount_out, token_list_len, token_list)
 
     return (list_len, list)
 end
@@ -343,7 +332,7 @@ func view_proportional_withdraw_given_pool_in{
     alloc_locals
 
     let (local total_pool_supply : Uint256) = totalSupply()
-    let (local exit_fee : Ratio) = Register.get_exit_fee()
+    let (local exit_fee : Uint256) = Register.get_exit_fee()
 
     # build list of tokens and current balances
     let (local num_tokens_in_pool) = Register.get_num_tokens()
@@ -406,34 +395,18 @@ end
 
 @view
 func get_token_weight{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        erc20_address : felt) -> (approved : Ratio):
+        erc20_address : felt) -> (approved : Uint256):
     alloc_locals
-    let (weight : Ratio) = Register.get_token_weight(erc20_address)
+    let (weight : Uint256) = Register.get_token_weight(erc20_address)
     return (weight)
 end
 
 @view
 func get_pool_into{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        erc20_address : felt) -> (swap_fee : Ratio, exit_fee : Ratio, total_weight : Ratio):
+        erc20_address : felt) -> (swap_fee : Uint256, exit_fee : Uint256, total_weight : Uint256):
     alloc_locals
-    let (s_fee : Ratio, e_fee : Ratio, t_w : Ratio) = Register.get_pool_info()
+    let (s_fee : Uint256, e_fee : Uint256, t_w : Uint256) = Register.get_pool_info()
     return (s_fee, e_fee, t_w)
-end
-
-#########
-# REQUIRE FUNCTION
-#########
-
-@view
-func require_not_initialized{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
-    alloc_locals
-    let (local initialized : felt) = Initializable_initialized.read()
-
-    with_attr error_message("ERROR POOL ALREADY INITIALIZED"):
-        assert initialized = 0
-    end
-
-    return ()
 end
 
 #########
