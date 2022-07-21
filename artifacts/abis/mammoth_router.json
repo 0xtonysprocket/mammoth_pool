@@ -2,23 +2,6 @@
     {
         "members": [
             {
-                "name": "n",
-                "offset": 0,
-                "type": "Uint256"
-            },
-            {
-                "name": "d",
-                "offset": 2,
-                "type": "Uint256"
-            }
-        ],
-        "name": "Ratio",
-        "size": 4,
-        "type": "struct"
-    },
-    {
-        "members": [
-            {
                 "name": "low",
                 "offset": 0,
                 "type": "felt"
@@ -41,38 +24,28 @@
                 "type": "felt"
             },
             {
-                "name": "low_num",
+                "name": "weight_low",
                 "offset": 1,
                 "type": "felt"
             },
             {
-                "name": "high_num",
+                "name": "weight_high",
                 "offset": 2,
                 "type": "felt"
             },
             {
-                "name": "low_den",
+                "name": "initial_liquidity_low",
                 "offset": 3,
                 "type": "felt"
             },
             {
-                "name": "high_den",
-                "offset": 4,
-                "type": "felt"
-            },
-            {
-                "name": "initial_liquidity_low",
-                "offset": 5,
-                "type": "felt"
-            },
-            {
                 "name": "initial_liquidity_high",
-                "offset": 6,
+                "offset": 4,
                 "type": "felt"
             }
         ],
         "name": "ApprovedERC20",
-        "size": 7,
+        "size": 5,
         "type": "struct"
     },
     {
@@ -93,61 +66,15 @@
     {
         "inputs": [
             {
-                "name": "x",
-                "type": "Ratio"
-            },
-            {
-                "name": "y",
-                "type": "Ratio"
-            }
-        ],
-        "name": "ratio_mul",
-        "outputs": [
-            {
-                "name": "z",
-                "type": "Ratio"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "x",
-                "type": "Ratio"
-            },
-            {
-                "name": "y",
-                "type": "Ratio"
-            }
-        ],
-        "name": "ratio_div",
-        "outputs": [
-            {
-                "name": "z",
-                "type": "Ratio"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "x",
-                "type": "Ratio"
-            },
-            {
-                "name": "m",
+                "name": "a",
                 "type": "Uint256"
             }
         ],
-        "name": "ratio_pow",
+        "name": "floor_intermediate",
         "outputs": [
             {
-                "name": "z",
-                "type": "Ratio"
+                "name": "b",
+                "type": "Uint256"
             }
         ],
         "stateMutability": "view",
@@ -156,19 +83,15 @@
     {
         "inputs": [
             {
-                "name": "base",
-                "type": "felt"
-            },
-            {
-                "name": "exponent",
-                "type": "felt"
+                "name": "a",
+                "type": "Uint256"
             }
         ],
-        "name": "pow",
+        "name": "floor",
         "outputs": [
             {
-                "name": "result",
-                "type": "felt"
+                "name": "floor",
+                "type": "Uint256"
             }
         ],
         "stateMutability": "view",
@@ -177,19 +100,15 @@
     {
         "inputs": [
             {
-                "name": "x",
-                "type": "felt"
-            },
-            {
-                "name": "y",
-                "type": "felt"
+                "name": "a",
+                "type": "Uint256"
             }
         ],
-        "name": "diff",
+        "name": "half_scaling",
         "outputs": [
             {
-                "name": "result",
-                "type": "felt"
+                "name": "b",
+                "type": "Uint256"
             }
         ],
         "stateMutability": "view",
@@ -198,19 +117,15 @@
     {
         "inputs": [
             {
-                "name": "first_ratio",
-                "type": "Ratio"
-            },
-            {
-                "name": "second_ratio",
-                "type": "Ratio"
+                "name": "a",
+                "type": "Uint256"
             }
         ],
-        "name": "ratio_add",
+        "name": "double_scaling",
         "outputs": [
             {
-                "name": "sum",
-                "type": "Ratio"
+                "name": "b",
+                "type": "Uint256"
             }
         ],
         "stateMutability": "view",
@@ -219,19 +134,19 @@
     {
         "inputs": [
             {
-                "name": "base_ratio",
-                "type": "Ratio"
+                "name": "a",
+                "type": "Uint256"
             },
             {
-                "name": "other_ratio",
-                "type": "Ratio"
+                "name": "b",
+                "type": "Uint256"
             }
         ],
-        "name": "ratio_diff",
+        "name": "add",
         "outputs": [
             {
-                "name": "diff",
-                "type": "Ratio"
+                "name": "c",
+                "type": "Uint256"
             }
         ],
         "stateMutability": "view",
@@ -240,16 +155,41 @@
     {
         "inputs": [
             {
-                "name": "first_ratio",
-                "type": "Ratio"
+                "name": "a",
+                "type": "Uint256"
             },
             {
-                "name": "second_ratio",
-                "type": "Ratio"
+                "name": "b",
+                "type": "Uint256"
             }
         ],
-        "name": "ratio_less_than_or_eq",
+        "name": "sub",
         "outputs": [
+            {
+                "name": "c",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "a",
+                "type": "Uint256"
+            },
+            {
+                "name": "b",
+                "type": "Uint256"
+            }
+        ],
+        "name": "diff_and_sign",
+        "outputs": [
+            {
+                "name": "c",
+                "type": "Uint256"
+            },
             {
                 "name": "bool",
                 "type": "felt"
@@ -261,25 +201,191 @@
     {
         "inputs": [
             {
-                "name": "x",
-                "type": "Ratio"
+                "name": "a",
+                "type": "Uint256"
             },
             {
-                "name": "m",
+                "name": "b",
+                "type": "Uint256"
+            }
+        ],
+        "name": "mul",
+        "outputs": [
+            {
+                "name": "c",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "num",
+                "type": "Uint256"
+            },
+            {
+                "name": "den",
+                "type": "Uint256"
+            }
+        ],
+        "name": "div",
+        "outputs": [
+            {
+                "name": "c",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base",
+                "type": "Uint256"
+            },
+            {
+                "name": "exponent",
+                "type": "Uint256"
+            }
+        ],
+        "name": "integer_pow",
+        "outputs": [
+            {
+                "name": "c",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "current_product",
+                "type": "Uint256"
+            },
+            {
+                "name": "base",
+                "type": "Uint256"
+            },
+            {
+                "name": "exponent",
+                "type": "Uint256"
+            }
+        ],
+        "name": "_recursive_integer_pow",
+        "outputs": [
+            {
+                "name": "c",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base",
+                "type": "Uint256"
+            },
+            {
+                "name": "exponent",
                 "type": "Uint256"
             },
             {
                 "name": "precision",
+                "type": "Uint256"
+            }
+        ],
+        "name": "bounded_decimal_pow",
+        "outputs": [
+            {
+                "name": "result",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base_minus_one",
+                "type": "Uint256"
+            },
+            {
+                "name": "exponent",
+                "type": "Uint256"
+            },
+            {
+                "name": "precision",
+                "type": "Uint256"
+            },
+            {
+                "name": "previous_element",
+                "type": "Uint256"
+            },
+            {
+                "name": "index",
+                "type": "Uint256"
+            },
+            {
+                "name": "current_sum",
+                "type": "Uint256"
+            },
+            {
+                "name": "base_minus_center_sign",
+                "type": "felt"
+            },
+            {
+                "name": "previous_sign",
                 "type": "felt"
             }
         ],
-        "name": "nth_root_by_digit",
+        "name": "_recursive_decimal_pow",
         "outputs": [
             {
-                "name": "z",
-                "type": "Ratio"
+                "name": "final_sum",
+                "type": "Uint256"
             }
         ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base",
+                "type": "Uint256"
+            },
+            {
+                "name": "exponent",
+                "type": "Uint256"
+            }
+        ],
+        "name": "bounded_pow",
+        "outputs": [
+            {
+                "name": "result",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "base",
+                "type": "Uint256"
+            }
+        ],
+        "name": "assert_base_within_bound",
+        "outputs": [],
         "stateMutability": "view",
         "type": "function"
     },
@@ -318,11 +424,11 @@
             },
             {
                 "name": "swap_fee",
-                "type": "Ratio"
+                "type": "Uint256"
             },
             {
                 "name": "exit_fee",
-                "type": "Ratio"
+                "type": "Uint256"
             },
             {
                 "name": "tokens_len",
@@ -487,11 +593,11 @@
             },
             {
                 "name": "s_fee",
-                "type": "Ratio"
+                "type": "Uint256"
             },
             {
                 "name": "e_fee",
-                "type": "Ratio"
+                "type": "Uint256"
             },
             {
                 "name": "erc_list_len",

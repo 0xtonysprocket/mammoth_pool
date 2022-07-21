@@ -101,30 +101,24 @@ async def test_create_pool(
 
     print(dir(pool_factory['pool_contract']))
 
-    swap_fee = [to_uint(2), to_uint(1000)]  # .02%
-    exit_fee = [to_uint(2), to_uint(1000)]  # .02%
+    swap_fee = to_uint(2 * DECIMALS/(10**2))  # .02%
+    exit_fee = to_uint(2 * DECIMALS/(10**2)) # .02%
     # weight of 1/3 represented as 1, 0, 3, 0
     erc_array_input = (
         tusdc_address,
-        1,  # weight
-        0,
-        3,
+        333333333333333333,  # weight 1/3
         0,
         (3000 * DECIMALS),  # initial liquidity amount
         0,
         fc_address,
-        1,  # weight
+        333333333333333333,  # weight 1/3
         0,
-        3,
-        0,
-        (1 * DECIMALS),  # initial liquidity amount
+        (20 * DECIMALS),  # initial liquidity amount
         0,
         teeth_address,
-        1,  # weight
+        333333333333333334,  # weight 1/3
         0,
-        3,
-        0,
-        (2 * DECIMALS),  # initial liquidity amount
+        (35 * DECIMALS),  # initial liquidity amount
         0
     )
 
@@ -138,10 +132,8 @@ async def test_create_pool(
             str_to_felt("MLP"),  # symbol
             18,  # decimals
             user_address,
-            *swap_fee[0],
-            *swap_fee[1],
-            *exit_fee[0],
-            *exit_fee[1],
+            *swap_fee,
+            *exit_fee,
             3,
             *erc_array_input,
         ],
@@ -166,10 +158,10 @@ async def test_create_pool(
     assert pool_tusdc_balance.result == ((3000 * DECIMALS, 0),)
 
     pool_fc_balance = await fc_contract.balanceOf(pool_address).call()
-    assert pool_fc_balance.result == ((1 * DECIMALS, 0),)
+    assert pool_fc_balance.result == ((20 * DECIMALS, 0),)
 
     pool_teeth_balance = await teeth_contract.balanceOf(pool_address).call()
-    assert pool_teeth_balance.result == ((2 * DECIMALS, 0),)
+    assert pool_teeth_balance.result == ((35 * DECIMALS, 0),)
 
     # ADD MORE TESTS TO MAKE SURE POOL INITIALIZED PROPERLY
 
@@ -188,18 +180,18 @@ async def test_view_single_out_given_pool_in(
 
     desired = await balancer.get_single_out_given_pool_in(
         to_uint(1 * DECIMALS),
-        to_uint(9 * DECIMALS),
-        to_uint(10 * DECIMALS),
-        (to_uint(1), to_uint(3)),
-        (to_uint(1), to_uint(1)),
-        (to_uint(2), to_uint(1000)),
-        (to_uint(2), to_uint(1000)),
+        to_uint(3000 * DECIMALS),
+        to_uint(3000 * DECIMALS),
+        to_uint(333333333333333334),
+        (to_uint(1 * DECIMALS)),
+        to_uint(2 * (10**16)),
+        (to_uint(2 * (10**16))),
     ).call()
 
     assert (
-        from_uint(tusdc_out.result[0])
-        - from_uint(desired.result[0][0]) / from_uint(desired.result[0][1])
-        < 0.000005
+        abs(from_uint(tusdc_out.result[0])
+        - from_uint(desired.result[0]))
+        < 5 * 10**14
     )
 
 
@@ -218,17 +210,15 @@ async def test_view_pool_minted_given_single_in(
 
     desired = await balancer.get_pool_minted_given_single_in(
         to_uint(1 * DECIMALS),
-        to_uint(9 * DECIMALS),
-        to_uint(10 * DECIMALS),
-        (to_uint(1), to_uint(3)),
-        (to_uint(1), to_uint(1)),
-        (to_uint(2), to_uint(1000)),
+        to_uint(3000 * DECIMALS),
+        to_uint(3000 * DECIMALS),
+        to_uint(333333333333333334),
+        (to_uint(1 * DECIMALS)),
+        (to_uint(2 * (10**16))),
     ).call()
 
     assert (
-        from_uint(lp_out.result[0])
-        - from_uint(desired.result[0][0]) / from_uint(desired.result[0][1])
-        < 0.000005
+        abs(from_uint(lp_out.result[0]) - from_uint(desired.result[0])) < 0.000005
     )
 
 
@@ -248,17 +238,16 @@ async def test_view_out_given_in(
 
     desired = await balancer.get_out_given_in(
         to_uint(1 * DECIMALS),
-        to_uint(9 * DECIMALS),
-        (to_uint(1), to_uint(3)),
-        to_uint(9 * DECIMALS),
-        (to_uint(1), to_uint(3)),
-        (to_uint(2), to_uint(1000)),
+        to_uint(3000 * DECIMALS),
+        to_uint(.333333333333333334 * DECIMALS),
+        to_uint(20 * DECIMALS),
+        to_uint(.333333333333333334 * DECIMALS),
+        to_uint(2 * (10**16)),
     ).call()
 
     assert (
-        from_uint(amount_out.result[0])
-        - from_uint(desired.result[0][0]) / from_uint(desired.result[0][1])
-        < 0.000005
+        abs(from_uint(amount_out.result[0])
+        - from_uint(desired.result[0])) < 0.000005
     )
 
 
@@ -305,15 +294,15 @@ async def test_mammoth_deposit_single_asset(
     # new erc balance
     new_balance = await pool_contract.get_ERC20_balance(fc_address).call()
     assert (
-        from_uint(new_balance.result[0]) - from_uint(initial_balance.result[0])
+        abs(from_uint(new_balance.result[0]) - from_uint(initial_balance.result[0]))
         == 4 * DECIMALS
     )
 
     # new lp balance
     new_user_lp_balance = await pool_contract.balanceOf(user).call()
-    assert from_uint(new_user_lp_balance.result[0]) - from_uint(
+    assert abs(from_uint(new_user_lp_balance.result[0]) - from_uint(
         initial_user_lp.result[0]
-    ) == from_uint(lp_to_mint.result[0])
+    )) == from_uint(lp_to_mint.result[0])
 
 
 @pytest.mark.asyncio
@@ -351,17 +340,17 @@ async def test_mammoth_proportional_deposit(
 
     # new fc balance
     fc_new_balance = await pool_contract.get_ERC20_balance(fc_address).call()
-    assert from_uint(fc_new_balance.result[0]) - from_uint(fc_initial_balance.result[0]) - (
-        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0])) < 5 / (10 ** 5)
+    assert abs(from_uint(fc_new_balance.result[0]) - from_uint(fc_initial_balance.result[0]) - (
+        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0]))) < 5 * DECIMALS / (10 ** 5)
 
     tusdc_new_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
-    assert from_uint(tusdc_new_balance.result[0]) - from_uint(tusdc_initial_balance.result[0]) - (
-        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0])) < 5 / (10 ** 5)
+    assert abs(from_uint(tusdc_new_balance.result[0]) - from_uint(tusdc_initial_balance.result[0]) - (
+        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0]))) < 5 * DECIMALS / (10 ** 5)
 
     # new fc balance
     teeth_new_balance = await pool_contract.get_ERC20_balance(teeth_address).call()
-    assert from_uint(teeth_new_balance.result[0]) - from_uint(teeth_initial_balance.result[0]) - (
-        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0])) < 5 / (10 ** 5)
+    assert abs(from_uint(teeth_new_balance.result[0]) - from_uint(teeth_initial_balance.result[0]) - (
+        ((4 * DECIMALS) / (from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0]))) < 5 * DECIMALS / (10 ** 5)
 
     # new lp balance
     new_user_lp_balance = await pool_contract.balanceOf(user).call()
@@ -405,15 +394,15 @@ async def test_mammoth_withdraw_single_asset(
 
     # tusdc balance
     new_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
-    assert from_uint(initial_balance.result[0]) - from_uint(
+    assert abs(from_uint(initial_balance.result[0]) - from_uint(
         new_balance.result[0]
-    ) == from_uint(tusdc_to_withdraw.result[0])
+    )) == from_uint(tusdc_to_withdraw.result[0])
 
     # check lp tokens were minted that represent same amount as initial deposit
     new_user_lp_balance = await pool_contract.balanceOf(user).call()
     assert (
-        from_uint(initial_user_lp.result[0]) -
-        from_uint(new_user_lp_balance.result[0])
+        abs(from_uint(initial_user_lp.result[0]) -
+        from_uint(new_user_lp_balance.result[0]))
         == 5 * DECIMALS
     )
 
@@ -448,28 +437,29 @@ async def test_mammoth_proportional_withdraw(
         account=user_account,
         to=router_address,
         selector_name="mammoth_proportional_withdraw",
-        calldata=[*to_uint(4 * DECIMALS), user, pool_address],
+        calldata=[*to_uint(10 * DECIMALS), user, pool_address],
     )
 
+    #emulate the fixed point math calculations in these tests
     # new fc balance
     fc_new_balance = await pool_contract.get_ERC20_balance(fc_address).call()
-    assert from_uint(fc_new_balance.result[0]) - from_uint(fc_initial_balance.result[0]) - (
-        (((4 * DECIMALS) * (2 * 4 * DECIMALS / 1000)) / (from_uint(total_lp_supply.result[0]))) * from_uint(fc_initial_balance.result[0])) < 5 / (10 ** 5)
+    assert abs(abs(from_uint(fc_new_balance.result[0]) - from_uint(fc_initial_balance.result[0])) - (
+        ((10 * DECIMALS)/10**9 * (10**18 - (2*10**16))/10 **9 * 10**18 / (from_uint(total_lp_supply.result[0])))/10**9 * from_uint(fc_initial_balance.result[0]))/10**9) < 5 * DECIMALS/ (10 ** 4)
 
     tusdc_new_balance = await pool_contract.get_ERC20_balance(tusdc_address).call()
-    assert from_uint(tusdc_new_balance.result[0]) - from_uint(tusdc_initial_balance.result[0]) - (
-        (((4 * DECIMALS) * (2 * 4 * DECIMALS / 1000)) / (from_uint(total_lp_supply.result[0]))) * from_uint(tusdc_initial_balance.result[0])) < 5 / (10 ** 5)
+    assert abs(abs(from_uint(tusdc_new_balance.result[0]) - from_uint(tusdc_initial_balance.result[0])) - (
+        (((10 * DECIMALS)/10**9 * (10**18 - 2*10**16))/10**9 * 10**18/ (from_uint(total_lp_supply.result[0])))/10**9 * from_uint(tusdc_initial_balance.result[0]))/10**9) < 5  * DECIMALS/ (10 ** 4)
 
     # new fc balance
     teeth_new_balance = await pool_contract.get_ERC20_balance(teeth_address).call()
-    assert from_uint(teeth_new_balance.result[0]) - from_uint(teeth_initial_balance.result[0]) - (
-        (((4 * DECIMALS) * (2 * 4 * DECIMALS / 1000)) / (from_uint(total_lp_supply.result[0]))) * from_uint(teeth_initial_balance.result[0])) < 5 / (10 ** 5)
+    assert abs(abs(from_uint(teeth_new_balance.result[0]) - from_uint(teeth_initial_balance.result[0])) - (
+        (((10 * DECIMALS)/10**9 * (10**18 - 2*10**16)) /10**9 * 10**18/ (from_uint(total_lp_supply.result[0])))/10**9 * from_uint(teeth_initial_balance.result[0]))/10**9) < 5 * DECIMALS / (10 ** 4)
 
     # new lp balance
     new_user_lp_balance = await pool_contract.balanceOf(user).call()
     assert abs(from_uint(new_user_lp_balance.result[0]) - from_uint(
         initial_user_lp.result[0]
-    )) == 4 * DECIMALS
+    )) == 10 * DECIMALS
 
 
 # @given(

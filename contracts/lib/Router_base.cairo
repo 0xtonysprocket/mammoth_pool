@@ -13,7 +13,6 @@ from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import deploy, get_contract_address
 from starkware.cairo.common.alloc import alloc
 
-from contracts.lib.ratios.contracts.ratio import Ratio
 from contracts.lib.Pool_registry_base import ApprovedERC20
 
 @contract_interface
@@ -49,7 +48,7 @@ end
 @contract_interface
 namespace IPoolRegister:
     func init_pool(
-            caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
+            caller_address : felt, s_fee : Uint256, e_fee : Uint256, erc_list_len : felt,
             erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
     end
 end
@@ -185,7 +184,7 @@ namespace Router:
     end
 
     func init_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            caller_address : felt, pool_address : felt, s_fee : Ratio, e_fee : Ratio,
+            caller_address : felt, pool_address : felt, s_fee : Uint256, e_fee : Uint256,
             erc_list_len : felt, erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
         alloc_locals
         approved_pool_address.write(pool_address, TRUE)
