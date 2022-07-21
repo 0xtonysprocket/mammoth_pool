@@ -2,7 +2,7 @@
 
 Starknet pool similar to balancer v1 AMM
 
-This repo uses cairo-nile ~https://github.com/OpenZeppelin/nile~
+This repo uses cairo-nile https://github.com/OpenZeppelin/nile
 
 # Goals:
 
