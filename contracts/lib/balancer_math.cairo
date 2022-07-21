@@ -87,14 +87,38 @@ namespace Balancer_Math:
         return (amount_pool_tokens_out)
     end
 
-    # IMPLEMENT LATER
-    # @view
-    # func get_single_in_given_pool_out{
-    #        syscall_ptr : felt*,
-    #        pedersen_ptr : HashBuiltin*,
-    #        range_check_ptr
-    #    }(erc20_address: felt, pool_amount_out: felt) -> (amount_of_a_in: felt):
-    # end
+    # **********************************************************************************************
+    # calcSingleInGivenPoolOut                                                                  //
+    # tAi = tokenAmountIn              //(pS + pAo)\     /    1    \\                           //
+    # pS = poolSupply                 || ---------  | ^ | --------- || * bI - bI                //
+    # pAo = poolAmountOut              \\    pS    /     \(wI / tW)//                           //
+    # bI = balanceIn          tAi =  --------------------------------------------               //
+    # wI = weightIn                              /      wI  \                                   //
+    # tW = totalWeight                          |  1 - ----  |  * sF                            //
+    # sF = swapFee                               \      tW  /                                   //
+    # **********************************************************************************************/
+    @view
+    func get_single_in_given_pool_out{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            pool_amount_out : Uint256, a_balance : Uint256, supply : Uint256, a_weight : Uint256,
+            total_weight : Uint256, swap_fee : Uint256) -> (amount_of_a_in : Uint256):
+        alloc_locals
+
+        let (local weight_ratio : Uint256) = FixedPoint.div(a_weight, total_weight)
+        let (local fee_adj_one : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), weight_ratio)
+        let (local fee_adj : Uint256) = FixedPoint.mul(fee_adj_one, swap_fee)
+
+        let (local pool_supp_adj : Uint256) = FixedPoint.add(supply, pool_amount_out)
+        let (local pool_ratio : Uint256) = FixedPoint.div(pool_supp_adj, supply)
+        let (local exponent : Uint256) = FixedPoint.div(Uint256(DECIMALS, 0), weight_ratio)
+        let (local balance_in_multiplier : Uint256) = FixedPoint.bounded_pow(pool_ratio, exponent)
+        let (local new_balance_in : Uint256) = FixedPoint.mul(balance_in_multiplier, a_balance)
+        let (local token_in_after_fee : Uint256) = FixedPoint.sub(new_balance_in, a_balance)
+
+        let (local amount_a_in : Uint256) = FixedPoint.div(token_in_after_fee, fee_adj)
+
+        return (amount_a_in)
+    end
 
     # **********************************************************************************************
     # calcSingleOutGivenPoolIn                                                                  //
@@ -146,14 +170,45 @@ namespace Balancer_Math:
         return (token_amount_out)
     end
 
-    # IMPLEMENT LATER
-    # @view
-    # func get_pool_in_given_single_out{
-    #        syscall_ptr : felt*,
-    #        pedersen_ptr : HashBuiltin*,
-    #        range_check_ptr
-    #    }(erc20_address: felt, amount_of_a_out: felt) -> (pool_tokens_in: felt):
-    # end
+    # **********************************************************************************************
+    # calcPoolInGivenSingleOut                                                                  //
+    # pAi = poolAmountIn               // /               tAo             \\     / wO \     \   //
+    # bO = tokenBalanceOut            // | bO - -------------------------- |\   | ---- |     \  //
+    # tAo = tokenAmountOut      pS - ||   \     1 - ((1 - (tO / tW)) * sF)/  | ^ \ tW /  * pS | //
+    # ps = poolSupply                 \\ -----------------------------------/                /  //
+    # wO = tokenWeightOut  pAi =       \\               bO                 /                /   //
+    # tW = totalWeight           -------------------------------------------------------------  //
+    # sF = swapFee                                        ( 1 - eF )                            //
+    # eF = exitFee                                                                              //
+    # **********************************************************************************************/
+    @view
+    func get_pool_in_given_single_out{
+            syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            amount_b_out : Uint256, b_balance : Uint256, supply : Uint256, b_weight : Uint256,
+            total_weight : Uint256, swap_fee : Uint256, exit_fee : Uint256) -> (
+            pool_amount_in : Uint256):
+        alloc_locals
+
+        let (local weight_ratio : Uint256) = FixedPoint.div(b_weight, total_weight)
+
+        let (local weight_adj : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), weight_ratio)
+        let (local fee_adj_one : Uint256) = FixedPoint.mul(weight_adj, swap_fee)
+        let (local fee_adj : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), fee_adj_one)
+        let (local token_out_before_fee : Uint256) = FixedPoint.div(amount_b_out, fee_adj)
+        let (local new_balance_out : Uint256) = FixedPoint.sub(b_balance, token_out_before_fee)
+        let (local token_out_ratio : Uint256) = FixedPoint.div(new_balance_out, b_balance)
+
+        let (local pool_ratio : Uint256) = FixedPoint.bounded_pow(token_out_ratio, weight_ratio)
+        let (local new_pool_supply : Uint256) = FixedPoint.mul(pool_ratio, supply)
+        let (local pool_amount_in_after_exit_fee : Uint256) = FixedPoint.sub(
+            supply, new_pool_supply)
+
+        let (local exit_fee_adj : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), exit_fee)
+        let (local pool_amount_in : Uint256) = FixedPoint.div(
+            pool_amount_in_after_exit_fee, exit_fee_adj)
+
+        return (pool_amount_in)
+    end
 
     ###########################
     # SWAPS
@@ -188,6 +243,42 @@ namespace Balancer_Math:
         let (local token_amount_out : Uint256) = FixedPoint.mul(b_balance, out_balance_multiplier)
 
         return (token_amount_out)
+    end
+
+    # **********************************************************************************************
+    # calcInGivenOut                                                                            //
+    # aI = tokenAmountIn                                                                        //
+    # bO = tokenBalanceOut               /  /     bO      \    (wO / wI)      \                 //
+    # bI = tokenBalanceIn          bI * |  | ------------  | ^            - 1  |                //
+    # aO = tokenAmountOut    aI =        \  \ ( bO - aO ) /                   /                 //
+    # wI = tokenWeightIn           --------------------------------------------                 //
+    # wO = tokenWeightOut                          ( 1 - sF )                                   //
+    # sF = swapFee                                                                              //
+    # **********************************************************************************************/
+    # a is token in, b is token out
+    @view
+    func get_in_given_out{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+            amount_of_b_out : Uint256, b_balance : Uint256, b_weight : Uint256, a_balance : Uint256,
+            a_weight : Uint256, swap_fee : Uint256) -> (amount_of_a_in : Uint256):
+        alloc_locals
+
+        let (local weight_ratio : Uint256) = FixedPoint.div(b_weight, a_weight)
+        let (local fee_adj : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), swap_fee)
+
+        let (local balance_out_minus_amount_out : Uint256) = FixedPoint.sub(
+            b_balance, amount_of_b_out)
+        let (local balance_out_ratio : Uint256) = FixedPoint.div(
+            b_balance, balance_out_minus_amount_out)
+        let (local weight_ratio_transform : Uint256) = FixedPoint.bounded_pow(
+            balance_out_ratio, weight_ratio)
+        let (local balance_in_multiplier_sans_fee : Uint256) = FixedPoint.sub(
+            weight_ratio_transform, Uint256(DECIMALS, 0))
+        let (local balance_in_multiplier : Uint256) = FixedPoint.div(
+            balance_in_multiplier_sans_fee, fee_adj)
+
+        let (local amount_of_a_in : Uint256) = FixedPoint.mul(a_balance, balance_in_multiplier)
+
+        return (amount_of_a_in)
     end
 
     @view

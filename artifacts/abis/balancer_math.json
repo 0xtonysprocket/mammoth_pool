@@ -432,6 +432,43 @@
     {
         "inputs": [
             {
+                "name": "pool_amount_out",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "supply",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_weight",
+                "type": "Uint256"
+            },
+            {
+                "name": "total_weight",
+                "type": "Uint256"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Uint256"
+            }
+        ],
+        "name": "get_single_in_given_pool_out",
+        "outputs": [
+            {
+                "name": "amount_of_a_in",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "pool_amount_in",
                 "type": "Uint256"
             },
@@ -473,6 +510,47 @@
     {
         "inputs": [
             {
+                "name": "amount_b_out",
+                "type": "Uint256"
+            },
+            {
+                "name": "b_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "supply",
+                "type": "Uint256"
+            },
+            {
+                "name": "b_weight",
+                "type": "Uint256"
+            },
+            {
+                "name": "total_weight",
+                "type": "Uint256"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Uint256"
+            },
+            {
+                "name": "exit_fee",
+                "type": "Uint256"
+            }
+        ],
+        "name": "get_pool_in_given_single_out",
+        "outputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "amount_of_a_in",
                 "type": "Uint256"
             },
@@ -501,6 +579,43 @@
         "outputs": [
             {
                 "name": "amount_of_b_out",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_of_b_out",
+                "type": "Uint256"
+            },
+            {
+                "name": "b_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "b_weight",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_balance",
+                "type": "Uint256"
+            },
+            {
+                "name": "a_weight",
+                "type": "Uint256"
+            },
+            {
+                "name": "swap_fee",
+                "type": "Uint256"
+            }
+        ],
+        "name": "get_in_given_out",
+        "outputs": [
+            {
+                "name": "amount_of_a_in",
                 "type": "Uint256"
             }
         ],
