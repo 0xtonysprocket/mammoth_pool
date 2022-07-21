@@ -32,8 +32,11 @@ This repo uses cairo-nile https://github.com/OpenZeppelin/nile
 ### View
 
 - view_out_given_in - given amount of ERC20 in and an ERC20 for out returns the amount of the second ERC20 a user would receive for inputing the amount in a swap
+- view_in_given_out
 - view_pool_minted_given_single_in - given amount of ERC20 in return amount of LP tokens minted
+- view_single_in_given_pool_out
 - view_single_out_given_pool_in - given amount of LP tokens in and ERC20 address returns amount of given ERC20 received for burning LP tokens
+- view_pool_in_given_single_out
 - get_ERC20_balance - given ERC20 address return balance of ERC20 in pool
 - is_erc20_approved - given pool and ERC20 address returns 1 if ERC20 is approved for said pool else 0
 - IMPLEMENTS ERC20_Mintable_Burnable

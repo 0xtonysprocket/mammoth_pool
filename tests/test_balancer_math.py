@@ -54,6 +54,26 @@ async def test_get_pool_minted_given_single_in(balancer_factory):
 
 
 @ pytest.mark.asyncio
+async def test_get_single_in_given_pool_out(balancer_factory):
+    balancer_contract, _ = balancer_factory
+
+    pool_out = to_uint(72.26014216013375 * DECIMALS)
+    a_balance = to_uint(45789 * DECIMALS)
+    supply = to_uint(100000 * DECIMALS)
+    a_weight = to_uint(.3333333333 * DECIMALS)  # 1/3
+    total_weight = to_uint(1 * DECIMALS)  # 1/1
+    swap_fee = to_uint(.01 * DECIMALS)  # 1/100
+
+    amount_in = await balancer_contract.get_single_in_given_pool_out(
+        pool_out, a_balance, supply, a_weight, total_weight, swap_fee
+    ).call()
+    assert (
+        abs(from_uint(amount_in.result[0])
+            - (100 * DECIMALS))
+    ) < (5 * DECIMALS) / (10 ** 4)
+
+
+@ pytest.mark.asyncio
 async def test_get_single_out_given_pool_in(balancer_factory):
     balancer_contract, _ = balancer_factory
 
@@ -73,6 +93,25 @@ async def test_get_single_out_given_pool_in(balancer_factory):
 
 
 @ pytest.mark.asyncio
+async def test_get_pool_in_given_single_out(balancer_factory):
+    balancer_contract, _ = balancer_factory
+
+    amount_out = to_uint(12.712380 * DECIMALS)
+    a_balance = to_uint(5324 * DECIMALS)
+    supply = to_uint(1234567 * DECIMALS)
+    a_weight = to_uint(.3333333333 * DECIMALS)
+    total_weight = to_uint(1 * DECIMALS)
+    swap_fee = to_uint(.01 * DECIMALS)
+    exit_fee = to_uint(.01 * DECIMALS)
+
+    pool_in = await balancer_contract.get_pool_in_given_single_out(
+        amount_out, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee
+    ).call()
+    assert abs(from_uint(
+        pool_in.result[0]) - (1000 * DECIMALS)) < (5 * DECIMALS) / (10 ** 3)
+
+
+@ pytest.mark.asyncio
 async def test_get_out_given_in(balancer_factory):
     balancer_contract, _ = balancer_factory
 
@@ -83,11 +122,29 @@ async def test_get_out_given_in(balancer_factory):
     b_weight = to_uint(.3333333333 * DECIMALS)
     swap_fee = to_uint(.01 * DECIMALS)
 
-    pool_minted = await balancer_contract.get_out_given_in(
+    amount_out = await balancer_contract.get_out_given_in(
         amount_of_a_in, a_balance, a_weight, b_balance, b_weight, swap_fee
     ).call()
-    assert abs(from_uint(pool_minted.result[0]) -
+    assert abs(from_uint(amount_out.result[0]) -
                (50.4193149 * DECIMALS)) < (5 * DECIMALS) / (10 ** 5)
+
+
+@ pytest.mark.asyncio
+async def test_get_in_given_out(balancer_factory):
+    balancer_contract, _ = balancer_factory
+
+    amount_of_b_out = to_uint(50.4193149 * DECIMALS)
+    a_balance = to_uint(2324 * DECIMALS)
+    a_weight = to_uint(.3333333333 * DECIMALS)
+    b_balance = to_uint(1234 * DECIMALS)
+    b_weight = to_uint(.3333333333 * DECIMALS)
+    swap_fee = to_uint(.01 * DECIMALS)
+
+    amount_in = await balancer_contract.get_in_given_out(
+        amount_of_b_out, b_balance, b_weight, a_balance, a_weight, swap_fee
+    ).call()
+    assert abs(from_uint(amount_in.result[0]) -
+               (100 * DECIMALS)) < (5 * DECIMALS) / (10 ** 5)
 
 
 @ pytest.mark.asyncio

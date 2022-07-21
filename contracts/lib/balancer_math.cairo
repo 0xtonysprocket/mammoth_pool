@@ -94,7 +94,7 @@ namespace Balancer_Math:
     # pAo = poolAmountOut              \\    pS    /     \(wI / tW)//                           //
     # bI = balanceIn          tAi =  --------------------------------------------               //
     # wI = weightIn                              /      wI  \                                   //
-    # tW = totalWeight                          |  1 - ----  |  * sF                            //
+    # tW = totalWeight                      1 - |  1 - ----  |  * sF                            //
     # sF = swapFee                               \      tW  /                                   //
     # **********************************************************************************************/
     @view
@@ -106,7 +106,8 @@ namespace Balancer_Math:
 
         let (local weight_ratio : Uint256) = FixedPoint.div(a_weight, total_weight)
         let (local fee_adj_one : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), weight_ratio)
-        let (local fee_adj : Uint256) = FixedPoint.mul(fee_adj_one, swap_fee)
+        let (local fee_adj_two : Uint256) = FixedPoint.mul(fee_adj_one, swap_fee)
+        let (local fee_adj : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), fee_adj_two)
 
         let (local pool_supp_adj : Uint256) = FixedPoint.add(supply, pool_amount_out)
         let (local pool_ratio : Uint256) = FixedPoint.div(pool_supp_adj, supply)

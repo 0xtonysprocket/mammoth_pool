@@ -194,6 +194,34 @@ async def test_view_single_out_given_pool_in(
         < 5 * 10**14
     )
 
+@pytest.mark.asyncio
+async def test_view_pool_in_given_single_out(
+    pool_factory, tusdc_factory, balancer_factory
+):
+    pool_contract = pool_factory['pool_contract']
+    _, tusdc_address = tusdc_factory
+    balancer, _ = balancer_factory
+
+    tusdc_out = await pool_contract.view_pool_in_given_single_out(
+        to_uint(1 * DECIMALS), tusdc_address
+    ).call()
+
+    desired = await balancer.get_pool_in_given_single_out(
+        to_uint(1 * DECIMALS),
+        to_uint(3000 * DECIMALS),
+        to_uint(3000 * DECIMALS),
+        to_uint(333333333333333334),
+        (to_uint(1 * DECIMALS)),
+        to_uint(2 * (10**16)),
+        (to_uint(2 * (10**16))),
+    ).call()
+
+    assert (
+        abs(from_uint(tusdc_out.result[0])
+        - from_uint(desired.result[0]))
+        < 5 * 10**14
+    )
+
 
 @pytest.mark.asyncio
 async def test_view_pool_minted_given_single_in(
@@ -219,6 +247,32 @@ async def test_view_pool_minted_given_single_in(
 
     assert (
         abs(from_uint(lp_out.result[0]) - from_uint(desired.result[0])) < 0.000005
+    )
+
+@pytest.mark.asyncio
+async def test_view_single_in_given_pool_out(
+    pool_factory, tusdc_factory, balancer_factory
+):
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
+    _, tusdc_address = tusdc_factory
+    balancer, _ = balancer_factory
+
+    lp_out = await pool_contract.view_single_in_given_pool_out(
+        to_uint(1 * DECIMALS), tusdc_address
+    ).call()
+
+    desired = await balancer.get_single_in_given_pool_out(
+        to_uint(1 * DECIMALS),
+        to_uint(3000 * DECIMALS),
+        to_uint(3000 * DECIMALS),
+        to_uint(333333333333333334),
+        (to_uint(1 * DECIMALS)),
+        (to_uint(2 * (10**16))),
+    ).call()
+
+    assert (
+        abs(from_uint(lp_out.result[0]) - from_uint(desired.result[0])) < 5 * 10**13
     )
 
 
@@ -247,6 +301,34 @@ async def test_view_out_given_in(
 
     assert (
         abs(from_uint(amount_out.result[0])
+        - from_uint(desired.result[0])) < 0.000005
+    )
+
+@pytest.mark.asyncio
+async def test_view_in_given_out(
+    pool_factory, tusdc_factory, fc_factory, balancer_factory
+):
+    pool_address = pool_factory['pool_address']
+    pool_contract = pool_factory['pool_contract']
+    _, tusdc_address = tusdc_factory
+    _, fc_address = fc_factory
+    balancer, _ = balancer_factory
+
+    amount_in = await pool_contract.view_in_given_out(
+        to_uint(1 * DECIMALS), tusdc_address, fc_address
+    ).call()
+
+    desired = await balancer.get_in_given_out(
+        to_uint(1 * DECIMALS),
+        to_uint(20 * DECIMALS),
+        to_uint(.333333333333333334 * DECIMALS),
+        to_uint(3000 * DECIMALS),
+        to_uint(.333333333333333334 * DECIMALS),
+        to_uint(2 * (10**16)),
+    ).call()
+
+    assert (
+        abs(from_uint(amount_in.result[0])
         - from_uint(desired.result[0])) < 0.000005
     )
 
