@@ -44,6 +44,7 @@ def uint(a):
 
 def to_uint(a):
     """Takes in value, returns uint256-ish tuple."""
+    a = int(a)
     return (a & ((1 << 128) - 1), a >> 128)
 
 

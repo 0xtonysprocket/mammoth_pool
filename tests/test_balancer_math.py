@@ -28,7 +28,7 @@ async def test_get_spot_price(balancer_factory):
     spot_price = await balancer_contract.get_spot_price(
         a_balance, a_weight, b_balance, b_weight, fee
     ).call()
-    assert from_uint(spot_price.result[0]) - (1.6835016833333336 * DECIMALS) < (
+    assert abs(from_uint(spot_price.result[0]) - (1.6835016833333336 * DECIMALS)) < (
         (5 * DECIMALS) / 10**6
     )
 
@@ -48,9 +48,9 @@ async def test_get_pool_minted_given_single_in(balancer_factory):
         amount_of_a_in, a_balance, supply, a_weight, total_weight, swap_fee
     ).call()
     assert (
-        from_uint(pool_minted.result[0])
-        - (1354.11112 * DECIMALS)
-    ) < (5 * DECIMALS) / (10 ** 6)
+        abs(from_uint(pool_minted.result[0])
+            - (72.26014216013375 * DECIMALS))
+    ) < (5 * DECIMALS) / (10 ** 4)
 
 
 @ pytest.mark.asyncio
@@ -68,8 +68,8 @@ async def test_get_single_out_given_pool_in(balancer_factory):
     pool_minted = await balancer_contract.get_single_out_given_pool_in(
         pool_amount_in, a_balance, supply, a_weight, total_weight, swap_fee, exit_fee
     ).call()
-    assert from_uint(
-        pool_minted.result[0]) - (12.712380 * DECIMALS) < (5 * DECIMALS) / (10 ** 6)
+    assert abs(from_uint(
+        pool_minted.result[0]) - (12.712380 * DECIMALS)) < (5 * DECIMALS) / (10 ** 6)
 
 
 @ pytest.mark.asyncio
@@ -86,8 +86,8 @@ async def test_get_out_given_in(balancer_factory):
     pool_minted = await balancer_contract.get_out_given_in(
         amount_of_a_in, a_balance, a_weight, b_balance, b_weight, swap_fee
     ).call()
-    assert from_uint(pool_minted.result[0]) - \
-        (50.4193149 * DECIMALS) < (5 * DECIMALS) / (10 ** 7)
+    assert abs(from_uint(pool_minted.result[0]) -
+               (50.4193149 * DECIMALS)) < (5 * DECIMALS) / (10 ** 5)
 
 
 @ pytest.mark.asyncio
@@ -107,17 +107,17 @@ async def test_get_proportional_deposits_given_pool_out(balancer_factory):
 
     list_of_deposits = await balancer_contract.get_proportional_deposits_given_pool_out(total_pool_supply, pool_out, token_list_input).call()
     assert list_of_deposits.result[0][0][0] == 1
-    assert from_uint(list_of_deposits.result[0][0][1]) - (
-        ((10000 * DECIMALS) / (578347 * DECIMALS)) * (200 * DECIMALS)) < 5 / (10**5)
+    assert abs(from_uint(list_of_deposits.result[0][0][1]) - (
+        ((10000 * DECIMALS) / (578347 * DECIMALS)) * (200 * DECIMALS))) < 5 * DECIMALS / (10**5)
 
     assert list_of_deposits.result[0][1][0] == 2
-    assert from_uint(list_of_deposits.result[0][1][1]) - (
+    assert abs(from_uint(list_of_deposits.result[0][1][1]) - (
         ((10000 * DECIMALS) / (578347 * DECIMALS))
-        * (1111 * DECIMALS)) < 5 / (10**5)
+        * (1111 * DECIMALS))) < 5 * DECIMALS / (10**5)
 
     assert list_of_deposits.result[0][2][0] == 3
-    assert from_uint(list_of_deposits.result[0][2][1]) - (((10000 * DECIMALS) / (578347 * DECIMALS))
-                                                          * (7777 * DECIMALS)) < 5 / (10**5)
+    assert abs(from_uint(list_of_deposits.result[0][2][1]) - (((10000 * DECIMALS) / (578347 * DECIMALS))
+                                                              * (7777 * DECIMALS))) < 5 * DECIMALS / (10**5)
 
 
 @ pytest.mark.asyncio
@@ -138,16 +138,16 @@ async def test_get_proportional_withdraw_given_pool_in(balancer_factory):
 
     list_of_deposits = await balancer_contract.get_proportional_withdraw_given_pool_in(pool_total_supply, amount_in, exit_fee, token_list_input).call()
     assert list_of_deposits.result[0][0][0] == 1
-    assert from_uint(list_of_deposits.result[0][0][1]) - \
-        ((((10000 * DECIMALS) - (10000 * DECIMALS / 1000)) /
-         (578347 * DECIMALS)) * (200 * DECIMALS)) < 5 / (10**5)
+    assert abs(from_uint(list_of_deposits.result[0][0][1]) -
+               ((((10000 * DECIMALS) - (10000 * DECIMALS / 1000)) /
+                 (578347 * DECIMALS)) * (200 * DECIMALS))) < 5 * DECIMALS / (10**5)
 
     assert list_of_deposits.result[0][1][0] == 2
-    assert from_uint(list_of_deposits.result[0][1][1]) - \
-        ((((10000 * DECIMALS) - (10000 * DECIMALS / 1000)) /
-          (578347 * DECIMALS)) * (578347 * DECIMALS)) * (1111 * DECIMALS) < 5 / (10**5)
+    assert abs(from_uint(list_of_deposits.result[0][1][1]) -
+               ((((10000 * DECIMALS) - (10000 * DECIMALS / 1000)) /
+                 (578347 * DECIMALS)) * (1111 * DECIMALS))) < 5 * DECIMALS / (10**5)
 
     assert list_of_deposits.result[0][2][0] == 3
-    assert from_uint(list_of_deposits.result[0][2][1]) - \
-        ((((10000 * DECIMALS) - (10000 * DECIMALS / 1000)) /
-          (578347 * DECIMALS)) * (7777 * DECIMALS)) < 5 / (10**5)
+    assert abs(from_uint(list_of_deposits.result[0][2][1]) -
+               ((((10000 * DECIMALS) - (10000 * DECIMALS / 1000)) /
+                 (578347 * DECIMALS)) * (7777 * DECIMALS))) < 5 * DECIMALS / (10**5)
