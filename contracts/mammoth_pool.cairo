@@ -268,6 +268,26 @@ func view_single_out_given_pool_in{
 end
 
 @view
+func view_pool_in_given_single_out{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        amount_to_withdraw : Uint256, erc20_address : felt) -> (pool_amount_in : Uint256):
+    alloc_locals
+
+    let (local this_contract : felt) = get_contract_address()
+
+    let (local swap_fee : Uint256, local exit_fee : Uint256,
+        total_weight : Uint256) = Register.get_pool_info()
+    let (local b_weight : Uint256) = Register.get_token_weight(erc20_address)
+    let (local supply : Uint256) = totalSupply()
+    let (local b_balance : Uint256) = get_ERC20_balance(erc20_address)
+
+    let (local pool_amount_in : Uint256) = Balancer_Math.get_pool_in_given_single_out(
+        amount_to_withdraw, b_balance, supply, b_weight, total_weight, swap_fee, exit_fee)
+
+    return (pool_amount_in)
+end
+
+@view
 func view_pool_minted_given_single_in{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         amount_to_deposit : Uint256, erc20_address : felt) -> (amount_to_mint : Uint256):
@@ -285,6 +305,23 @@ func view_pool_minted_given_single_in{
 end
 
 @view
+func view_single_in_given_pool_out{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        pool_amount_out : Uint256, erc20_address : felt) -> (amount_to_deposit : Uint256):
+    alloc_locals
+
+    let (local swap_fee : Uint256, _, total_weight : Uint256) = Register.get_pool_info()
+    let (local a_weight : Uint256) = Register.get_token_weight(erc20_address)
+    let (local supply : Uint256) = totalSupply()
+    let (local a_balance : Uint256) = get_ERC20_balance(erc20_address)
+
+    let (local amount_to_deposit : Uint256) = Balancer_Math.get_single_in_given_pool_out(
+        pool_amount_out, a_balance, supply, a_weight, total_weight, swap_fee)
+
+    return (amount_to_deposit)
+end
+
+@view
 func view_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         amount_in : Uint256, erc20_address_in : felt, erc20_address_out : felt) -> (
         amount_out : Uint256):
@@ -298,6 +335,24 @@ func view_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
 
     let (local amount_out : Uint256) = Balancer_Math.get_out_given_in(
         amount_in, a_balance, a_weight, b_balance, b_weight, swap_fee)
+
+    return (amount_out)
+end
+
+@view
+func view_in_given_out{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        amount_out : Uint256, erc20_address_in : felt, erc20_address_out : felt) -> (
+        amount_in : Uint256):
+    alloc_locals
+
+    let (local swap_fee : Uint256, _, _) = Register.get_pool_info()
+    let (local a_balance : Uint256) = get_ERC20_balance(erc20_address_in)
+    let (local a_weight : Uint256) = Register.get_token_weight(erc20_address_in)
+    let (local b_balance : Uint256) = get_ERC20_balance(erc20_address_out)
+    let (local b_weight : Uint256) = Register.get_token_weight(erc20_address_out)
+
+    let (local amount_out : Uint256) = Balancer_Math.get_in_given_out(
+        amount_out, b_balance, b_weight, a_balance, a_weight, swap_fee)
 
     return (amount_out)
 end

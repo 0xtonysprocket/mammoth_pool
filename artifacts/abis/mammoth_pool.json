@@ -976,6 +976,27 @@
     {
         "inputs": [
             {
+                "name": "amount_to_withdraw",
+                "type": "Uint256"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "view_pool_in_given_single_out",
+        "outputs": [
+            {
+                "name": "pool_amount_in",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "amount_to_deposit",
                 "type": "Uint256"
             },
@@ -988,6 +1009,27 @@
         "outputs": [
             {
                 "name": "amount_to_mint",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pool_amount_out",
+                "type": "Uint256"
+            },
+            {
+                "name": "erc20_address",
+                "type": "felt"
+            }
+        ],
+        "name": "view_single_in_given_pool_out",
+        "outputs": [
+            {
+                "name": "amount_to_deposit",
                 "type": "Uint256"
             }
         ],
@@ -1013,6 +1055,31 @@
         "outputs": [
             {
                 "name": "amount_out",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount_out",
+                "type": "Uint256"
+            },
+            {
+                "name": "erc20_address_in",
+                "type": "felt"
+            },
+            {
+                "name": "erc20_address_out",
+                "type": "felt"
+            }
+        ],
+        "name": "view_in_given_out",
+        "outputs": [
+            {
+                "name": "amount_in",
                 "type": "Uint256"
             }
         ],
