@@ -1,18 +1,12 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
-from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.math import assert_not_zero, assert_le, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.uint256 import (
-    Uint256, uint256_add, uint256_sub, uint256_mul, uint256_le, uint256_lt,
-    uint256_unsigned_div_rem)
+from starkware.cairo.common.uint256 import Uint256
 
-from contracts.lib.ratios.contracts.ratio import (
-    Ratio, ratio_mul, ratio_div, ratio_add, ratio_diff, nth_root_by_digit, pow, ratio_pow,
-    ratio_less_than_or_eq)
+from contracts.lib.fixed_point.src.fixed_point import FixedPoint
+from contracts.config import DECIMALS
 
 #########
 # STRUCT
@@ -32,32 +26,24 @@ end
 
 namespace Balancer_Math:
     #
-    #   a_balance/a_weight          fee.denominator
+    #   a_balance/a_weight          1
     #           /               *           /
-    #   b_balance/b_weight          fee.denominator - fee.numerator
+    #   b_balance/b_weight          1 - swap_fee
     #
     @view
     func get_spot_price{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            a_balance : Uint256, a_weight : Ratio, b_balance : Uint256, b_weight : Ratio,
-            fee : Ratio) -> (spot_price : Ratio):
+            a_balance : Uint256, a_weight : Uint256, b_balance : Uint256, b_weight : Uint256,
+            fee : Uint256) -> (spot_price : Uint256):
         alloc_locals
 
-        # needed for dereferencing ratios
-        let (__fp__, _) = get_fp_and_pc()
+        let (local x : Uint256) = FixedPoint.div(a_balance, a_weight)
+        let (local y : Uint256) = FixedPoint.div(b_balance, b_weight)
+        let (local fee_adj : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), fee)
 
-        let (local x : Uint256, _) = uint256_mul(a_balance, a_weight.n)
-        let (local y : Uint256, _) = uint256_mul(b_balance, b_weight.n)
-        let fee_adj : Uint256 = uint256_sub(fee.d, fee.n)
+        let (local balance_ratio : Uint256) = FixedPoint.div(x, y)
+        let (local fee_ratio : Uint256) = FixedPoint.div(Uint256(DECIMALS, 0), fee_adj)
 
-        local num_ratio : Ratio = Ratio(n=x, d=a_weight.d)
-        local den_ratio : Ratio = Ratio(n=y, d=b_weight.d)
-
-        let (local z : Uint256, _) = uint256_mul(num_ratio.n, den_ratio.d)
-        let (local z_fee : Uint256, _) = uint256_mul(z, fee.d)
-        let (local k : Uint256, _) = uint256_mul(den_ratio.n, num_ratio.d)
-        let (local k_fee : Uint256, _) = uint256_mul(fee_adj, k)
-
-        local spot_price : Ratio = Ratio(n=z_fee, d=k_fee)
+        let (local spot_price : Uint256) = FixedPoint.mul(balance_ratio, fee_ratio)
 
         return (spot_price)
     end
@@ -79,44 +65,24 @@ namespace Balancer_Math:
     @view
     func get_pool_minted_given_single_in{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            amount_of_a_in : Uint256, a_balance : Uint256, supply : Uint256, a_weight : Ratio,
-            total_weight : Ratio, swap_fee : Ratio) -> (pool_tokens_out : Ratio):
+            amount_of_a_in : Uint256, a_balance : Uint256, supply : Uint256, a_weight : Uint256,
+            total_weight : Uint256, swap_fee : Uint256) -> (pool_tokens_out : Uint256):
         alloc_locals
 
-        # needed for dereferencing ratios
-        let (__fp__, _) = get_fp_and_pc()
+        let (local divide_weights : Uint256) = FixedPoint.div(a_weight, total_weight)
 
-        let (local divide_weights : Ratio) = ratio_div(a_weight, total_weight)
-
-        # TODO: add sanity check that 1/1 > divide_weights
-        let (local step_one : Ratio) = ratio_diff(
-            Ratio(Uint256(1, 0), Uint256(1, 0)), divide_weights)
-
-        let (local step_one_times_fee : Ratio) = ratio_mul(step_one, swap_fee)
-
-        let (local i : Uint256) = uint256_sub(step_one_times_fee.d, step_one_times_fee.n)
-        local one_minus : Ratio = Ratio(i, step_one_times_fee.d)
-        let (local times_amount : Ratio) = ratio_mul(
-            Ratio(amount_of_a_in, Uint256(1, 0)), one_minus)
-        let (local plus_token_balance : Ratio) = ratio_add(
-            times_amount, Ratio(a_balance, Uint256(1, 0)))
-        let (local divided_by_balance : Ratio) = ratio_div(
-            plus_token_balance, Ratio(a_balance, Uint256(1, 0)))
-
-        let (local exponent : Ratio) = ratio_div(a_weight, total_weight)
-
-        let (local raised_to_exponent : Ratio) = ratio_pow(divided_by_balance, exponent.n)
-
-        # nth root accurate to 9 digits
-        with_attr error_message(
-                "ERROR WHEN TAKING THE NTH ROOT : LIKELY FRACTION REDUCTION PROBLEM; TRY SLIGHTLY ADJUSTING NUMBERS"):
-            let (local take_root_of_exponent : Ratio) = nth_root_by_digit(
-                raised_to_exponent, exponent.d, 9)
-        end
-        let (local times_pool_supply : Ratio) = ratio_mul(
-            take_root_of_exponent, Ratio(supply, Uint256(1, 0)))
-        let (local amount_pool_tokens_out : Ratio) = ratio_diff(
-            times_pool_supply, Ratio(supply, Uint256(1, 0)))
+        let (local x : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), divide_weights)
+        let (local x_times_fee : Uint256) = FixedPoint.mul(x, swap_fee)
+        let (local swap_fee_adj : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), x_times_fee)
+        let (local token_amount_in_after_fee : Uint256) = FixedPoint.mul(
+            amount_of_a_in, swap_fee_adj)
+        let (local new_token_balance_in : Uint256) = FixedPoint.add(
+            token_amount_in_after_fee, a_balance)
+        let (local balance_in_ratio : Uint256) = FixedPoint.div(new_token_balance_in, a_balance)
+        let (local pool_multiplier : Uint256) = FixedPoint.bounded_pow(
+            balance_in_ratio, divide_weights)
+        let (local new_pool_supply : Uint256) = FixedPoint.mul(pool_multiplier, supply)
+        let (local amount_pool_tokens_out : Uint256) = FixedPoint.sub(new_pool_supply, supply)
 
         return (amount_pool_tokens_out)
     end
@@ -144,53 +110,40 @@ namespace Balancer_Math:
     @view
     func get_single_out_given_pool_in{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_amount_in : Uint256, a_balance : Uint256, supply : Uint256, a_weight : Ratio,
-            total_weight : Ratio, swap_fee : Ratio, exit_fee : Ratio) -> (amount_token_out : Ratio):
+            pool_amount_in : Uint256, a_balance : Uint256, supply : Uint256, a_weight : Uint256,
+            total_weight : Uint256, swap_fee : Uint256, exit_fee : Uint256) -> (
+            amount_token_out : Uint256):
         alloc_locals
 
-        # needed for dereferencing ratios
-        let (__fp__, _) = get_fp_and_pc()
+        let (local one_minus_exit_fee : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), exit_fee)
+        let (local pool_amount_in_after_exit_fee : Uint256) = FixedPoint.mul(
+            pool_amount_in, one_minus_exit_fee)
+        let (local new_pool_supply : Uint256) = FixedPoint.sub(
+            supply, pool_amount_in_after_exit_fee)
+        let (local new_pool_div_old_pool : Uint256) = FixedPoint.div(new_pool_supply, supply)
 
-        let x : Uint256 = uint256_sub(exit_fee.d, exit_fee.n)
+        let (local weight_ratio : Uint256) = FixedPoint.div(a_weight, total_weight)
+        let (local exponent : Uint256) = FixedPoint.div(Uint256(DECIMALS, 0), weight_ratio)
+        let (local token_out_ratio : Uint256) = FixedPoint.bounded_pow(
+            new_pool_div_old_pool, exponent)
 
-        # calculate main ratio
-        local one_minus_exit_fee : Ratio = Ratio(x, exit_fee.d)
-        let times_pool_in : Ratio = ratio_mul(
-            one_minus_exit_fee, Ratio(pool_amount_in, Uint256(1, 0)))
+        let (local new_token_balance : Uint256) = FixedPoint.mul(token_out_ratio, a_balance)
+        let (local token_amount_out_before_swap_fee : Uint256) = FixedPoint.sub(
+            a_balance, new_token_balance)
 
-        let (local y : Uint256, _) = uint256_mul(supply, times_pool_in.d)
-        let y_adj : Uint256 = uint256_sub(y, times_pool_in.n)
-        local pool_supply_minus : Ratio = Ratio(y_adj, times_pool_in.d)
-        let divided_by_ps : Ratio = ratio_div(pool_supply_minus, Ratio(supply, Uint256(1, 0)))
+        # swap fee
+        let (local one_minus_weight_ratio : Uint256) = FixedPoint.sub(
+            Uint256(DECIMALS, 0), weight_ratio)
+        let (local multiply_by_swap_fee : Uint256) = FixedPoint.mul(
+            one_minus_weight_ratio, swap_fee)
+        let (local one_minus_all : Uint256) = FixedPoint.sub(
+            Uint256(DECIMALS, 0), multiply_by_swap_fee)
 
-        let exponent : Ratio = ratio_div(total_weight, a_weight)
+        # final multiplication
+        let (local token_amount_out : Uint256) = FixedPoint.mul(
+            token_amount_out_before_swap_fee, one_minus_all)
 
-        let raised_to_exponent : Ratio = ratio_pow(divided_by_ps, exponent.n)
-
-        with_attr error_message(
-                "ERROR WHEN TAKING THE NTH ROOT : LIKELY FRACTION REDUCTION PROBLEM; TRY SLIGHTLY ADJUSTING NUMBERS"):
-            let take_root_of_exponent : Ratio = nth_root_by_digit(raised_to_exponent, exponent.d, 9)
-        end
-
-        let times_balance_out : Ratio = ratio_mul(
-            take_root_of_exponent, Ratio(a_balance, Uint256(1, 0)))
-
-        let (local z : Uint256, _) = uint256_mul(a_balance, times_balance_out.d)
-        let z_adj : Uint256 = uint256_sub(z, times_balance_out.n)
-        let first_ratio : Ratio = Ratio(z_adj, times_balance_out.d)
-
-        # calculate other ratio
-        let step_one : Ratio = ratio_diff(total_weight, a_weight)
-
-        let step_one_times_fee : Ratio = ratio_mul(step_one, swap_fee)
-
-        let k : Uint256 = uint256_sub(step_one_times_fee.d, step_one_times_fee.n)
-        local second_ratio : Ratio = Ratio(k, step_one_times_fee.d)
-
-        # multiply together
-        let amount_token_out : Ratio = ratio_mul(first_ratio, second_ratio)
-
-        return (amount_token_out)
+        return (token_amount_out)
     end
 
     # IMPLEMENT LATER
@@ -218,52 +171,36 @@ namespace Balancer_Math:
     # **********************************************************************************************/
     @view
     func get_out_given_in{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            amount_of_a_in : Uint256, a_balance : Uint256, a_weight : Ratio, b_balance : Uint256,
-            b_weight : Ratio, swap_fee : Ratio) -> (amount_of_b_out : Ratio):
+            amount_of_a_in : Uint256, a_balance : Uint256, a_weight : Uint256, b_balance : Uint256,
+            b_weight : Uint256, swap_fee : Uint256) -> (amount_of_b_out : Uint256):
         alloc_locals
 
-        # needed for dereferencing ratios
-        let (__fp__, _) = get_fp_and_pc()
+        let (local weight_ratio : Uint256) = FixedPoint.div(a_weight, b_weight)
+        let (local one_minus_swap_fee : Uint256) = FixedPoint.sub(Uint256(DECIMALS, 0), swap_fee)
+        let (local adjusted_in : Uint256) = FixedPoint.mul(amount_of_a_in, one_minus_swap_fee)
 
-        local token_balance_in : Ratio = Ratio(a_balance, Uint256(1, 0))
-        local token_amount_in : Ratio = Ratio(amount_of_a_in, Uint256(1, 0))
-        local token_balance_out : Ratio = Ratio(b_balance, Uint256(1, 0))
+        let (local new_balance_in : Uint256) = FixedPoint.add(a_balance, adjusted_in)
+        let (local balance_in_ratio : Uint256) = FixedPoint.div(a_balance, new_balance_in)
+        let (local impact_on_balance_out : Uint256) = FixedPoint.bounded_pow(
+            balance_in_ratio, weight_ratio)
+        let (local out_balance_multiplier : Uint256) = FixedPoint.sub(
+            Uint256(DECIMALS, 0), impact_on_balance_out)
+        let (local token_amount_out : Uint256) = FixedPoint.mul(b_balance, out_balance_multiplier)
 
-        let x : Uint256 = uint256_sub(swap_fee.d, swap_fee.n)
-        local one_minus_swap_fee : Ratio = Ratio(x, swap_fee.d)
-        let times_tai : Ratio = ratio_mul(one_minus_swap_fee, token_amount_in)
-        let plus_balance_in : Ratio = ratio_add(token_balance_in, times_tai)
-        let balance_in_divided_by : Ratio = ratio_div(token_balance_in, plus_balance_in)
-
-        let exponent : Ratio = ratio_div(a_weight, b_weight)
-
-        let raised_to_exponent : Ratio = ratio_pow(balance_in_divided_by, exponent.n)
-
-        with_attr error_message(
-                "ERROR WHEN TAKING THE NTH ROOT : LIKELY FRACTION REDUCTION PROBLEM; TRY SLIGHTLY ADJUSTING NUMBERS"):
-            let take_root_of_exponent : Ratio = nth_root_by_digit(raised_to_exponent, exponent.d, 9)
-        end
-
-        let y : Uint256 = uint256_sub(take_root_of_exponent.d, take_root_of_exponent.n)
-        local one_minus_all : Ratio = Ratio(y, take_root_of_exponent.d)
-        let amount_of_b_out : Ratio = ratio_mul(token_balance_out, one_minus_all)
-
-        return (amount_of_b_out)
+        return (token_amount_out)
     end
 
     @view
     func get_proportional_withdraw_given_pool_in{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_total_supply : Uint256, pool_amount_in : Uint256, exit_fee : Ratio,
+            pool_total_supply : Uint256, pool_amount_in : Uint256, exit_fee : Uint256,
             token_list_len : felt, token_list : TokenAndAmount*) -> (
             output_arr_len : felt, output_arr : TokenAndAmount*):
         alloc_locals
 
-        local ratio_in : Ratio = Ratio(pool_amount_in, Uint256(1, 0))
-        let (local fee_adj : Ratio) = ratio_mul(ratio_in, exit_fee)
-        let (local adj_in : Ratio) = ratio_diff(ratio_in, fee_adj)
-        local ratio_total_supply : Ratio = Ratio(pool_total_supply, Uint256(1, 0))
-        let (local adj_pool_supply_ratio : Ratio) = ratio_div(adj_in, ratio_total_supply)
+        let (local fee_adj : Uint256) = FixedPoint.mul(pool_amount_in, exit_fee)
+        let (local adj_in : Uint256) = FixedPoint.sub(pool_amount_in, fee_adj)
+        let (local adj_pool_supply_ratio : Uint256) = FixedPoint.div(adj_in, pool_total_supply)
 
         let (local output_arr : TokenAndAmount*) = alloc()
 
@@ -277,10 +214,11 @@ namespace Balancer_Math:
     @view
     func get_proportional_deposits_given_pool_out{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_supply_ratio : Ratio, token_list_len : felt, token_list : TokenAndAmount*) -> (
-            output_arr_len : felt, output_arr : TokenAndAmount*):
+            pool_supply : Uint256, pool_amount_out : Uint256, token_list_len : felt,
+            token_list : TokenAndAmount*) -> (output_arr_len : felt, output_arr : TokenAndAmount*):
         alloc_locals
 
+        let (local pool_supply_ratio : Uint256) = FixedPoint.div(pool_amount_out, pool_supply)
         let (local output_arr : TokenAndAmount*) = alloc()
 
         let (local return_arr_len : felt,
@@ -292,7 +230,7 @@ namespace Balancer_Math:
 
     func _recursive_get_balance_needed{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_supply_ratio : Ratio, input_arr_len : felt, input_arr : TokenAndAmount*,
+            pool_supply_ratio : Uint256, input_arr_len : felt, input_arr : TokenAndAmount*,
             output_arr_len : felt, output_arr : TokenAndAmount*, counter : felt) -> (
             list_len : felt, list : TokenAndAmount*):
         alloc_locals
@@ -325,14 +263,10 @@ namespace Balancer_Math:
 
     func _get_balance_needed_from_pool_supply{
             syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            pool_supply_ratio : Ratio, current_balance : Uint256) -> (balance_needed : Uint256):
+            pool_supply_ratio : Uint256, current_balance : Uint256) -> (balance_needed : Uint256):
         alloc_locals
 
-        local ratio_current_balance : Ratio = Ratio(current_balance, Uint256(1, 0))
-        let (local curr_times_supply_ratio : Ratio) = ratio_mul(
-            ratio_current_balance, pool_supply_ratio)
-        let (local amount_required : Uint256, _) = uint256_unsigned_div_rem(
-            curr_times_supply_ratio.n, curr_times_supply_ratio.d)
+        let (local amount_required : Uint256) = FixedPoint.mul(current_balance, pool_supply_ratio)
 
         return (amount_required)
     end

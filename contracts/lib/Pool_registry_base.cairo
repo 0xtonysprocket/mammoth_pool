@@ -9,7 +9,8 @@ from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_le
 from starkware.cairo.common.bool import TRUE, FALSE
 
 # local
-from contracts.lib.ratios.contracts.ratio import Ratio, ratio_add
+from contracts.lib.fixed_point.src.fixed_point import FixedPoint
+from contracts.config import DECIMALS
 from contracts.lib.Pool_base import Pool
 
 # approved erc20s
@@ -19,22 +20,22 @@ end
 
 # pool weight of a given erc20 (1/w)
 @storage_var
-func token_weight(erc20_address : felt) -> (weight : Ratio):
+func token_weight(erc20_address : felt) -> (weight : Uint256):
 end
 
 # sum of all weights for normalization
 @storage_var
-func total_weight() -> (total_weight : Ratio):
+func total_weight() -> (total_weight : Uint256):
 end
 
 # swap fee
 @storage_var
-func swap_fee() -> (fee : Ratio):
+func swap_fee() -> (fee : Uint256):
 end
 
 # exit fee
 @storage_var
-func exit_fee() -> (fee : Ratio):
+func exit_fee() -> (fee : Uint256):
 end
 
 # number of tokens
@@ -52,17 +53,15 @@ end
 
 struct ApprovedERC20:
     member erc_address : felt
-    member low_num : felt
-    member high_num : felt
-    member low_den : felt
-    member high_den : felt
+    member weight_low : felt
+    member weight_high : felt
     member initial_liquidity_low : felt
-    member initial_liquidity_high : felt
+    member initial_liquidity_high : felt  # weight and initial liquidity are Uint256
 end
 
 namespace Register:
     func init_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            caller_address : felt, s_fee : Ratio, e_fee : Ratio, erc_list_len : felt,
+            caller_address : felt, s_fee : Uint256, e_fee : Uint256, erc_list_len : felt,
             erc_list : ApprovedERC20*) -> (bool : felt, lp_amount : Uint256):
         alloc_locals
 
@@ -74,31 +73,31 @@ namespace Register:
         num_tokens.write(erc_list_len)
 
         local _lp_amount : Uint256 = Uint256(0, 0)
-        let (local t_weight : Ratio, local lp_amount : Uint256) = _approve_ercs(
+        let (local t_weight : Uint256, local lp_amount : Uint256) = _approve_ercs(
             caller_address, _lp_amount, erc_list_len, erc_list)
 
         # check weights are normalized
-        let (local eq : felt) = uint256_eq(t_weight.n, t_weight.d)
+        let (local eq : felt) = uint256_eq(t_weight, Uint256(DECIMALS, 0))
         assert eq = 1
 
-        total_weight.write(Ratio(Uint256(1, 0), Uint256(1, 0)))
+        total_weight.write(Uint256(DECIMALS, 0))
         return (TRUE, lp_amount)
     end
 
     func _approve_ercs{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
             caller_address : felt, _lp_amount : Uint256, arr_len : felt, arr : ApprovedERC20*) -> (
-            weight_sum : Ratio, lp_amount : Uint256):
+            weight_sum : Uint256, lp_amount : Uint256):
         alloc_locals
 
         # needed for dereferencing struct
         let (__fp__, _) = get_fp_and_pc()
 
         if arr_len == 0:
-            return (Ratio(Uint256(0, 0), Uint256(1, 0)), _lp_amount)
+            return (Uint256(0, 0), _lp_amount)
         end
 
         let current_struct : ApprovedERC20* = [&arr]
-        local weight : Ratio = Ratio(Uint256(current_struct.low_num, current_struct.high_num), Uint256(current_struct.low_den, current_struct.high_den))
+        local weight : Uint256 = Uint256(current_struct.weight_low, current_struct.weight_high)
 
         approved_erc20s.write(current_struct.erc_address, TRUE)
         token_weight.write(current_struct.erc_address, weight)
@@ -115,35 +114,35 @@ namespace Register:
         # make two separate branches  to avoid variable dereferencing on _lp_amount
         if le == 1:
             local _lp_amount : Uint256 = amount
-            let (local rest_of_sum : Ratio, lp_amount : Uint256) = _approve_ercs(
+            let (local rest_of_sum : Uint256, lp_amount : Uint256) = _approve_ercs(
                 caller_address, _lp_amount, arr_len - 1, arr + ApprovedERC20.SIZE)
-            let (local weight_sum : Ratio) = ratio_add(weight, rest_of_sum)
+            let (local weight_sum : Uint256) = FixedPoint.add(weight, rest_of_sum)
 
             return (weight_sum, lp_amount)
         else:
-            let (local rest_of_sum : Ratio, lp_amount : Uint256) = _approve_ercs(
+            let (local rest_of_sum : Uint256, lp_amount : Uint256) = _approve_ercs(
                 caller_address, _lp_amount, arr_len - 1, arr + ApprovedERC20.SIZE)
-            let (local weight_sum : Ratio) = ratio_add(weight, rest_of_sum)
+            let (local weight_sum : Uint256) = FixedPoint.add(weight, rest_of_sum)
 
             return (weight_sum, lp_amount)
         end
     end
 
     func get_pool_info{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
-            s_fee : Ratio, e_fee : Ratio, tot_weight : Ratio):
+            s_fee : Uint256, e_fee : Uint256, tot_weight : Uint256):
         alloc_locals
 
-        let (local s : Ratio) = swap_fee.read()
-        let (local e : Ratio) = exit_fee.read()
-        let (local t_w : Ratio) = total_weight.read()
+        let (local s : Uint256) = swap_fee.read()
+        let (local e : Uint256) = exit_fee.read()
+        let (local t_w : Uint256) = total_weight.read()
 
         return (s, e, t_w)
     end
 
     func get_token_weight{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-            erc_address : felt) -> (token_weight : Ratio):
+            erc_address : felt) -> (token_weight : Uint256):
         alloc_locals
-        let (local tok_w : Ratio) = token_weight.read(erc_address)
+        let (local tok_w : Uint256) = token_weight.read(erc_address)
         return (tok_w)
     end
 
@@ -169,10 +168,10 @@ namespace Register:
     end
 
     func get_exit_fee{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
-            fee : Ratio):
+            fee : Uint256):
         alloc_locals
 
-        let (local fee : Ratio) = exit_fee.read()
+        let (local fee : Uint256) = exit_fee.read()
         return (fee)
     end
 

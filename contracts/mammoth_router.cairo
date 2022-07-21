@@ -10,7 +10,6 @@ from openzeppelin.access.ownable import Ownable
 from openzeppelin.security.initializable import Initializable, Initializable_initialized
 
 # Mammoth
-from contracts.lib.ratios.contracts.ratio import Ratio
 from contracts.lib.Router_base import Router
 from contracts.lib.Pool_registry_base import ApprovedERC20
 
@@ -24,8 +23,9 @@ end
 
 @event
 func pool_created(
-        pool : felt, name : felt, symbol : felt, decimals : felt, swap_fee : Ratio,
-        exit_fee : Ratio, tokens_len : felt, tokens : ApprovedERC20*, initial_lp_minted : Uint256):
+        pool : felt, name : felt, symbol : felt, decimals : felt, swap_fee : Uint256,
+        exit_fee : Uint256, tokens_len : felt, tokens : ApprovedERC20*,
+        initial_lp_minted : Uint256):
 end
 
 @event
@@ -84,7 +84,7 @@ end
 @external
 func create_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         pool_address : felt, name : felt, symbol : felt, decimals : felt, caller_address : felt,
-        s_fee : Ratio, e_fee : Ratio, erc_list_len : felt, erc_list : ApprovedERC20*) -> (
+        s_fee : Uint256, e_fee : Uint256, erc_list_len : felt, erc_list : ApprovedERC20*) -> (
         bool : felt):
     alloc_locals
     Ownable.assert_only_owner()
